@@ -1,0 +1,14 @@
+BCD
+===
+
+Project to create and demonstrate various forms of Binary Coded Decimal (BCD) datatypes.
+BCD datatypes can calculate large numbers of decimals without rounding errors of the
+underlying binary hardware of the CPU.
+
+The folowwing forms are used/referenced in this program
+
+CALC  : The results of the MS-Windows OS application "Calc.exe"
+Double: C++ datatype 'double' as build in in the MS-VC++ compiler
+AFP   : A public domain implementation by Henrik Vestermark
+ICD   : Integer Coded Decimal as used in Pronto/BRE4all of Centric
+BCD   : Binary Coded Decimal by Edwig Huisman
