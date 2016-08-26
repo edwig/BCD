@@ -1,5 +1,3 @@
-// Copyright 2010 Centric IT Solutions. All rights reserved.
-//
 #ifndef Icd4_h
 #define Icd4_h
 
@@ -124,13 +122,13 @@ public:
   // Opvragen geconverteerd als double
   double  AlsDouble() const;
   // Opvragen geconverteerd als long
-	long    AlsLong() const;
+  long    AlsLong() const;
   // Opvragen geconverteerd als 64 bits long
   int64   AlsInt64() const;
   // Opvragen als mathematische string (met .)
   CString AlsString() const;
   // Opvragen als display string (volgens desktop locale)
-	CString AlsDisplayString() const;
+  CString AlsDisplayString() const;
   // Hier niet gebruikt. 
 //CString AlsSQLString() const;
   

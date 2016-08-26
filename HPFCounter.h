@@ -1,15 +1,3 @@
-////////////////////////////////////////////////////////////////////////
-//
-// $Source: ?/WOCO - BRIEF4all/Brief/BriefServer/Include/HPFCounter.h $
-// $Author: ehuisman $
-// 
-// $log$
-// Revision 152685 2011/01/12 10:47:59  ehuisman
-//   BRIEF4all -> Suite BRIEF-E omnoemen.
-//
-// Copyright (c) 1995 - 2011 Centric IT Solutions
-// Alle rechten voorbehouden
-//
 #pragma once
 
 class HPFCounter
