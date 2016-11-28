@@ -26,9 +26,9 @@ const int bcdPrecision = bcdDigits * bcdLength;
 // - Some generals:   DebugPrint ("%08d")
 
 // Handy typedefs of used basic datatypes
-typedef unsigned short ushort;
+using uchar = unsigned char;
 #ifndef int64
-typedef __int64 int64;
+using int64 = __int64;
 #endif
 
 // Forward declaration of our class
@@ -313,7 +313,7 @@ private:
   bcd  PositiveDivision(bcd& p_arg1,bcd& p_arg2) const;
 
   // STORAGE OF THE NUMBER
-  ushort m_sign : 1;            // bitfield sign
+  uchar  m_sign;                // bitfield sign
   short  m_exponent;            // +/- 10E32768
   long   m_mantissa[bcdLength]; // Up to (bcdDigits * bcdLength) digits
 };
