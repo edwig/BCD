@@ -101,6 +101,16 @@ bcd::bcd(const CString& p_string,bool p_fromDB /*= false*/)
   SetValueString(p_string,p_fromDB);
 }
 
+// bcd::bcd(numeric)
+// Description: Assignment-constructor for bcd from a SQL NUMERIC
+// Parameters:  p_numeric -> Input from a SQL ODBC database
+//                           from a NUMERIC field
+//
+bcd::bcd(const SQL_NUMERIC_STRUCT* p_numeric)
+{
+  SetValueNumeric(p_numeric);
+}
+
 // bcd::~bcd
 // Description: Destructor of class bcd.
 //
@@ -122,7 +132,7 @@ bcd::~bcd()
 
 // bcd::PI
 // Description: Circumference/Radius ratio of a circle
-// Technical:   Natureconstant that never changes
+// Technical:   Nature constant that never changes
 bcd
 bcd::PI()
 {
@@ -449,18 +459,10 @@ bcd::operator<(const bcd& p_value) const
   {
     if(m_exponent < p_value.m_exponent)
     {
-      if(!p_value.m_exponent)
-      {
-        return (m_sign == Negative);
-      }
       return (m_sign == Positive);
     }
     else
     {
-      if(!p_value.m_exponent)
-      {
-        return (m_sign == Positive);
-      }
       return (m_sign == Negative);
     }
   }
@@ -619,16 +621,6 @@ bcd::Round(int p_precision /*=0*/)
       {
         m_mantissa[mant] = newMant;
       }
-//       ++digitValue;
-// 
-//       int newMant = digitValue * base;
-//       if(pos > 0)
-//       {
-//         mantBefore /= 10;
-//         mantBefore *= 10;
-//         newMant += mantBefore;
-//         m_mantissa[mant] = newMant;
-//       }
     }
     // Strip everything in the mantissa behind the position
     m_mantissa[mant] /= base;
@@ -1115,16 +1107,18 @@ bcd::Sine() const
     between /= bcd(step) * bcd(step - 1);
     between  = -between; // Switch sign each step
 
+//     // DEBUGGING
 //     printf("Step: %d\n",step);
 //     result.DebugPrint("Result");
 //     between.DebugPrint("Between");
 
     result  += between;
 
-//    result.DebugPrint("Between+");
+//     // DEBUGGING
+//     result.DebugPrint("Between+");
 
-    // DEBUGGING
-    // printf("%02d = %40s = %40s\n",step,between.AsString(),result.AsString());
+//     // DEBUGGING
+//     printf("%02d = %40s = %40s\n",step,between.AsString(),result.AsString());
 
     // Check tolerance criterion
     if(between.AbsoluteValue() < epsilon)
@@ -1676,6 +1670,76 @@ bcd::AsDisplayString() const
   return AsString();
 }
 
+// Get as an ODBC SQL NUMERIC
+bool
+bcd::AsNumeric(SQL_NUMERIC_STRUCT* p_numeric,unsigned p_precision,unsigned p_scale)
+{
+  // Init the value array
+  memset(p_numeric->val,0,SQL_MAX_NUMERIC_LEN);
+
+  // Check precision/scale values
+  // Precision cannot be greater than 256^16 = 2.03 10^38
+  // Scale cannot be greater than (precision - 1)
+  if(p_precision > 37)
+  {
+    p_precision = 37;
+  }
+  if(p_scale >= p_precision)
+  {
+    p_scale = p_precision - 1;
+  }
+
+  // Setting the sign, precision and scale
+  p_numeric->sign      = (m_sign == Positive) ? 1 : 0;
+  p_numeric->precision = p_precision;
+  p_numeric->scale     = p_scale;
+
+  // Special case for 0.0
+  if(IsNull())
+  {
+    return true;
+  }
+
+  // Check for size
+  bcd maximum = bcd(10).TenPower(p_precision - p_scale);
+  bool result = *this < maximum;
+
+  // Adjusting m_exponent to positive scaled integer result
+  m_sign = Positive;
+  m_exponent += p_scale;
+
+  // Converting the value array
+  bcd radix(256);
+  bcd one(1);
+  int ind = 0;
+
+  while(true)
+  {
+    // Getting the next val array value
+    bcd val = Mod(radix);
+    p_numeric->val[ind] = (SQLCHAR) val.AsLong();
+    *this -= val;
+    *this  = Div(radix);
+    ++ind;
+
+    // Breaking criterion: nothing left
+    if(*this < one)
+    {
+      break;
+    }
+
+    // Breaking criterion on overflow
+    // Check as last, number could fit exactly!
+    if(ind >= SQL_MAX_NUMERIC_LEN)
+    {
+      result = false;
+      break;
+    }
+  }
+  // Returns the fact that we have an overflow or not
+  return result;
+}
+
 //////////////////////////////////////////////////////////////////////////
 //
 // END OF "GET AS SOMETHING DIFFERENT"
@@ -1737,7 +1801,7 @@ bcd::GetLength() const
   int length  = 0;
   int counter = 0;
 
-  // Quick optimalisation
+  // Quick optimization
   if(IsNull())
   {
     // Zero (0) has length of 1
@@ -1772,7 +1836,7 @@ bcd::GetLength() const
 int   
 bcd::GetPrecision() const
 {
-  // Quick optimalisation
+  // Quick optimization
   if(IsNull())
   {
     return 0;
@@ -2240,6 +2304,47 @@ bcd::SetValueString(const CString& p_string,bool p_fromDB)
   Normalize();
 }
 
+// Sets the value from a SQL NUMERIC
+void  
+bcd::SetValueNumeric(const SQL_NUMERIC_STRUCT* p_numeric)
+{
+  int maxval = SQL_MAX_NUMERIC_LEN - 1;
+
+  // Start at zero
+  Zero();
+
+  // Find the last value in the numeric
+  int ind = maxval;
+  for(;ind >= 0; --ind)
+  {
+    if(p_numeric->val[ind])
+    {
+      maxval = ind;
+      break;
+    }
+  }
+
+  // Special case: NUMERIC = zero
+  if(ind < 0)
+  {
+    return;
+  }
+
+  // Compute the value array to the bcd-mantissa
+  bcd radix(1);
+  for(ind = 0;ind <= maxval; ++ind)
+  {
+    bcd val = radix * bcd(p_numeric->val[ind]);
+    *this   = Add(val);
+    radix  *= 256;  // Value array is in 256 radix
+  }
+
+  // Compute the exponent from the precision and scale
+  m_exponent -= p_numeric->scale;
+
+  // Adjust the sign
+  m_sign = p_numeric->sign == 1 ? Positive : Negative;
+}
 
 // bcd::Normalize
 // Description: Normalize the exponent. 
@@ -2288,7 +2393,7 @@ void
 bcd::Mult10(int p_times /* = 1 */)
 {
   // If the number of times is bigger than bcdDigits
-  // Optimize by doing shifts instead of mult's
+  // Optimize by doing shifts instead of mults
   if(p_times / bcdDigits)
   {
     int shifts = p_times / bcdDigits;
@@ -2321,7 +2426,7 @@ void
 bcd::Div10(int p_times /*=1*/)
 {
   // if the number of times is bigger than bcdDigits
-  // optimize by doing shifts instead of div's
+  // optimize by doing shifts instead of divs
   if(p_times / bcdDigits)
   {
     int shifts = p_times / bcdDigits;
@@ -2393,7 +2498,7 @@ bcd::SplitMantissa() const
 {
   bcd result = *this;
 
-  // Spliting position is 1 more than the exponent
+  // Splitting position is 1 more than the exponent
   // because of the implied first position
   int position = m_exponent + 1;
 
@@ -2483,14 +2588,14 @@ bcd::DebugPrint(char* p_name)
 #endif
 
 // bcd::Epsilon
-// Description: Stopping criterium for iterations
+// Description: Stopping criterion for iterations
 // Technical:   Translates fraction to lowest decimal position
 //               10 -> 0,00000000000000000010
 //                5 -> 0,00000000000000000005
 bcd&
 bcd::Epsilon(long p_fraction) const
 {
-  // Calculate stop criterium epsilon
+  // Calculate stop criterion epsilon
   static bcd epsilon;
   epsilon.m_mantissa[0] = p_fraction * bcdBase / 10;
   epsilon.m_exponent    = 2 - bcdPrecision;
@@ -2598,12 +2703,12 @@ bcd::Mod(const bcd& p_number) const
 {
   bcd count = ((*this) / p_number).Floor();
 
-//   bcd deel  = (*this) / p_number;
+//   bcd part  = (*this) / p_number;
 //   bcd floor = deel.Floor();
 //   bcd subst = floor * p_number;
 //   bcd answ  = *this - subst;
 // 
-//   deel .DebugPrint("Divisor");
+//   part .DebugPrint("Divisor");
 //   floor.DebugPrint("Divisor-floor");
 //   subst.DebugPrint("Subtrahend");
 //   answ .DebugPrint("Answer");
@@ -2857,7 +2962,7 @@ bcd::PositiveDivision(bcd& p_arg1,bcd& p_arg2) const
 
   for(int ind = 1;ind <= bcdPrecision; ++ind)
   {
-//     printf("Iteratie: %d\n",ind);
+//     printf("Iteration: %d\n",ind);
 //     p_arg1.DebugPrint("argument1");
 //     p_arg2.DebugPrint("argument2");
 
@@ -2881,7 +2986,7 @@ bcd::PositiveDivision(bcd& p_arg1,bcd& p_arg2) const
     {
       p_arg1.Mult10();
 
-      // If still not at implied position, we may do an extra shift's 
+      // If still not at implied position, we may do an extra shifts 
       // inserting zero's in the result if there are more
       if((p_arg1.m_mantissa[0] * 10 / bcdBase) == 0)
       {

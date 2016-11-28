@@ -11,8 +11,9 @@
 //
 #pragma once
 #include <string>
+#include <sqltypes.h>
 
-// Constants that controle the actual precision:
+// Constants that controls the actual precision:
 const int bcdBase      = 100000000L; // Base of the numbers in m_mantissa
 const int bcdDigits    = 8;          // Number of digits in one mantissa element
 const int bcdLength    = 5;          // Number of elements in the mantissa    
@@ -20,8 +21,8 @@ const int bcdPrecision = bcdDigits * bcdLength;
 // When rethinking one of these four constants, 
 // be sure to edit the following points in the implementation class
 // - The constants:   PI, LN2, LN10
-// - The conversions: AsLong, AsInt64
-// - The setters:     SetValueLong, SetValueInt64
+// - The conversions: AsLong, AsInt64, AsNumeric
+// - The setters:     SetValueLong, SetValueInt64, SetValueNumeric
 // - Some generals:   DebugPrint ("%08d")
 
 // Handy typedefs of used basic datatypes
@@ -55,6 +56,12 @@ bcd asin (bcd p_number);
 bcd acos (bcd p_number);
 bcd atan (bcd p_number);
 bcd atan2(bcd p_y,bcd p_x);
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The Binary Coded Decimal class
+//
+//////////////////////////////////////////////////////////////////////////
 
 class bcd
 {
@@ -92,14 +99,17 @@ public:
   // Assignment-constructor of class bcd.
   bcd(const CString& p_string,bool p_fromDB = false);
 
+  // BCD from a SQL_NUMERIC_STRUCT
+  bcd(const SQL_NUMERIC_STRUCT* p_numeric);
+
   // Destructor of class bcd.
   ~bcd();
 
   // CONSTANTS
 
   static bcd PI();     // Circumference/Radius ratio of a circle
-  static bcd LN2();    // Natural logarithme of 2
-  static bcd LN10();   // Natural logarithme of 10
+  static bcd LN2();    // Natural logarithm of 2
+  static bcd LN10();   // Natural logarithm of 10
 
   // OPERATORS
 
@@ -143,11 +153,11 @@ public:
   // MAKING AN EXACT NUMERIC value
   
   // Set the mantissa/exponent/sign to the number zero (0)
-  void     Zero();
+  void    Zero();
   // Round to a specified fraction (decimals behind the .)
-  void     Round(int p_precision = 0);
+  void    Round(int p_precision = 0);
   // Truncate to a specified fraction (decimals behind the .)
-  void     Truncate(int p_precision = 0);  
+  void    Truncate(int p_precision = 0);  
   
   // MATHEMATICAL FUNCTIONS
 
@@ -165,7 +175,7 @@ public:
   bcd     AbsoluteValue() const;
   // Reciproke / Inverse = 1/x
   bcd     Reciproke() const;
-  // Natural logarithme
+  // Natural logarithm
   bcd     Log() const;
   // Exponent e tot the power 'this number'
   bcd     Exp() const;
@@ -203,72 +213,76 @@ public:
   CString AsString(int p_format = Bookkeeping,bool p_printPositive = false) const;
   // Get as a display string (by desktop locale)
   CString AsDisplayString() const;
+  // Get as an ODBC SQL NUMERIC(p,s)
+  bool    AsNumeric(SQL_NUMERIC_STRUCT* p_numeric,unsigned p_precision,unsigned p_scale);
   
   // GETTER FUNCTIES
 
   // Is bcd exactly 0.0?
-  bool  IsNull() const; 
+  bool    IsNull() const; 
   // Gets the sign 0 (= 0.0), 1 (greater than 0) of -1 (smaller than 0)
-  int   GetSign() const;
+  int     GetSign() const;
   // Total length (before and after decimal point)
-  int   GetLength() const;
+  int     GetLength() const;
   // Total precision (length after the decimal point)
-  int   GetPrecision() const;
+  int     GetPrecision() const;
   // Get the max size of a bcd
   static int GetMaxSize(int p_precision = 0);
   // Gets the fact that it fits in a long
-  bool  GetFitsInLong() const;
+  bool    GetFitsInLong() const;
   // Gets the fact that it fits in an int64
-  bool  GetFitsInInt64() const;
+  bool    GetFitsInInt64() const;
   // Decimal part (behind the decimal point) is not "000" (zeros)
-  bool  GetHasDecimals() const;
+  bool    GetHasDecimals() const;
   // Gets the exponent
-  int   GetExponent() const;
+  int     GetExponent() const;
   // Gets the mantissa
-  bcd   GetMantissa() const;
+  bcd     GetMantissa() const;
 
   // FILE STREAM FUNCTIONS
-  bool  WriteToFile (FILE* p_fp);
-  bool  ReadFromFile(FILE* p_fp);
+  bool    WriteToFile (FILE* p_fp);
+  bool    ReadFromFile(FILE* p_fp);
 
 private:
 
   // INTERNALS
 
   // Sets one integer in this bcd number
-  void  SetValueInt(const int p_value);
+  void    SetValueInt(const int p_value);
   // Sets one or two longs in this bcd number
-  void  SetValueLong(const long p_value, const long p_restValue);
+  void    SetValueLong(const long p_value, const long p_restValue);
   // Sets one or two longs in this bcd number
-  void  SetValueInt64(const int64 p_value, const int64 p_restValue);
+  void    SetValueInt64(const int64 p_value, const int64 p_restValue);
   // Sets the value from a double
-  void  SetValueDouble(const double p_value);
+  void    SetValueDouble(const double p_value);
   // Sets the value from a string
-  void  SetValueString(const CString& p_string,bool p_fromDB = false);
+  void    SetValueString(const CString& p_string,bool p_fromDB = false);
+  // Sets the value from a SQL NUMERIC
+  void    SetValueNumeric(const SQL_NUMERIC_STRUCT* p_numeric);
   // Take the absolute value of a long
-  long  long_abs(const long p_value) const;
+  long    long_abs(const long p_value) const;
   // Normalize the mantissa/exponent
-  void  Normalize(int p_startExponent = 0);
+  void    Normalize(int p_startExponent = 0);
   // Multiply the mantissa by 10
-  void  Mult10(int p_times = 1);
+  void    Mult10(int p_times = 1);
   // Divide the mantissa by 10
-  void  Div10(int p_times = 1);
+  void    Div10(int p_times = 1);
   // Shift mantissa 1 position right
-  void  ShiftRight();
+  void    ShiftRight();
   // Shift mantissa 1 position left
-  void  ShiftLeft();
+  void    ShiftLeft();
   // Convert a string to a single long value
-  long  StringToLong(CString& p_string) const;
+  long    StringToLong(CString& p_string) const;
   // Convert a long to a string
   CString LongToString(long p_value) const;
   // Split the mantissa for floor/ceiling operations
-  bcd   SplitMantissa() const;
+  bcd     SplitMantissa() const;
   // Compare two mantissa
-  int   CompareMantissa(const bcd& p_value) const;
+  int     CompareMantissa(const bcd& p_value) const;
   // Debug print of the mantissa
-  void  DebugPrint(char* p_name);
-  // Stopping criterium for internal iterations
-  bcd&  Epsilon(long p_fraction) const;
+  void    DebugPrint(char* p_name);
+  // Stopping criterion for internal iterations
+  bcd&    Epsilon(long p_fraction) const;
 
   // BASIC OPERATIONS
 
@@ -299,9 +313,7 @@ private:
   bcd  PositiveDivision(bcd& p_arg1,bcd& p_arg2) const;
 
   // STORAGE OF THE NUMBER
-  ushort m_sign      : 1;  // bitfield sign
-//ushort m_precision : 7;  // bcdPrecision upto 127 is possible
-  short  m_exponent;       // +/- 10E32768
+  ushort m_sign : 1;            // bitfield sign
+  short  m_exponent;            // +/- 10E32768
   long   m_mantissa[bcdLength]; // Up to (bcdDigits * bcdLength) digits
 };
-

@@ -703,8 +703,41 @@ TestFuncties(int p_count)
 int
 Test()
 {
-  double test = 0.123456789012345678901234567890;
-  printf("Test: %.30lf\n\n",(test * 432));
+  // Header
+  printf("Testing SQL_NUMERIC_STRUCT for SQL NUMERIC/DECIMAL's\n");
+  printf("====================================================\n");
+
+  // num = 10.001 (ten and 1 thousandth)
+  SQL_NUMERIC_STRUCT num;
+  memset(&num,0,sizeof(SQL_NUMERIC_STRUCT));
+  num.sign = 1; // Positive
+  num.precision = 6;
+  num.scale     = 4;
+
+  num.val[0] = 0xAA;
+  num.val[1] = 0x86;
+  num.val[2] = 0x01;
+
+  bcd ten(&num);
+  printf("This is the value: %s\n" ,ten.AsString());
+
+  // Now back again to a SQL_NUMERIC_STRUCT
+  memset(&num,0,sizeof(SQL_NUMERIC_STRUCT));
+  if(ten.AsNumeric(&num,12,7))
+  {
+    printf("Precision: %d\n",num.precision);
+    printf("Scale    : %d\n",num.scale);
+    printf("Sign     : %d\n",num.sign);
+
+    for(unsigned ind = 0;ind < SQL_MAX_NUMERIC_LEN; ++ind)
+    {
+      printf("Numeric mantissa [%d:%02.2X]\n",ind,num.val[ind]);
+    }
+
+    bcd check(&num);
+    printf("This is the value: %s\n",check.AsString());
+  }
+
   return 0;
 }
 
