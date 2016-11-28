@@ -701,15 +701,16 @@ TestFuncties(int p_count)
 }
 
 int
-Test()
+TestNumeric(int p_count)
 {
   // Header
-  printf("Testing SQL_NUMERIC_STRUCT for SQL NUMERIC/DECIMAL's\n");
-  printf("====================================================\n");
+  printf("Testing SQL_NUMERIC_STRUCT for a total of [%d] iterations\n\n",p_count);
 
   // num = 10.001 (ten and 1 thousandth)
   SQL_NUMERIC_STRUCT num;
+  SQL_NUMERIC_STRUCT res;
   memset(&num,0,sizeof(SQL_NUMERIC_STRUCT));
+  memset(&res,0,sizeof(SQL_NUMERIC_STRUCT));
   num.sign = 1; // Positive
   num.precision = 6;
   num.scale     = 4;
@@ -718,26 +719,40 @@ Test()
   num.val[1] = 0x86;
   num.val[2] = 0x01;
 
+  HPFCounter counter;
+  for(int x = 0; x < p_count; ++x)
+  {
+    bcd ten(&num);
+  }
+  counter.Stop();
   bcd ten(&num);
-  printf("This is the value: %s\n" ,ten.AsString());
+  printf("SQL_NUMERIC_STRUCT -> bcd %10.6f : %s\n",counter.GetCounter(),ten.AsString());
+
 
   // Now back again to a SQL_NUMERIC_STRUCT
-  memset(&num,0,sizeof(SQL_NUMERIC_STRUCT));
-  if(ten.AsNumeric(&num,12,7))
+  HPFCounter cnt2;
+  for(int x = 0; x < p_count; ++x)
   {
-    printf("Precision: %d\n",num.precision);
-    printf("Scale    : %d\n",num.scale);
-    printf("Sign     : %d\n",num.sign);
+    ten.AsNumeric(&res,12,7);
+  }
+  cnt2.Stop();
 
-    for(unsigned ind = 0;ind < SQL_MAX_NUMERIC_LEN; ++ind)
-    {
-      printf("Numeric mantissa [%d:%02.2X]\n",ind,num.val[ind]);
-    }
+
+  if(ten.AsNumeric(&res,12,7))
+  {
+//     printf("Precision: %d\n",num.precision);
+//     printf("Scale    : %d\n",num.scale);
+//     printf("Sign     : %d\n",num.sign);
+// 
+//     for(unsigned ind = 0;ind < SQL_MAX_NUMERIC_LEN; ++ind)
+//     {
+//       printf("Numeric mantissa [%d:%02.2X]\n",ind,num.val[ind]);
+//     }
 
     bcd check(&num);
-    printf("This is the value: %s\n",check.AsString());
+    printf("bcd -> SQL_NUMERIC_STRUCT %10.6f : %s\n",cnt2.GetCounter(),check.AsString());
   }
-
+  printf("\n");
   return 0;
 }
 
@@ -779,9 +794,6 @@ _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 #endif
   Calibrate(count);
 
-  // Small test program
-  Test();
-
   // Constants
   PrintConstants(count);
 
@@ -790,6 +802,9 @@ _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 
   // Functions
   TestFuncties(count);
+
+  // SQL DECIMAL/NUMERIC conversions
+  TestNumeric(count);
 
   // Wait until user has seen the result
   printf("Seen the output? ");
