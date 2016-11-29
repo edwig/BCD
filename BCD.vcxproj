@@ -155,7 +155,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="afp.cpp" />
-    <ClCompile Include="bcd.cpp" />
+    <ClCompile Include="bcd.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Level4</WarningLevel>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="HPFCounter.cpp" />
     <ClCompile Include="Icd.cpp" />
     <ClCompile Include="Icd4.cpp" />

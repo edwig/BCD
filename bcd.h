@@ -7,11 +7,10 @@
 //  Numbers are stored in 1E8 based mantissa with a digital . implied at the second position
 //  The mantissa array exists of a series of integers with 8 functional digits each
 //
-//  Copyright (c) ir W. E. Huisman
+//  Copyright (c) 2013-2016 ir W. E. Huisman
 //
 #pragma once
-#include <string>
-#include <sqltypes.h>
+#include <sqltypes.h>   // Needed for conversions of SQL_NUMERIC_STRUCT
 
 // Constants that controls the actual precision:
 const int bcdBase      = 100000000L; // Base of the numbers in m_mantissa

@@ -8,7 +8,7 @@
 //  And is always stored in normalized mode after an operation or conversion
 //  with an implied decimal point between the first and second position
 //
-//  Copyright (c) 2013 ir. W.E. Huisman
+//  Copyright (c) 2013-2016 ir. W.E. Huisman
 //
 //  Examples:
 //  E+03 15456712 45000000 00000000 -> 1545.671245
@@ -292,7 +292,6 @@ bcd::operator%=(const bcd& p_value)
   return *this;
 }
 
-
 // bd::-
 // Description: prefix unary minus (negation)
 //
@@ -449,7 +448,7 @@ bcd::operator<(const bcd& p_value) const
   // Shortcut: Negative numbers are smaller than positive ones
   if(m_sign != p_value.m_sign)
   {
-    // Signs are not equal. 
+    // Signs are not equal 
     // If this one is negative "smaller than" is true
     // If this one is positive "smaller than" is false
     return (m_sign == Negative);
@@ -584,7 +583,6 @@ bcd::Round(int p_precision /*=0*/)
     }
     else
     {
-      int digitValue = mm % 10;
       int mn = m_mantissa[mant + 1];
       int digitNext  = mn / (bcdBase / 10);
 
@@ -606,7 +604,6 @@ bcd::Round(int p_precision /*=0*/)
     }
     // Rouding this digit
     int mantBefore = mm / base;
-    int digitValue = mantBefore % 10;
     // Next rouding digit
     int digitNext = mm % base;
     digitNext /= (base / 10);
@@ -1033,7 +1030,7 @@ bcd
 bcd::TenPower(int n)
 {
   bcd res = *this;
-  res.m_exponent += n;
+  res.m_exponent += (short)n;
   res.Normalize();
   
   return res;
@@ -1691,8 +1688,8 @@ bcd::AsNumeric(SQL_NUMERIC_STRUCT* p_numeric,unsigned p_precision,unsigned p_sca
 
   // Setting the sign, precision and scale
   p_numeric->sign      = (m_sign == Positive) ? 1 : 0;
-  p_numeric->precision = p_precision;
-  p_numeric->scale     = p_scale;
+  p_numeric->precision = (SQLCHAR)  p_precision;
+  p_numeric->scale     = (SQLSCHAR) p_scale;
 
   // Special case for 0.0
   if(IsNull())
@@ -1706,7 +1703,7 @@ bcd::AsNumeric(SQL_NUMERIC_STRUCT* p_numeric,unsigned p_precision,unsigned p_sca
 
   // Adjusting m_exponent to positive scaled integer result
   m_sign = Positive;
-  m_exponent += p_scale;
+  m_exponent += (short) p_scale;
 
   // Converting the value array
   bcd radix(256);
@@ -1881,7 +1878,7 @@ bcd::GetPrecision() const
 // bcd::GetMaxSize
 // Description: Get the max size of a bcd
 int 
-bcd::GetMaxSize(int precisie /*= 0*/)
+bcd::GetMaxSize(int /* precision /*= 0*/)
 {
   // int size = bcdDigits * bcdLength;
   return bcdPrecision;
@@ -1894,7 +1891,7 @@ bcd::GetFitsInLong() const
 {
   try
   {
-    long test = AsLong();
+    AsLong();
   }
   catch(CString)
   {
@@ -1911,7 +1908,7 @@ bcd::GetFitsInInt64() const
 {
   try
   {
-    int64 test = AsInt64();
+    AsInt64();
   }
   catch(CString)
   {
@@ -2016,7 +2013,7 @@ bcd::SetValueInt(const int p_value)
     return;
   }
   // Take care of sign
-  m_sign = (p_value < 0) ? Negative : Positive;
+  m_sign = (uchar) ((p_value < 0) ? Negative : Positive);
   // Place in mantissa
   m_mantissa[0] = long_abs(p_value);
   // And normalize
@@ -2043,11 +2040,11 @@ bcd::SetValueLong(const long p_value, const long p_restValue)
   // Get the sign
   if (p_value == 0)
   {
-    m_sign = (p_restValue < 0) ? Negative : Positive;
+    m_sign = (uchar)((p_restValue < 0) ? Negative : Positive);
   }
   else
   {
-    m_sign = (p_value < 0) ? Negative : Positive;
+    m_sign = (uchar)((p_value < 0) ? Negative : Positive);
   }
   // Fill in mantissa. restValue first
   if(p_restValue)
@@ -2090,14 +2087,13 @@ bcd::SetValueInt64(const int64 p_value, const int64 p_restValue)
   // Get the sign
   if(p_value == 0L)
   {
-    m_sign = (p_restValue < 0L) ? Negative : Positive;
+    m_sign = (uchar)((p_restValue < 0L) ? Negative : Positive);
   }
   else
   {
-    m_sign = (p_value < 0L) ? Negative : Positive;
+    m_sign = (uchar)((p_value < 0L) ? Negative : Positive);
   }
   // Fill in mantissa
-  int ind = 0;
   if(p_restValue % bcdBase)
   {
     m_mantissa[0] = long_abs(p_value % bcdBase);
@@ -2170,7 +2166,7 @@ bcd::SetValueDouble(const double p_value)
 // Technical:   Scans [sign][digit][.[digit]*][E[sign][digits]+]
 //              part =       1        2          3    
 void
-bcd::SetValueString(const CString& p_string,bool p_fromDB)
+bcd::SetValueString(const CString& p_string,bool /*p_fromDB*/)
 {
   // Zero out this number
   Zero();
@@ -2298,7 +2294,7 @@ bcd::SetValueString(const CString& p_string,bool p_fromDB)
     {
       exp_extra = -exp_extra;
     }
-    m_exponent += exp_extra;
+    m_exponent += (short) exp_extra;
   }
   // Normalize for "0.xxx" case
   Normalize();
@@ -2343,7 +2339,7 @@ bcd::SetValueNumeric(const SQL_NUMERIC_STRUCT* p_numeric)
   m_exponent -= p_numeric->scale;
 
   // Adjust the sign
-  m_sign = p_numeric->sign == 1 ? Positive : Negative;
+  m_sign = (uchar)(p_numeric->sign == 1 ? Positive : Negative);
 }
 
 // bcd::Normalize
@@ -2355,7 +2351,7 @@ bcd::Normalize(int p_startExponent /*=0*/)
   // Set starting exponent
   if(p_startExponent)
   {
-    m_exponent = p_startExponent;
+    m_exponent = (short)p_startExponent;
   }
   // Check for zero first
   bool zero = true;
@@ -2381,7 +2377,7 @@ bcd::Normalize(int p_startExponent /*=0*/)
     Mult10();
   }
   // Calculate exponent from number of shifts
-  m_exponent -= shift;
+  m_exponent -= (short) shift;
 }
 
 // bcd::Mult10
@@ -2646,7 +2642,7 @@ bcd::Add(const bcd& p_number) const
       signResult = Negative;
     }
   }
-  arg1.m_sign = signResult;
+  arg1.m_sign = (uchar) signResult;
 
   return arg1;
 }
@@ -2667,7 +2663,7 @@ bcd::Mul(const bcd& p_number) const
   bcd result = PositiveMultiplication(*this,p_number);
 
   // Take care of the sign
-  result.m_sign = result.IsNull() ? Positive : CalculateSign(*this, p_number);
+  result.m_sign = (uchar) (result.IsNull() ? Positive : CalculateSign(*this, p_number));
 
   return result;
 }
@@ -2692,7 +2688,7 @@ bcd::Div(const bcd& p_number) const
   bcd result = PositiveDivision(arg1,arg2);
 
   // Take care of the sign
-  result.m_sign = result.IsNull() ? Positive : CalculateSign(*this, p_number);
+  result.m_sign = (char) (result.IsNull() ? Positive : CalculateSign(*this, p_number));
 
   return result;
 }
@@ -2819,7 +2815,7 @@ bcd::PositiveAddition(bcd& arg1,bcd& arg2) const
       }
       // Shift arg1 to the right
       arg1.Div10(shift);
-      arg1.m_exponent += shift;
+      arg1.m_exponent += (short) shift;
     }
   }
   // Do the addition of the mantissa
@@ -2864,7 +2860,6 @@ bcd::PositiveSubtraction(bcd& arg1,bcd& arg2) const
   }
   // Do the subtraction of the mantissa
   int64 reg   = 0L;
-  int64 carry = 0L;
   for(int ind = bcdLength - 1;ind >= 0; --ind)
   {
     if(arg1.m_mantissa[ind] >= arg2.m_mantissa[ind])
@@ -3275,9 +3270,9 @@ bcd::ReadFromFile(FILE* p_fp)
   }
   // Read in the exponent
   ch = getc(p_fp);
-  m_exponent = (ch << 8);
+  m_exponent = (short) (ch << 8);
   ch = getc(p_fp);
-  m_exponent += ch;
+  m_exponent += (short) ch;
 
   // Read in the mantissa
   for(unsigned int ind = 0; ind < bcdLength; ++ind)
