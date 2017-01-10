@@ -1,16 +1,23 @@
 //////////////////////////////////////////////////////////////////////////
 //
-//  BCD
+// BCD
 //
-//  Floating Point Precision Number class (Binary Coded Decimal)
-//  A number always has the format [sign][[digit]*][.[digit]*][E[sign][digits]+] where sign is either '+' or '-'
-//  Numbers are stored in 1E8 based mantissa with a digital . implied at the second position
-//  The mantissa array exists of a series of integers with 8 functional digits each
+// Floating Point Precision Number class (Binary Coded Decimal)
+// A number always has the format [sign][[digit]*][.[digit]*][E[sign][digits]+] where sign is either '+' or '-'
+// Numbers are stored in 1E8 based mantissa with a digital . implied at the second position
+// The mantissa array exists of a series of integers with 8 functional digits each
 //
-//  Copyright (c) 2013-2016 ir W. E. Huisman
+// Copyright (c) 2013-2017 ir W. E. Huisman
+//
+// Last Revision:   08-01-2017
+// Version number:  1.4.0
 //
 #pragma once
 #include <sqltypes.h>   // Needed for conversions of SQL_NUMERIC_STRUCT
+
+#ifndef SQLNUM_MAX_PREC
+#define SQLNUM_MAX_PREC 38
+#endif
 
 // Constants that controls the actual precision:
 const int bcdBase      = 100000000L; // Base of the numbers in m_mantissa
@@ -25,9 +32,12 @@ const int bcdPrecision = bcdDigits * bcdLength;
 // - Some generals:   DebugPrint ("%08d")
 
 // Handy typedefs of used basic datatypes
-using uchar = unsigned char;
+using uchar  = unsigned char;
+using ushort = unsigned short;
+using ulong  = unsigned long;
 #ifndef int64
-using int64 = __int64;
+using int64  = __int64;
+using uint64 = unsigned __int64;
 #endif
 
 // Forward declaration of our class
@@ -89,6 +99,9 @@ public:
   // BCD from a 64bits int
   bcd(const int64 p_value,const int64 p_restvalue = 0);
 
+  // BCD from a 64bits int
+  bcd(const uint64 p_value,const int64 p_restvalue = 0);
+
   // Copy constructor.
   bcd(const bcd& icd);
 
@@ -97,6 +110,9 @@ public:
 
   // Assignment-constructor of class bcd.
   bcd(const CString& p_string,bool p_fromDB = false);
+
+  // BCD From a character string
+  bcd(const char* p_string,bool p_fromDB = false);
 
   // BCD from a SQL_NUMERIC_STRUCT
   bcd(const SQL_NUMERIC_STRUCT* p_numeric);
@@ -204,16 +220,24 @@ public:
 
   // Get as a double
   double  AsDouble() const;
+  // Get as a short
+  short   AsShort() const;
+  // Get as an unsigned short
+  ushort  AsUShort() const;
   // Get as a long
   long    AsLong() const;
+  // Get as an unsigned long
+  ulong   AsULong() const;
   // Get as a 64bits long
   int64   AsInt64() const;
+  // Get as an unsigned 64 bits long
+  uint64  AsUInt64() const;
   // Get as a mathematical string
   CString AsString(int p_format = Bookkeeping,bool p_printPositive = false) const;
   // Get as a display string (by desktop locale)
   CString AsDisplayString() const;
   // Get as an ODBC SQL NUMERIC(p,s)
-  bool    AsNumeric(SQL_NUMERIC_STRUCT* p_numeric,unsigned p_precision,unsigned p_scale);
+  void    AsNumeric(SQL_NUMERIC_STRUCT* p_numeric) const;
   
   // GETTER FUNCTIES
 
@@ -251,7 +275,8 @@ private:
   // Sets one or two longs in this bcd number
   void    SetValueLong(const long p_value, const long p_restValue);
   // Sets one or two longs in this bcd number
-  void    SetValueInt64(const int64 p_value, const int64 p_restValue);
+  void    SetValueInt64 (const  int64 p_value,const int64 p_restValue);
+  void    SetValueUInt64(const uint64 p_value,const int64 p_restValue);
   // Sets the value from a double
   void    SetValueDouble(const double p_value);
   // Sets the value from a string

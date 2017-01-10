@@ -8,7 +8,7 @@
 //  And is always stored in normalized mode after an operation or conversion
 //  with an implied decimal point between the first and second position
 //
-//  Copyright (c) 2013-2016 ir. W.E. Huisman
+//  Copyright (c) 2013-2017 ir. W.E. Huisman
 //
 //  Examples:
 //  E+03 15456712 45000000 00000000 -> 1545.671245
@@ -18,6 +18,13 @@
 #include "Stdafx.h"
 #include "bcd.h"
 #include <math.h> // Still needed for conversions of double
+#include <intsafe.h>
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -84,6 +91,11 @@ bcd::bcd(const int64 p_value,const int64 p_restvalue /*= 0*/)
   SetValueInt64(p_value,p_restvalue);
 }
 
+bcd::bcd(const uint64 p_value,const int64 p_restvalue)
+{
+  SetValueUInt64(p_value,p_restvalue);
+}
+
 // bcd::bcd(double)
 // Description: Construct a bcd from a double
 // 
@@ -98,6 +110,16 @@ bcd::bcd(const double p_value)
 //              p_fromDB -> Input comes from a database (always American format)
 bcd::bcd(const CString& p_string,bool p_fromDB /*= false*/)
 {
+  SetValueString(p_string,p_fromDB);
+}
+
+// BCD From a character string
+// Description: Assignment-constructor from an elementary character data pointer
+// Parameters:  p_string -> Input character pointer (containing a number)
+//              p_fromDB -> Input comes from a  database (always American format)
+bcd::bcd(const char* p_string,bool p_fromDB /*= false*/)
+{
+  CString str(p_string);
   SetValueString(p_string,p_fromDB);
 }
 
@@ -786,12 +808,12 @@ bcd::SquareRoot() const
   bcd two(2);
   bcd three(3);
 
-  // Optimalization sqrt(0) = 0
+  // Optimalisation sqrt(0) = 0
   if(IsNull())
   {
     return number;
   }
-  // Tolerance criterium epsilon
+  // Tolerance criterion epsilon
   bcd epsilon = Epsilon(10);
 
   number = *this; // Number to get the root from
@@ -808,12 +830,12 @@ bcd::SquareRoot() const
     reduction *= two;
   }
   // Reduce by dividing by the square of the reduction
-  // (reduction is realy sqrt(reduction)
+  // (reduction is really sqrt(reduction)
   number /= (reduction * reduction);
 
   // First quick guess
   double approximation1 = number.AsDouble();
-  double approximation2 = 1 / sqrt(approximation1);
+  double approximation2 = 1 / ::sqrt(approximation1);
   bcd    result(approximation2);
   bcd    between;
 
@@ -925,7 +947,7 @@ bcd::Log() const
     res += between;
   }
   // Re-add powers of two (comes from  " < 1.2")
-  res *= bcd(pow(2.0,(double)(k + 1)));
+  res *= bcd(::pow(2.0,(double)(k + 1)));
 
   // Re-apply the exponent
   if(expo != 0)
@@ -1288,9 +1310,9 @@ bcd::ArcSine() const
     number /= sqrt(c2) * sqrt( c1 + sqrt( c1 - number * number ));
   }
   // Quick approximation of the asin
-  d = asin(number.AsDouble());
+  d = ::asin(number.AsDouble());
   result = bcd( d );
-  factor = bcd( 1.0 / cos(d)); // Constant factor 
+  factor = bcd( 1.0 / ::cos(d)); // Constant factor 
 
   // Newton Iteration
   for( step=0;; step++)
@@ -1333,7 +1355,7 @@ bcd::ArcCosine() const
 }
 
 // bcd::ArcTangent
-// Descripiton: Arctangent (angle) of the ratio
+// Description: Arctangent (angle) of the ratio
 // Technical:   Use the Taylor series. ArcTan(x) = x - x^3/3 + x^5/5 ...
 //              However first reduce x to abs(x)< 0.5 to improve taylor series
 //              using the identity. ArcTan(x)=2*ArcTan(x/(1+sqrt(1+x^2)))
@@ -1478,7 +1500,7 @@ bcd::AsDouble() const
   // Take care of exponent
   if(m_exponent)
   {
-    result *= pow(10.0,m_exponent);
+    result *= ::pow(10.0,m_exponent);
   }
   // Take care of the sign
   if(m_sign == Negative)
@@ -1486,6 +1508,80 @@ bcd::AsDouble() const
     result = -result;
   }
   return result;
+}
+
+// bcd::AsShort
+// Description: Get as a short
+short   
+bcd::AsShort() const
+{
+  // Quick check for zero
+  if(m_exponent < 0)
+  {
+    return 0;
+  }
+  int exponent = bcdDigits - m_exponent - 1;
+
+  // Get from the mantissa
+  int result = m_mantissa[0];
+
+  // Adjust to exponent
+  while(exponent--)
+  {
+    result /= 10;
+  }
+
+  // Take care of sign and over/under flows
+  if(m_sign == Positive)
+  {
+    if(result > SHORT_MAX)
+    {
+      throw CString("BCD: Overflow in conversion to short number.");
+    }
+  }
+  else
+  {
+    if(result < SHORT_MIN)
+    {
+      throw CString("BCD: Underflow in conversion to short number.");
+    }
+  }
+  return (short) result;
+}
+
+// bcd::AsUShort
+// Description: Get as an unsigned short
+ushort  
+bcd::AsUShort() const
+{
+  // Check for unsigned
+  if(m_sign == Negative)
+  {
+    throw CString("BCD: Cannot convert a negative number to an unsigned short number.");
+  }
+  // Quick check for zero
+  if(m_exponent < 0)
+  {
+    return 0;
+  }
+
+  // Get from the mantissa
+  int result = m_mantissa[0];
+
+  // Adjust to exponent
+  int exponent = bcdDigits - m_exponent - 1;
+  while(exponent--)
+  {
+    result /= 10;
+  }
+
+  // Take care of overflow
+  if(result > USHORT_MAX)
+  {
+    throw CString("BCD: Overflow in conversion to unsigned short number.");
+  }
+
+  return (short)result;
 }
 
 // bcd::AsLong
@@ -1498,13 +1594,12 @@ bcd::AsLong() const
   {
     return 0L;
   }
-  int64 result = 0L;
-  int exponent = 2 * bcdDigits - m_exponent - 1;
 
   // Get from the mantissa
-  result = ((int64)m_mantissa[0] * bcdBase) + ((int64)m_mantissa[1]);
+  int64 result = ((int64)m_mantissa[0] * bcdBase) + ((int64)m_mantissa[1]);
 
   // Adjust to exponent
+  int exponent = 2 * bcdDigits - m_exponent - 1;
   while(exponent--)
   {
     result /= 10;
@@ -1527,6 +1622,41 @@ bcd::AsLong() const
     result = -result;
   }
   return (long) result;
+}
+
+// bcd::AsULong
+// Get as an unsigned long
+ulong   
+bcd::AsULong() const
+{
+  // Check for unsigned
+  if(m_sign == Negative)
+  {
+    throw CString("BCD: Cannot convert a negative number to an unsigned long.");
+  }
+
+  // Quick optimization for really small numbers
+  if(m_exponent < 0)
+  {
+    return 0L;
+  }
+
+  // Get from the mantissa
+  int64 result = ((int64)m_mantissa[0] * bcdBase) + ((int64)m_mantissa[1]);
+
+  // Adjust to exponent
+  int exponent = 2 * bcdDigits - m_exponent - 1;
+  while(exponent--)
+  {
+    result /= 10;
+  }
+
+  // Take care of overflow
+  if(result > ULONG_MAX)
+  {
+    throw CString("BCD: Overflow in conversion to unsigned long integer.");
+  }
+  return (long)result;
 }
 
 // bcd::AsInt64
@@ -1572,6 +1702,50 @@ bcd::AsInt64() const
   {
     result2 = -result2;
   }
+  return result2;
+}
+
+// Get as an unsigned 64 bits long
+uint64  
+bcd::AsUInt64() const
+{
+  // Check for negative
+  if(m_sign == Negative)
+  {
+    throw CString("BCD: Cannot convert a negative number to an unsigned 64 bits integer");
+  }
+  // Quick optimization for really small numbers
+  if(m_exponent < 0)
+  {
+    return 0L;
+  }
+  uint64 carry   = 0L;
+  uint64 result1 = 0L;
+  uint64 result2 = 0L;
+  int exponent   = 4 * bcdDigits - m_exponent - 1;
+  uint64 base2   = (uint64)bcdBase * ((uint64)bcdBase);
+  uint64 base    = base2 / 10;
+
+  // Get from the mantissa
+  result1 = ((uint64)m_mantissa[0] * bcdBase) + ((uint64)m_mantissa[1]);
+  result2 = ((uint64)m_mantissa[2] * bcdBase) + ((uint64)m_mantissa[3]);
+
+  // Adjust to exponent
+  while(exponent--)
+  {
+    carry    = result1 %10;
+    result1 /= 10;
+    result2 /= 10;
+    result2 += carry * base;
+  }
+
+  // Take care of overflow
+  if(result1 > (ULLONG_MAX / base2))
+  {
+    throw CString("BCD: Overflow in conversion to 64 bits unsigned integer number.");
+  }
+  result2 += (result1 * base2);
+
   return result2;
 }
 
@@ -1668,73 +1842,77 @@ bcd::AsDisplayString() const
 }
 
 // Get as an ODBC SQL NUMERIC
-bool
-bcd::AsNumeric(SQL_NUMERIC_STRUCT* p_numeric,unsigned p_precision,unsigned p_scale)
+void
+bcd::AsNumeric(SQL_NUMERIC_STRUCT* p_numeric) const
 {
   // Init the value array
   memset(p_numeric->val,0,SQL_MAX_NUMERIC_LEN);
 
-  // Check precision/scale values
-  // Precision cannot be greater than 256^16 = 2.03 10^38
-  // Scale cannot be greater than (precision - 1)
-  if(p_precision > 37)
-  {
-    p_precision = 37;
-  }
-  if(p_scale >= p_precision)
-  {
-    p_scale = p_precision - 1;
-  }
-
   // Setting the sign, precision and scale
   p_numeric->sign      = (m_sign == Positive) ? 1 : 0;
-  p_numeric->precision = (SQLCHAR)  p_precision;
-  p_numeric->scale     = (SQLSCHAR) p_scale;
+  p_numeric->precision = (SQLCHAR)  SQLNUM_MAX_PREC;
 
-  // Special case for 0.0
-  if(IsNull())
+  // Special case for 0.0 or smaller than can be contained (1.0E-38)
+  if(IsNull() || m_exponent < -SQLNUM_MAX_PREC)
   {
-    return true;
+    return;
   }
 
-  // Check for size
-  bcd maximum = bcd(10).TenPower(p_precision - p_scale);
-  bool result = *this < maximum;
+  // Check for overflow. Cannot be greater than 9.999999999E+37
+  if(m_exponent >= SQLNUM_MAX_PREC)
+  {
+    throw CString("Overflow in converting bcd to SQL NUMERIC/DECIMAL");
+  }
 
-  // Adjusting m_exponent to positive scaled integer result
-  m_sign = Positive;
-  m_exponent += (short) p_scale;
+  // Calculate the scale of the number
+  int scale     = GetPrecision();
+  int precision = 1 + scale + ((m_exponent >= 0) ? m_exponent : 0);
+
+  // If we become too large, we loose a bit of the scale digits
+  if(precision > SQLNUM_MAX_PREC)
+  {
+    scale    -= (precision - SQLNUM_MAX_PREC);
+    precision = SQLNUM_MAX_PREC;
+  }
+
+  // Register the resulting precision and scale
+  p_numeric->precision = (SQLCHAR)  precision;
+  p_numeric->scale     = (SQLSCHAR) scale;
 
   // Converting the value array
-  bcd radix(256);
   bcd one(1);
-  int ind = 0;
+  bcd radix(256);
+  bcd accu(*this);
+  int index = 0;
+
+  // Here is the big trick: use the exponent to scale up the number
+  // Adjusting m_exponent to positive scaled integer result
+  accu.m_exponent += (short)scale;
+  accu.m_sign      = Positive;
 
   while(true)
   {
-    // Getting the next val array value
-    bcd val = Mod(radix);
-    p_numeric->val[ind] = (SQLCHAR) val.AsLong();
-    *this -= val;
-    *this  = Div(radix);
-    ++ind;
+    // Getting the next val array value, relying on the bcd::modulo
+    bcd val = accu.Mod(radix);
+    p_numeric->val[index++] = (SQLCHAR) val.AsLong();
+
+    // Adjust the intermediate accu
+    accu -= val;
+    accu  = accu.Div(radix);
 
     // Breaking criterion: nothing left
-    if(*this < one)
+    if(accu < one)
     {
       break;
     }
 
     // Breaking criterion on overflow
     // Check as last, number could fit exactly!
-    if(ind >= SQL_MAX_NUMERIC_LEN)
+    if(index >= SQL_MAX_NUMERIC_LEN)
     {
-      result = false;
       break;
     }
   }
-  // Returns the fact that we have an overflow or not
-  return result;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2121,6 +2299,23 @@ bcd::SetValueInt64(const int64 p_value, const int64 p_restValue)
   }
 }
 
+void    
+bcd::SetValueUInt64(const uint64 p_value,const int64 p_restValue)
+{
+  uint64 value(p_value);
+  bool extra = false;
+  if(p_value > LONG_MAX)
+  {
+    extra  = true;
+    value -= LONG_MAX;
+  }
+  SetValueInt64(value,p_restValue);
+  if(extra)
+  {
+    *this += bcd((long)LONG_MAX);
+  }
+}
+
 // bcd::SetValueDouble
 // Description: Sets the value from a double
 void  
@@ -2140,10 +2335,10 @@ bcd::SetValueDouble(const double p_value)
     between = -between;
   }
   // Take care of exponent
-  m_exponent = (short)log10(between);
+  m_exponent = (short)::log10(between);
 
   // Normalize
-  between *= pow(10.0,(int)-m_exponent);
+  between *= ::pow(10.0,(int)-m_exponent);
 
   // Set the double mantissa into the m_mantissa
   // A double has 16 digits
@@ -2152,8 +2347,8 @@ bcd::SetValueDouble(const double p_value)
     long base = bcdBase / 10;
     for(int pos = 0; pos < bcdDigits; ++pos)
     {
-      long res = (long) fmod(between,10.0);
-      between  = modf(between,&notused) * 10;
+      long res = (long) ::fmod(between,10.0);
+      between  = ::modf(between,&notused) * 10;
 
       m_mantissa[ind] += res * base;
       base /= 10;
@@ -3248,10 +3443,11 @@ bcd::WriteToFile (FILE* p_fp)
   // Write out the mantissa
   for(unsigned int ind = 0;ind < bcdLength; ++ind)
   {
-    if(putc(m_mantissa[ind],p_fp) == EOF)
-    {
-      return false;
-    }
+    ulong num = (ulong) m_mantissa[ind];
+    if(putc((num & 0xFF000000) >> 24,p_fp) == EOF) return false;
+    if(putc((num & 0x00FF0000) >> 16,p_fp) == EOF) return false;
+    if(putc((num & 0x0000FF00) >>  8,p_fp) == EOF) return false;
+    if(putc((num & 0x000000FF)      ,p_fp) == EOF) return false;
   }
   return true;
 }
@@ -3277,8 +3473,12 @@ bcd::ReadFromFile(FILE* p_fp)
   // Read in the mantissa
   for(unsigned int ind = 0; ind < bcdLength; ++ind)
   {
-    ch = getc(p_fp);
-    m_mantissa[ind] = ch;
+    ulong num = 0L;
+    ch = getc(p_fp); num += ((ulong)ch) << 24;
+    ch = getc(p_fp); num += ((ulong)ch) << 16;
+    ch = getc(p_fp); num += ((ulong)ch) <<  8;
+    ch = getc(p_fp); num +=  (ulong)ch;
+    m_mantissa[ind] = num;
   }
 
   // BCD is invalid in case of file error
