@@ -40,9 +40,6 @@
     <ClInclude Include="afp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Icd4.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Testing.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -61,9 +58,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="afp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Icd4.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Testing.cpp">

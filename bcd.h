@@ -35,8 +35,12 @@ const int bcdPrecision = bcdDigits * bcdLength;
 using uchar  = unsigned char;
 using ushort = unsigned short;
 using ulong  = unsigned long;
+
 #ifndef int64
 using int64  = __int64;
+#endif
+
+#ifndef uint64
 using uint64 = unsigned __int64;
 #endif
 
@@ -173,6 +177,8 @@ public:
   void    Round(int p_precision = 0);
   // Truncate to a specified fraction (decimals behind the .)
   void    Truncate(int p_precision = 0);  
+  // Change the sign
+  void    Negate();
   
   // MATHEMATICAL FUNCTIONS
 
@@ -337,7 +343,7 @@ private:
   bcd  PositiveDivision(bcd& p_arg1,bcd& p_arg2) const;
 
   // STORAGE OF THE NUMBER
-  uchar  m_sign;                // bitfield sign
+  Sign   m_sign;                // 0 = Positive, 1 = Negative
   short  m_exponent;            // +/- 10E32768
   long   m_mantissa[bcdLength]; // Up to (bcdDigits * bcdLength) digits
 };

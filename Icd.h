@@ -14,111 +14,111 @@ static const short icdKommaPositie = 5;          // Geimpliceerde positie van de
 // Interne registers worden in 64 bits verwerkt
 #define int64 __int64
 
-class Icd
+class icd
 {
 public:
   // Default constructor.
-  Icd();
+  icd();
 
   // ICD van een long
-  Icd(const long waarde, const long restWaarde = 0);
+  icd(const long waarde, const long restWaarde = 0);
 
   // ICD van een 64bits int
-  Icd(const int64 waarde,const int64 restWaarde = 0);
+  icd(const int64 waarde,const int64 restWaarde = 0);
 
   // Copy constructor.
-  Icd(const Icd& icd);
+  icd(const icd& icd);
 
   // ICD van een double
-  Icd(const double waarde);
+  icd(const double waarde);
 
   // Assignment-constructor van de klasse Icd.
-  Icd(const CString& p_string,bool p_fromDB = false);
+  icd(const CString& p_string,bool p_fromDB = false);
 
   // Destructor van de klasse Icd.
-  ~Icd();
+  ~icd();
 
   // CONSTANTS
 
-  static Icd PI();     // Radius verhouding van een cirkel
-  static Icd LN2();    // Natuurlijke logarithme van 2
-  static Icd LN10();   // Natuurlijke logarithme van 10
+  static icd PI();     // Radius verhouding van een cirkel
+  static icd LN2();    // Natuurlijke logarithme van 2
+  static icd LN10();   // Natuurlijke logarithme van 10
 
   // OPERATOREN
 
-  const Icd& operator=( const Icd& icd);
-  const Icd& operator=( const long waarde);
-  const Icd& operator=( const double waarde);
-  const Icd& operator=( const CString& str);
-  const Icd& operator+=(const Icd& icd);
-  const Icd& operator-=(const Icd& icd);
-  const Icd& operator*=(const Icd& icd);
-  const Icd& operator/=(const Icd& icd);
+  const icd& operator=( const icd& icd);
+  const icd& operator=( const long waarde);
+  const icd& operator=( const double waarde);
+  const icd& operator=( const CString& str);
+  const icd& operator+=(const icd& icd);
+  const icd& operator-=(const icd& icd);
+  const icd& operator*=(const icd& icd);
+  const icd& operator/=(const icd& icd);
   // Prefix unary minus (negation)
-  const Icd  operator-() const;
+  const icd  operator-() const;
   // Postfix increment
-  const Icd operator++(int);
+  const icd operator++(int);
   // Prefix increment
-  Icd& operator++();
+  icd& operator++();
   // Postfix decrement
-  const Icd operator--(int);
+  const icd operator--(int);
   // Prefix decrement
-  Icd& operator--();
+  icd& operator--();
 
   // vergelijkingsoperators
-  const bool operator==(const Icd& icd) const;
-  const bool operator!=(const Icd& icd) const;
-  const bool operator<(const Icd& icd) const;
-  const bool operator>(const Icd& icd) const;
-  const bool operator<=(const Icd& icd) const;
-  const bool operator>=(const Icd& icd) const;
+  const bool operator==(const icd& icd) const;
+  const bool operator!=(const icd& icd) const;
+  const bool operator<(const icd& icd) const;
+  const bool operator>(const icd& icd) const;
+  const bool operator<=(const icd& icd) const;
+  const bool operator>=(const icd& icd) const;
 
   // standaard output operator
-  friend ostream& operator<<(ostream& os, const Icd& icd);
+  friend ostream& operator<<(ostream& os, const icd& icd);
 
   // MATHEMATISCHE FUNCTIES
 
   // Floor functie
-  Icd     Floor() const;
+  icd     Floor() const;
   // Ceiling functie
-  Icd     Ceil() const;
+  icd     Ceil() const;
   // Vierkants wortel
-  Icd     VierkantsWortel() const;
+  icd     VierkantsWortel() const;
   // Verheffen tot een macht.
-  Icd     Macht(const Icd& macht) const;
+  icd     Macht(const icd& macht) const;
   // Absolute waarde (ABS)
-  Icd     AbsoluteWaarde() const;
+  icd     AbsoluteWaarde() const;
   // Reciproke / Inverse = 1/x
-  Icd     Reciproke() const;
+  icd     Reciproke() const;
   // Natuurlijke logarithme
-  Icd     Log() const;
+  icd     Log() const;
   // Exponent e tot de macht
-  Icd     Exp() const;
+  icd     Exp() const;
   // Log with base 10
-  Icd     Log10() const;
+  icd     Log10() const;
 
   // TRIGONOMETRISCHE FUNCTIES
   
   // Sinus van de hoek
-  Icd     Sinus() const;
+  icd     Sinus() const;
   // Cosinus van de hoek
-  Icd     Cosinus() const;
+  icd     Cosinus() const;
   // Tangens van de hoek
-  Icd     Tangent() const;
+  icd     Tangent() const;
   // Arcsinus (hoek) van de verhouding
-  Icd     ArcSinus() const;
+  icd     ArcSinus() const;
   // Arccosinus (hoek) van de herhouding
-  Icd     ArcCosinus() const;
+  icd     ArcCosinus() const;
   // Arctangens (hoek) van de verhouding
-  Icd     ArcTangens() const;
+  icd     ArcTangens() const;
   // Hoek van twee punten.
-  Icd     ArcTangens2Punten(Icd p_x) const;
+  icd     ArcTangens2Punten(icd p_x) const;
 
   // OPVRAGEN ALS IETS ANDERS
   // Deel voor de komma opvragen (floor indien groter dan 0)
-  Icd     WaardeVoorKomma() const;
+  icd     WaardeVoorKomma() const;
   // Deel achter de komman opvragen
-  Icd     WaardeAchterKomma() const;
+  icd     WaardeAchterKomma() const;
   // Opvragen geconverteerd als double
   double  AlsDouble() const;
   // Opvragen geconverteerd als long
@@ -161,21 +161,21 @@ public:
   // Berekent de exponent van het Icd getal
   int   Exponent() const;
   // Berkent de 10macht mantissa
-  Icd   Mantissa() const;
+  icd   Mantissa() const;
 
   // BASIS OPERATIES.
   // Moeten public zijn om operatoren mogelijk te maken
 
   // optel operatie
-  Icd Add(const Icd& icd) const;
+  icd Add(const icd& icd) const;
   // aftrek operatie
-  Icd Sub(const Icd& icd) const;
+  icd Sub(const icd& icd) const;
   // vermenigvuldiging operatie
-  Icd Mul(const Icd& icd) const;
+  icd Mul(const icd& icd) const;
   // deling operatie
-  Icd Div(const Icd& icd) const;
+  icd Div(const icd& icd) const;
   // modulus operatie
-  Icd Mod(const Icd& icd) const;
+  icd Mod(const icd& icd) const;
 
 private:
   enum Teken          { Positief, Negatief  };
@@ -204,26 +204,26 @@ private:
   // Leeg maken naar 0.0
   void MaakLeeg();
   // Vermenigvuldig Icd met 1 (een) multiplier deel
-  const Icd Multi(const long multiplier) const;
+  const icd Multi(const long multiplier) const;
   // Grensgeval waarbij door afronding Icd buiten precisie valt
   const bool IsInhoudGrensGeval() const;
   // Bepaalt de tekens voor een basis-operatie
-  static void PositioneerArgumenten(Icd& arg1,
-                                    Icd& arg2,
+  static void PositioneerArgumenten(icd& arg1,
+                                    icd& arg2,
                                     Teken& tekenResultaat,
                                     SoortOperator& soortOperator);
   // Telt twee ICD's bij elkaar op zonder op het teken te letten
-  static const Icd    TelPositiefOp(const Icd& arg1, const Icd& arg2);
+  static const icd    TelPositiefOp(const icd& arg1, const icd& arg2);
   // Trekt een ICD van een andere af zonder op het teken te letten
-  static const Icd    TrekPositiefAf(const Icd& arg1, const Icd& arg2);
+  static const icd    TrekPositiefAf(const icd& arg1, const icd& arg2);
   // Vermenigvuldigt twee ICD's zonder op het teken te letten
-  static const Icd    VermenigvuldigPositief(const Icd& arg1, const Icd& arg2);
+  static const icd    VermenigvuldigPositief(const icd& arg1, const icd& arg2);
   // Deelt een ICD door een andere zonder op het teken te letten
-  static const Icd    DeelPositief(const Icd& arg1, const Icd& arg2);
+  static const icd    DeelPositief(const icd& arg1, const icd& arg2);
   // Bepaalt het teken van een vermenigvuldiging of deling
-  static const Teken  BepaalTeken(const Icd& arg1, const Icd& arg2);
+  static const Teken  BepaalTeken(const icd& arg1, const icd& arg2);
   // Deler en noemer op hetzelfde exponent brengen
-  static const Icd    TrekGelijk(const Icd& arg1, const long verschil);
+  static const icd    TrekGelijk(const icd& arg1, const long verschil);
   // Mantissa door 10 delen (schuifoperatie)
   void Div10();
   // Mantissa met 10 vermenigvuldigen (Schuifoperatie)
@@ -234,7 +234,7 @@ private:
   long    StringNaarLong(CString& p_string) const;
 
   // Afbreek criterium voor interne iteraties
-  Icd&    Epsilon(long p_fraction) const;
+  icd&    Epsilon(long p_fraction) const;
 
   //
   // Datamembers: Opslag van het getal
@@ -248,46 +248,46 @@ private:
 // Getters
 
 inline int
-Icd::Lengte()
+icd::Lengte()
 {
   return m_lengte;
 }
 
 inline int
-Icd::Precisie()
+icd::Precisie()
 {
   return m_precisie;
 }
 
 inline int 
-Icd::GeefMaxGroote(int precisie)
+icd::GeefMaxGroote(int precisie)
 {
   return ((icdLengte * 2) + precisie); 
 }
 
 // Overloaded basic operators
 
-inline Icd operator + (const Icd& lhs, const Icd& rhs)
+inline icd operator + (const icd& lhs, const icd& rhs)
 { 
   return lhs.Add(rhs); 
 }
 
-inline Icd operator - (const Icd& lhs, const Icd& rhs)
+inline icd operator - (const icd& lhs, const icd& rhs)
 { 
   return lhs.Sub(rhs); 
 }
 
-inline Icd operator * (const Icd& lhs, const Icd& rhs)
+inline icd operator * (const icd& lhs, const icd& rhs)
 { 
   return lhs.Mul(rhs); 
 }
 
-inline Icd operator / (const Icd& lhs, const Icd& rhs)
+inline icd operator / (const icd& lhs, const icd& rhs)
 { 
   return lhs.Div(rhs); 
 }
 
-inline Icd operator % (const Icd& lhs, const Icd& rhs)
+inline icd operator % (const icd& lhs, const icd& rhs)
 { 
   return lhs.Mod(rhs); 
 }
@@ -295,64 +295,64 @@ inline Icd operator % (const Icd& lhs, const Icd& rhs)
 // Overloaded math precision floating point functions equivalent with the std C functions
 // Overloaded to work with the ICD number class, always yielding a Icd number.
 
-inline Icd modf(Icd p_number, Icd* p_intpart)
+inline icd modf(icd p_number, icd* p_intpart)
 {
   *p_intpart = p_number.WaardeVoorKomma();
   return p_number.WaardeAchterKomma();
 }
 
-inline Icd fmod(Icd p_number,Icd p_divisor)
+inline icd fmod(icd p_number,icd p_divisor)
 {
   return p_number.Mod(p_divisor);
 }
 
-inline Icd floor(Icd p_number)
+inline icd floor(icd p_number)
 {
   return p_number.Floor();
 }
 
-inline Icd ceil(Icd p_number)
+inline icd ceil(icd p_number)
 {
   return p_number.Ceil();
 }
 
-inline Icd fabs(Icd p_number)
+inline icd fabs(icd p_number)
 {
   return p_number.AbsoluteWaarde();
 }
 
-inline Icd sqrt(Icd p_number)
+inline icd sqrt(icd p_number)
 {
   return p_number.VierkantsWortel();
 }
 
-inline Icd log10(Icd p_number)
+inline icd log10(icd p_number)
 {
   return p_number.Log10();
 }
 
-inline Icd log(Icd p_number)
+inline icd log(icd p_number)
 {
   return p_number.Log();
 }
 
-inline Icd exp(Icd p_number)
+inline icd exp(icd p_number)
 {
   return p_number.Exp();
 }
 
-inline Icd pow(Icd p_number,Icd  p_power)
+inline icd pow(icd p_number,icd  p_power)
 {
   return p_number.Macht(p_power);
 }
 
-inline Icd frexp(Icd p_number,int* p_exponent)
+inline icd frexp(icd p_number,int* p_exponent)
 {
   *p_exponent = p_number.Exponent();
   return p_number.Mantissa();
 }
 
-inline Icd ldexp(Icd p_number,int p_power)
+inline icd ldexp(icd p_number,int p_power)
 {
   if(p_power == 0)
   {
@@ -360,44 +360,44 @@ inline Icd ldexp(Icd p_number,int p_power)
   }
   if(p_power > 0 && p_power <= 31)
   {
-    return p_number * Icd((long) (1 << p_power));
+    return p_number * icd((long) (1 << p_power));
   }
-  return p_number * pow(Icd(2L),Icd((long)p_power));
+  return p_number * pow(icd(2L),icd((long)p_power));
 }
 
 // Overloaded trigonometric functions on a Icd number
 
-inline Icd atan (Icd p_number) 
+inline icd atan (icd p_number) 
 { 
   return p_number.ArcTangens(); 
 }
 
-inline Icd atan2(Icd p_y,Icd p_x)
+inline icd atan2(icd p_y,icd p_x)
 {
   return p_y.ArcTangens2Punten(p_x);
 }
 
-inline Icd asin(Icd p_number)
+inline icd asin(icd p_number)
 {
   return p_number.ArcSinus();
 }
 
-inline Icd acos(Icd p_number)
+inline icd acos(icd p_number)
 {
   return p_number.ArcCosinus();
 }
 
-inline Icd sin(Icd p_number)
+inline icd sin(icd p_number)
 {
   return p_number.Sinus();
 }
 
-inline Icd cos(Icd p_number)
+inline icd cos(icd p_number)
 {
   return p_number.Cosinus();
 }
 
-inline Icd tan(Icd p_number)
+inline icd tan(icd p_number)
 {
   return p_number.Tangent();
 }

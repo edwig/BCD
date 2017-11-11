@@ -4,7 +4,6 @@
 #include "stdafx.h"
 #include "Testing.h"
 #include "afp.h"
-#include "icd4.h"
 #include "icd.h"
 #include "bcd.h"
 #include "HPFCounter.h"
@@ -241,55 +240,10 @@ DoFunctionTest(TestFunction p_function
   if(pos1) *pos1 = ',';
   if(pos2) *pos2 = ',';
 
-  //ICD4
-  Icd4 i4_number1(buf1);
-  Icd4 i4_number2(buf2);
-  Icd4 i4_result;
-
-  HPFCounter counter5;
-  for(int x = 0; x < p_count; ++x)
-  {
-    switch(p_function)
-    {
-      case Func_sine:     i4_result = sin  (i4_number1);  break;
-      case Func_cosine:   i4_result = cos  (i4_number1);  break;
-      case Func_tangent:  i4_result = tan  (i4_number1);  break;
-      case Func_asin:     i4_result = asin (i4_number1);  break;
-      case Func_acos:     i4_result = acos (i4_number1);  break;
-      case Func_atan:     i4_result = atan (i4_number1);  break;
-      case Func_atan2:    i4_result = atan2(i4_number1,i4_number2); break;
-      case Func_floor:    i4_result = floor(i4_number1);  break;
-      case Func_ceiling:  i4_result = ceil (i4_number1);  break;  
-      case Func_fabs:     i4_result = fabs (i4_number1);  break;
-      case Func_sqrt:     i4_result = sqrt (i4_number1);  break;
-      case Func_log10:    i4_result = log10(i4_number1);  break;
-      case Func_log:      i4_result = log  (i4_number1);  break;
-      case Func_exp:      i4_result = exp  (i4_number1);  break;
-      case Func_pow:      i4_result = pow  (i4_number1, i4_number2);  break;
-      case Func_modf:     i4_result = modf (i4_number1,&i4_number2);  break;
-      case Func_fmod:     i4_result = fmod (i4_number1, i4_number2);  break;
-      case Func_frexp:    i4_result = frexp(i4_number1,&exponent);    break;
-      case Func_ldexp:    i4_result = ldexp(i4_number1, exponent);    break;
-      default:            printf("Unknown function in DoFunctionTest -> icd4\n");
-                          break;
-    }
-  }
-  counter5.Stop();
-  printf("Icd4   %10.6f %s\n",counter5.GetCounter(),i4_result.AlsString());
-  if(extraInteger)
-  {
-    printf("                  +%d\n",exponent);
-  }
-  if(extraFloat)
-  {
-    printf("                  %s\n",i4_number2.AlsString());
-  }
-
-
   // ICD8
-  Icd i_number1(buf1);
-  Icd i_number2(buf2);
-  Icd i_result;
+  icd i_number1(buf1);
+  icd i_number2(buf2);
+  icd i_result;
 
   HPFCounter counter3;
   for(int x = 0; x < p_count; ++x)
@@ -315,12 +269,12 @@ DoFunctionTest(TestFunction p_function
       case Func_fmod:     i_result = fmod (i_number1, i_number2);  break;
       case Func_frexp:    i_result = frexp(i_number1,&exponent);   break;
       case Func_ldexp:    i_result = ldexp(i_number1, exponent);   break;
-      default:            printf("Unknown function in DoFunctionTest -> icd8\n");
+      default:            printf("Unknown function in DoFunctionTest -> icd\n");
                           break;
     }
   }
   counter3.Stop();
-  printf("Icd8   %10.6f %s\n",counter3.GetCounter(),i_result.AlsString());
+  printf("icd    %10.6f %s\n",counter3.GetCounter(),i_result.AlsString());
   if(extraInteger)
   {
     printf("                  +%d\n",exponent);
@@ -439,31 +393,10 @@ DoOperatorTest(TestOperator p_operator,char* p_een,char* p_two,char* p_expect,in
   if(pos2) *pos2 = ',';
 
 
-  // ICD4
-  Icd4 i4_number1(buf1);
-  Icd4 i4_number2(buf2);
-  Icd4 i4_result;
-
-  HPFCounter counter3;
-  for(int x = 0;x < p_count; ++x)
-  {
-    switch(p_operator)
-    {
-      case Operator_add:    i4_result = i4_number1 + i4_number2; break;
-      case Operator_minus:  i4_result = i4_number1 - i4_number2; break;
-      case Operator_mult:   i4_result = i4_number1 * i4_number2; break;
-      case Operator_div:    i4_result = i4_number1 / i4_number2; break;
-      case Operator_mod:    i4_result = i4_number1 % i4_number2; break;
-    }
-  }
-  counter3.Stop();
-  printf("icd4   %10.6f %s\n",counter3.GetCounter(),i4_result.AlsString());
-
-
   // ICD (Improved)
-  Icd i_getal1(buf1);
-  Icd i_getal2(buf2);
-  Icd i_result;
+  icd i_getal1(buf1);
+  icd i_getal2(buf2);
+  icd i_result;
 
   HPFCounter counter4;
   for(int x = 0;x < p_count; ++x)
@@ -478,7 +411,7 @@ DoOperatorTest(TestOperator p_operator,char* p_een,char* p_two,char* p_expect,in
     }
   }
   counter4.Stop();
-  printf("icd8   %10.6f %s\n",counter4.GetCounter(),i_result.AlsString());
+  printf("icd    %10.6f %s\n",counter4.GetCounter(),i_result.AlsString());
 
   bcd c_number1(p_een);
   bcd c_number2(p_two);
@@ -508,12 +441,9 @@ PrintConstants(int p_count)
   afp  b_pi  (0,41);
   afp  b_ln10(0,41);
   afp  b_ln2 (0,41);
-  Icd4 i4_pi;
-  Icd4 i4_ln10;
-  Icd4 i4_ln2;
-  Icd  i_pi;
-  Icd  i_ln10;
-  Icd  i_ln2;
+  icd  i_pi;
+  icd  i_ln10;
+  icd  i_ln2;
   bcd  c_pi;
   bcd  c_ln10;
   bcd  c_ln2;
@@ -532,7 +462,7 @@ PrintConstants(int p_count)
   HPFCounter count2;
   for(int x = 0;x < p_count; ++x)
   {
-    i_pi = Icd::PI();
+    i_pi = icd::PI();
   }
   HPFCounter count3;
   for(int x = 0;x < p_count; ++x)
@@ -540,16 +470,10 @@ PrintConstants(int p_count)
     c_pi = bcd::PI();
   }
   count3.Stop();
-  HPFCounter count4;
-  for(int x = 0;x < p_count; ++x)
-  {
-    i4_pi = Icd4::PI();
-  }
-  count4.Stop();
-  printf("PI       Calc   0.000000 +3,1415926535897932384626433832795\n");
+
+  printf("PI       Calc   0.000000 +3.1415926535897932384626433832795\n");
   printf("         afp    %0.6f %s\n",count1.GetCounter(),_afp_ftoa(b_pi,41,41).c_str());
-  printf("         Icd4   %0.6f %s\n",count4.GetCounter(),i4_pi.AlsString());
-  printf("         Icd8   %0.6f %s\n",count2.GetCounter(),i_pi.AlsString());
+  printf("         icd    %0.6f %s\n",count2.GetCounter(),i_pi.AlsString());
   printf("         bcd    %0.6f %s\n",count3.GetCounter(),c_pi.AsString(bcd::Bookkeeping,true));
 
   // BEREKEN LN(10)
@@ -562,7 +486,7 @@ PrintConstants(int p_count)
   count2.Start();
   for(int x = 0; x < p_count; ++x)
   {
-    i_ln10 = Icd::LN10();
+    i_ln10 = icd::LN10();
   }
   count2.Stop();
   count3.Start();
@@ -571,16 +495,10 @@ PrintConstants(int p_count)
     c_ln10 = bcd::LN10();
   }
   count3.Stop();
-  count4.Start();
-  for(int x = 0; x < p_count; ++x)
-  {
-    i4_ln10 = Icd4::LN10();
-  }
-  count4.Stop();
-  printf("LN10     Calc   0.000000 +2,3025850929940456840179914546844\n");
+
+  printf("LN10     Calc   0.000000 +2.3025850929940456840179914546844\n");
   printf("         afp    %0.6f %s\n",count1.GetCounter(),_afp_ftoa(b_ln10,41).c_str());
-  printf("         Icd4   %0.6f %s\n",count4.GetCounter(),i4_ln10.AlsString());
-  printf("         Icd8   %0.6f %s\n",count2.GetCounter(),i_ln10.AlsString());
+  printf("         icd    %0.6f %s\n",count2.GetCounter(),i_ln10.AlsString());
   printf("         bcd    %0.6f %s\n",count3.GetCounter(),c_ln10.AsString(bcd::Bookkeeping,true));
 
   // BEREKEN LN(2)
@@ -593,7 +511,7 @@ PrintConstants(int p_count)
   count2.Start();
   for(int x = 0;x < p_count; ++x)
   {
-    i_ln2 = Icd::LN2();
+    i_ln2 = icd::LN2();
   }
   count2.Stop();
   count3.Start();
@@ -602,16 +520,10 @@ PrintConstants(int p_count)
     c_ln2 = bcd::LN2();
   }
   count3.Stop();
-  count4.Start();
-  for(int x = 0;x < p_count; ++x)
-  {
-    i4_ln2 = Icd4::LN2();
-  }
-  count4.Stop();
-  printf("LN2      Calc   0.000000 +0,69314718055994530941723212145818\n");
+
+  printf("LN2      Calc   0.000000 +0.69314718055994530941723212145818\n");
   printf("         afp    %0.6f %s\n",count1.GetCounter(),_afp_ftoa(b_ln2,41).c_str());
-  printf("         Icd4   %0.6f %s\n",count4.GetCounter(),i4_ln2.AlsString());
-  printf("         Icd8   %0.6f %s\n",count2.GetCounter(),i_ln2.AlsString());
+  printf("         icd    %0.6f %s\n",count2.GetCounter(),i_ln2.AlsString());
   printf("         bcd    %0.6f %s\n",count3.GetCounter(),c_ln2.AsString(bcd::Bookkeeping,true));
 
   printf("\n\n");
@@ -645,14 +557,14 @@ void
 TestFuncties(int p_count)
 {
   char* a_angle     = "0.9876543210123456";
-  char* r_sine      = "0,83473662950992611734760931537911";
-  char* r_cosine    = "0,55064939785167144253408441175647";
-  char* r_tangent   = "1,5159130887395963684392407742872";
+  char* r_sine      = "0.83473662950992611734760931537911";
+  char* r_cosine    = "0.55064939785167144253408441175647";
+  char* r_tangent   = "1.5159130887395963684392407742872";
   
   char* a_ratio     =  "0.765498765404321098765";
-  char* r_asine     = "0,87181613107055910102494602134303";
-  char* r_acosine   = "0,69898019572433751820637567029672";
-  char* r_atangent  = "0,653346752384431270749403109172";
+  char* r_asine     = "0.87181613107055910102494602134303";
+  char* r_acosine   = "0.69898019572433751820637567029672";
+  char* r_atangent  = "0.653346752384431270749403109172";
 
   char* a_big       =  "98765432109876543210.123456789012345678901234567890";
   char* a_big_n     = "-98765432109876543210.123456789012345678901234567890";
@@ -662,10 +574,10 @@ TestFuncties(int p_count)
   char* r_sqroot    =  "9938079900.558082311745752865316";
   char* r_floor     =  "98765432109876543210";
   char* r_ceiling   =  "98765432109876543211";
-  char* r_log10     =  "19,994604968162151965673558368195";
-  char* r_log       =  "46,039279339994856527044707840045";
-  char* r_exp       =  "341521984409,089389680737393624";
-  char* r_pow       =  "82616536947,2042654425347359351";
+  char* r_log10     =  "19.994604968162151965673558368195";
+  char* r_log       =  "46.039279339994856527044707840045";
+  char* r_exp       =  "341521984409.089389680737393624";
+  char* r_pow       =  "82616536947.2042654425347359351";
 
   char* a_big1      = "1234567890123456.1234567890123456";
   char* a_big2      =                "5.1234567890123456";
@@ -674,7 +586,7 @@ TestFuncties(int p_count)
   char* r_modf2     = "1234567890123456";
   char* r_frexp1    = "1.2345678901234561234567890123456";
   char* r_frexp2    = "15";
-  char* r_frexp3    = "7,7665544332211998877665544332211";
+  char* r_frexp3    = "7.7665544332211998877665544332211";
   char* r_frexp4    = "-16";
   char* r_ldexp     = "3399.254769907214365881024";
 
@@ -733,13 +645,11 @@ TestNumeric(int p_count)
   HPFCounter cnt2;
   for(int x = 0; x < p_count; ++x)
   {
-    ten.AsNumeric(&res,12,7);
+    ten.AsNumeric(&res);
   }
   cnt2.Stop();
 
 
-  if(ten.AsNumeric(&res,12,7))
-  {
 //     printf("Precision: %d\n",num.precision);
 //     printf("Scale    : %d\n",num.scale);
 //     printf("Sign     : %d\n",num.sign);
@@ -749,9 +659,9 @@ TestNumeric(int p_count)
 //       printf("Numeric mantissa [%d:%02.2X]\n",ind,num.val[ind]);
 //     }
 
-    bcd check(&num);
-    printf("bcd -> SQL_NUMERIC_STRUCT %10.6f : %s\n",cnt2.GetCounter(),check.AsString());
-  }
+  bcd check(&num);
+  printf("bcd -> SQL_NUMERIC_STRUCT %10.6f : %s\n",cnt2.GetCounter(),check.AsString());
+
   printf("\n");
   return 0;
 }
@@ -782,9 +692,8 @@ _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
   printf("calc   -> Calculations in MS-Calc (standard calculator)\n");
   printf("double -> Build in C++ datatype 'double'\n");
   printf("afp    -> Datatype 'Arbitrairy Floating Point' of Henrik Vestermark\n");
-  printf("Icd4   -> Datatype 'Integer Coded Decimal' of the Pronto(tm) project\n");
-  printf("Icd8   -> Datatype 'Integer Coded Decimal' (improved by EH)\n");
-  printf("bcd    -> Datatype 'Binairy Coded Decimal' of Edwig Huisman\n");
+  printf("icd    -> Datatype 'Integer Coded Decimal'\n");
+  printf("bcd    -> Datatype 'Binairy Coded Decimal'\n");
   printf("\n");
 
 #ifdef DEBUG
