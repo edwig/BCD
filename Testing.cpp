@@ -522,8 +522,8 @@ TestOperatoren(int p_count)
   char* a_small1    = "0.8347366295099261173476093153791068840878";
   char* a_small2    = "0.5506493978516714425340844117564672940305";
   char* r_small_add = "1.5159130887395963684392407742872";
-  char* r_small_div = "2111111100999999,3343333322232221";
-  char* r_big_min   =  "358024679246912,91258024580146906";
+  char* r_small_div = "2111111100999999.3343333322232221";
+  char* r_big_min   =  "358024679246912.91258024580146906";
 
   DoOperatorTest(Operator_mult, a_big1,   a_big2,   r_big_mult,   p_count);
   DoOperatorTest(Operator_div,  a_big1,   a_big2,   r_big_div,    p_count);
