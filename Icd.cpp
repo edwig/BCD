@@ -1,12 +1,13 @@
 // ICD = INTEGER CODED DECIMAL
-// Een klasse om met grote gebroken getallen te werken
-// Gebroken getallen met een exacte nauwkeurigheid in decimalen
-// als in tegenstelling tot binaire benaderingen (float,double)
+// A class to work with large decimal numbers
+// in exact precisions in decimals as opposed to
+// the built in data types (float, double) that
+// do a binary approximation 
 //
 #include "Stdafx.h"
-#include <math.h>   // Toch wel nodig voor conversies
-#include <float.h>  // en voor snelle benaderingen
-#include <limits.h> // Voor maximal grootte long en int64
+#include <math.h>   // Needed for conversions and estimates
+#include <float.h>  // Needed for estimates
+#include <limits.h> // For max sizes of int, long and int64
 #include "Icd.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -16,25 +17,25 @@
 //////////////////////////////////////////////////////////////////////////
 
 // Icd::Icd
-// Omschrijving:   default constructor
-// Werking:        Zet de waarde van de Icd op nul dmv aanroep MaakLeeg()
+// Description:   default constructor
+// What it does:  Initializes the icd to 0.0
 //
 icd::icd()
 {
-  MaakLeeg();
+  MakeEmpty();
 }
 
 // Icd::Icd
-// Omschrijving:   copy constructor
-// Parameters:     const Icd& Icd // te kopieeren Icd
-// Werking:        copieert alle datamembers van de opgegeven Icd
+// Description:   copy constructor
+// Parameters:    const icd& 
+// What it does:  copies all data members
 //
 icd::icd(const icd& p_icd)
 {
-  m_teken    = p_icd.m_teken;
-  m_lengte   = p_icd.m_lengte;
-  m_precisie = p_icd.m_precisie;
-  for(int i = 0; i < icdLengte; i++)
+  m_sign      = p_icd.m_sign;
+  m_length    = p_icd.m_length;
+  m_precision = p_icd.m_precision;
+  for(int i = 0; i < icdLength; i++)
   {
     m_data[i] = p_icd.m_data[i];
   }
@@ -42,59 +43,55 @@ icd::icd(const icd& p_icd)
 
 // Icd::Icd
 //
-// Omschrijving:   copy constructor met 1 of 2 longs (32 bit)
-// Parameters:     const long waarde     // waarde voor de komma
-//                 const long restWaarde // waarde achter de komma
-// Werking:        gebruikt ZetWaardeLong om de waarde van de long(s) in
-//                 de Icd te zetten. restWaarde is default 0.
+// Description:   copy constructor with one or two longs (32bits)
+// Parameters:    const long value      // value before the '.'
+//                const long remainder  // value behind the '.'
+// What it does:  Uses SetValue long to initialize the icd
 //
-icd::icd(const long waarde, const long restWaarde)
+icd::icd(const long value, const long remainder)
 {
-  ZetWaardeLong(waarde, restWaarde);
+  SetValueLong(value, remainder);
 }
 
 // Icd::Icd
-// Copy constructor met een int64 (64 bits) en een optionele restwaarde (32 bit)
-icd::icd(const int64 waarde, const int64 restWaarde)
+// Copy constructor with an int64 (64 bits) and an optional remainder (32 bit)
+icd::icd(const int64 value, const int64 remainder)
 {
-  ZetWaardeInt64(waarde, restWaarde);
+  SetValueInt64(value, remainder);
 }
 
 // Icd::Icd
-// Omschrijving:   copy constructor met double. Pas op: door de afrondfouten van een
-//                 double is het niet verstandig om deze constructor te gebruiken, aangezien
-//                 het waarde van de Icd ook deze afrondfouten kan bevatten!
-// Parameters:     const double waarde // te kopieeren waarde als double
-// Werking:        gebruikt ZetWaardeDouble om de waarde van de double in de Icd te zetten.
+// Description:   copy constructor from a double. Beware for rounding errors
+// Parameters:    const double value 
+// What it does:  Uses SetValueDouble
 //
-icd::icd(const double waarde)
+icd::icd(const double value)
 {
-  ZetWaardeDouble(waarde);
+  SetValueDouble(value);
 }
 
 // Icd::Icd
-// Omschrijving:   copy constructor met string. (String type uit basisklassen!)
-// Parameters:     const String& str // te kopieeren waarde als string
-//                 bool  fromDB      // Geeft aan of waarde uit een database (ODBC) kwam
-// Werking:        gebruikt ZetWaardeString om de waarde van de string in de Icd te zetten.
+// Description:   copy constructor from a string
+// Parameters:    const String&     // String to be copied
+//                bool  fromDB      // True if the value came from a database
+// What it does:  Uses SetValueString
 //
-icd::icd(const CString& str,bool fromDB)
+icd::icd(const CString& str)
 {
-  ZetWaardeString(str,fromDB);
+  SetValueString(str);
 }
 
 // Icd::~Icd
-// Omschrijving:   destructor
-// Werking:        doet (nog) niks
+// Description:   destructor
+// What it does:  Does nothing (yet)
 //
 icd::~icd()
 {
-  // niks, aanwezig voor evt. uitbreiding
 }
 
 //////////////////////////////////////////////////////////////////////////
 //
-// EINDE ICD CONSTRUCTORS / DESTRUCTORS
+// END ICD CONSTRUCTORS / DESTRUCTORS
 //
 //////////////////////////////////////////////////////////////////////////
 
@@ -105,101 +102,103 @@ icd::~icd()
 //////////////////////////////////////////////////////////////////////////
 
 // Icd::PI
-// Omschrijving: Verhouding tussen straal en omtrek van een cirkel
-// Werking:      Natuurconstante die nooit veranderd
+// Description:   Ratio between the radius and the circumference of a circle
+// What it does:  Natural constant that never changes
 icd
 icd::PI()
 {
   icd pi;
 
-  pi.m_lengte   = icdLengte * icdDigits;
-  pi.m_precisie = icdLengte * icdDigits / 2;
-  pi.m_teken    = Positief;
+  pi.m_length    = icdLength * icdDigits;
+  pi.m_precision = icdLength * icdDigits / 2;
+  pi.m_sign      = Positive;
 
-  // PI in 40 decimalen: Gebruik indien icdLengte wordt uitgebreid
+  // PI in 40 decimals
   // +3.14159265_35897932_38462643_38327950_28841972
-  pi.m_data[icdKommaPositie    ] = 3;
-  pi.m_data[icdKommaPositie - 1] = 14159265L;
-  pi.m_data[icdKommaPositie - 2] = 35897932L;
-  pi.m_data[icdKommaPositie - 3] = 38462643L;
-  pi.m_data[icdKommaPositie - 4] = 38327950L;
-  pi.m_data[icdKommaPositie - 5] = 28841972L;
+  pi.m_data[icdPointPosition    ] = 3;
+  pi.m_data[icdPointPosition - 1] = 14159265L;
+  pi.m_data[icdPointPosition - 2] = 35897932L;
+  pi.m_data[icdPointPosition - 3] = 38462643L;
+  pi.m_data[icdPointPosition - 4] = 38327950L;
+  pi.m_data[icdPointPosition - 5] = 28841972L;
 
   return pi;
 }
 
 // Icd::LN2
-// Omschrijving: Natuurlijke logarithme van twee
-// Werking:      Mathematische constante die nooit veranderd
+// Description:  Natural logarithm of two
+// What it does: Mathematical constant that never changes
 icd
 icd::LN2()
 {
   icd ln2;
 
-  ln2.m_lengte   = icdLengte * icdDigits;
-  ln2.m_precisie = icdLengte * icdDigits / 2;
-  ln2.m_teken    = Positief;
+  ln2.m_length    = icdLength * icdDigits;
+  ln2.m_precision = icdLength * icdDigits / 2;
+  ln2.m_sign      = Positive;
 
-  // LN2 in 40 decimalen: Gebruik indien icdLengte wordt uitgebreid
+  // LN2 in 40 decimals
   // +0.69314718_05599453_09417232_12145817_65680756
-  ln2.m_data[icdKommaPositie    ] = 0;
-  ln2.m_data[icdKommaPositie - 1] = 69314718L;
-  ln2.m_data[icdKommaPositie - 2] =  5599453L;
-  ln2.m_data[icdKommaPositie - 3] =  9417232L;
-  ln2.m_data[icdKommaPositie - 4] = 12145817L;
-  ln2.m_data[icdKommaPositie - 5] = 65680756L;
+  ln2.m_data[icdPointPosition    ] = 0;
+  ln2.m_data[icdPointPosition - 1] = 69314718L;
+  ln2.m_data[icdPointPosition - 2] =  5599453L;
+  ln2.m_data[icdPointPosition - 3] =  9417232L;
+  ln2.m_data[icdPointPosition - 4] = 12145817L;
+  ln2.m_data[icdPointPosition - 5] = 65680756L;
 
   return ln2;
 }
 
 // Icd::LN10
-// Omschrijving: Natuurlijke logarithme van tien
-// Werking:      Mathematische constante die nooit veranderd
+// Description:  Natural logarithm of ten
+// What it does: Mathematical constant that never changes
 icd
 icd::LN10()
 {
   icd ln10;
 
-  ln10.m_lengte   = icdLengte * icdDigits;
-  ln10.m_precisie = icdLengte * icdDigits / 2;
-  ln10.m_teken    = Positief;
+  ln10.m_length    = icdLength * icdDigits;
+  ln10.m_precision = icdLength * icdDigits / 2;
+  ln10.m_sign      = Positive;
 
-  // LN10 in 40 decimalen: Gebruik indien icdLengte wordt uitgebreid
+  // LN10 in 40 decimals
   // +2.30258509_29940456_84017991_45468436_42076019
-  ln10.m_data[icdKommaPositie    ] = 2;
-  ln10.m_data[icdKommaPositie - 1] = 30258509L;
-  ln10.m_data[icdKommaPositie - 2] = 29940456L;
-  ln10.m_data[icdKommaPositie - 3] = 84017991L;
-  ln10.m_data[icdKommaPositie - 4] = 45468436L;
-  ln10.m_data[icdKommaPositie - 5] = 42076019L;
+  ln10.m_data[icdPointPosition    ] = 2;
+  ln10.m_data[icdPointPosition - 1] = 30258509L;
+  ln10.m_data[icdPointPosition - 2] = 29940456L;
+  ln10.m_data[icdPointPosition - 3] = 84017991L;
+  ln10.m_data[icdPointPosition - 4] = 45468436L;
+  ln10.m_data[icdPointPosition - 5] = 42076019L;
 
   return ln10;
 }
 
 //////////////////////////////////////////////////////////////////////////
 //
-// EINDE ICD CONSTANTS
+// END ICD CONSTANTS
 //
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
 //
-// ICD OPERATOREN
+// ICD OPERATORS
 //
 //////////////////////////////////////////////////////////////////////////
 
 // Icd::operator=
-// Omschrijving:   assignment met Icd
-// Parameters:     const Icd& Icd // over te nemen Icd
-// Werking:        als niet Icd=Icd, dan alle datamembers gelijk zetten.
+// Description:   assignment from an icd
+// Parameters:    const icd& 
+// What it does:  If it is not us, copy the icd
 //
 const icd&
 icd::operator=(const icd& p_icd)
 {
   if (this != &p_icd)
   {
-    m_teken = p_icd.m_teken;
-    for (long i = 0; i < icdLengte; i++)
+    m_sign      = p_icd.m_sign;
+    m_length    = p_icd.m_length;
+    m_precision = p_icd.m_precision;
+    for (long i = 0; i < icdLength; i++)
     {
       m_data[i] = p_icd.m_data[i];
     }
@@ -209,68 +208,68 @@ icd::operator=(const icd& p_icd)
 
 // Icd::operator=
 //
-// Omschrijving:   assignment met string
-// Parameters:     const String& str
-// Werking:        gebruikt ZetWaardeString om de waarde van de string in de Icd te zetten.
+// Description:   assignment from a string
+// Parameters:    const String&
+// What it does:  Uses SetValueString to get the string in the icd
 //
 const icd&
 icd::operator=(const CString& str)
 {
-  ZetWaardeString(str);
+  SetValueString(str);
   return *this;
 }
 
 // Icd::operator=
-// Omschrijving:   assignment met long
-// Parameters:     const long waarde
-// Werking:        gebruikt ZetWaardeLong om de waarde van de long in de Icd te zetten.
+// Description:   assignment from a long
+// Parameters:    const long 
+// What it does:  Uses SetValueLong to get the long in the icd
 //
 const icd&
-icd::operator=(const long waarde)
+icd::operator=(const long value)
 {
-  ZetWaardeLong(waarde, 0);
+  SetValueLong(value, 0);
   return *this;
 }
 
 // Icd::operator=
-// Omschrijving:   assignment met double
-// Parameters:     const double waarde
-// Werking:        gebruikt ZetWaardeDouble om de waarde van de double in de Icd te zetten.
+// Description:   assignment from a double
+// Parameters:    const double 
+// What it does:  Uses SetValueDouble to get the double in the icd
 //
 const icd&
-icd::operator=(const double waarde)
+icd::operator=(const double value)
 {
-  ZetWaardeDouble(waarde);
+  SetValueDouble(value);
   return *this;
 }
 
 // Icd::operator+=
-// Omschrijving:   telt het argument op bij de Icd en retourneert het resultaat
-// Werking:        gebruikt de + operator en de = operator. (x+=y equivalent aan x=x+y)
+// Description:   Adds the icd and returns the result
+// What it does:  Uses the + operator and the = operator. (x+=y equivalent to x=x+y)
 //
 const icd&
 icd::operator+=(const icd& p_icd)
 {
-  // x+=y is gelijk aan x=x+y
+  // x+=y is equal to: x=x+y
   *this = *this + p_icd;
   return *this;
 }
 
 // Icd::operator-=
-// Omschrijving:   trekt het argument af van de Icd en retourneert het resultaat
-// Werking:        gebruikt de - operator en de = operator. (x-=y equivalent aan x=x-y)
+// Description:   Subtracts the icd and returns the result
+// What it does:  Uses the - operator and the = operator. (x-=y equivalent to x=x-y)
 //
 const icd&
 icd::operator-=(const icd& p_icd)
 {
-  // x-=y is gelijk aan x=x-y
+  // x-=y is the same as: x=x-y
   *this = *this - p_icd;
   return *this;
 }
 
 // Icd::operator*=
-// Omschrijving:   vermenigvuldigt getal met het argument en retourneert het resultaat
-// Werking:        gebruikt de Mul operatie functie
+// Description:   Multiplies the icd to this one and returns the result
+// What it does:  Uses the Mul operation
 //
 const icd& 
 icd::operator*=(const icd& p_icd)
@@ -280,8 +279,8 @@ icd::operator*=(const icd& p_icd)
 }
 
 // Icd::operator/=
-// Omschrijving:   deelt getal door het argument en retourneert het resultaat
-// Werking:        gebruikt de Div operatie functie
+// Description:   Divide this icd with the given icd and returns the result
+// What it does:  Uses the Div operation
 //
 const icd&
 icd::operator/=(const icd& p_icd)
@@ -291,256 +290,240 @@ icd::operator/=(const icd& p_icd)
 }
 
 // Icd::operator- (Unary)
-// Omschrijving:   prefix - operator (negatie)
-// Werking:        kopieert de waarde van de Icd, om deze vervolgens van
-//                 teken te laten wisselen, mits het geheel niet nul is.
+// Description:   prefix - operator (negation)
+// What it does:  Copies the icd and then negates the result, if not zero
 //
 const icd
 icd::operator-() const
 {
-  icd getal(*this);
+  icd number(*this);
 
-  // als nul, dan teken niet veranderen, anders omdraaien
-  if (!getal.IsNul())
+  // If null, do not change the sign, otherwise flip it
+  if (!number.IsNull())
   {
-    if (getal.m_teken == Positief)
-    {
-      getal.m_teken = Negatief;
-    }
-    else
-    {
-      getal.m_teken = Positief;
-    }
+    number.m_sign = (number.m_sign == Positive) ? Negative : Positive;
   }
-  return getal;
+  return number;
 }
 
 // Icd::operator++
-// Omschrijving:   postfix ++ operator
-// Werking:        gebruikt de prefix ++ en de copy constructor
+// Description:   postfix ++ operator
+// What it does:  Uses the prefix ++ and the copy constructor
 //
 const icd
 icd::operator++(int)
 {
-  // bij postfix ++ operator eerst resultaat retourneren, dan pas optellen
+  // postfix ++ operator: calculate the result first, do the addition afterward
   icd res(*this);
   ++*this;
   return res;
 }
 
 // Icd::operator++
-// Omschrijving:   prefix ++ operator
-// Werking:        maakt eerst een Icd aan met waarde 1, waarna
-//                 deze opgeteld wordt bij this.
+// Description:   prefix ++ operator
+// What it does:  Adds 1 (one) and returns the result
 //
 icd&
 icd::operator++()
 {
-  //++x is geljk aan x+=1
-  icd getal_1(1L, 0);
-  *this += getal_1;
+  //++x is equivalent to: x+=1
+  icd number_1(1L, 0);
+  *this += number_1;
   return *this;
 }
 
 // Icd::operator--
-// Omschrijving:   postfix -- operator
-// Werking:        gebruikt de prefix -- en de copy constructor
+// Description:   postfix -- operator
+// What it does   Uses the prefix -- and returns the result
 //
 const icd
 icd::operator--(int)
 {
-  // bij postfix -- operator eerst resultaat retourneren, dan pas aftrekken
+  // postfix -- operator: calculate result first, subtract later
   icd res(*this);
   --*this;
   return res;
 }
 
 // Icd::operator--
-// Omschrijving:   prefix -- operator
-// Werking:        maakt eerst een Icd aan met waarde 1, waarna
-//                 deze afgetrokken wordt van this.
+// Description:   prefix -- operator
+// What it does:  Subtract 1 (one) and return this
 //
 icd&
 icd::operator--()
 {
-  // --x is geljk aan x-=1
-  icd getal_1(1L);
-  *this -= getal_1;
+  // --x is same as x-=1
+  icd number_1(1L);
+  *this -= number_1;
   return *this;
 }
 
 // Icd::operator==
-// Omschrijving:   vergelijkingsoperator is_gelijk
-// Werking:        true als teken gelijk en alle m_data gelijk
+// Description:   comparison operator is-equal
+// What it does:  true if sign and all m_data are equal
 //
 const bool
 icd::operator==(const icd& p_icd) const
 {
-  // Alleen gelijk als de tekens gelijk zijn
-  bool isGelijk = m_teken == p_icd.m_teken;
+  // Only equal is signs are equal
+  bool isSame = m_sign == p_icd.m_sign;
 
-  // Gelijk als alle cijfers gelijk
-  for (long i = 0; isGelijk && i < icdLengte; i++)
+  if(isSame)
   {
-    isGelijk = m_data[i] == p_icd.m_data[i];
+    // Same if all m_data are equal
+    for(long i = 0; isSame && i < icdLength; i++)
+    {
+      isSame = m_data[i] == p_icd.m_data[i];
+    }
   }
-  return isGelijk;
+  return isSame;
 }
 
-
 // Icd::operator!=
-// Omschrijving:   vergelijkingsoperator is_ongelijk
-// Werking:        gebruikt == operator (x!=y is equivalent aan !(x==y))
+// Description:   Comparison operator not-equal
+// What it does:  Uses the inversion of the equality operator
 //
 const bool
 icd::operator!=(const icd& p_icd) const
 {
-  // x!=y is gelijk aan !(x==y)
+  // x!=y is equivalent to !(x==y)
   return !(*this == p_icd);
 }
 
 // Icd::operator<
-// Omschrijving:   vergelijkingsoperator is_kleiner
-// Werking:        als het linker argument negatief en rechter positief, dan al kleiner anders:
-//                 test vanaf de meest belangrijke m_data of de m_data aan de
-//                 linkerkant van de operator groter is, zo ja dan stoppen, anders doorgaan
-//                 als blijkt dat de tekens beide negatief zijn, dan resultaat omdraaien
-//                 tenzij de beide argumenten gelijk zijn.
+// Description:   Comparison operator smaller-than
+// What it does:  If the left side is negative, and the right side positive, already true
+//                Otherwise: test the m_data for the inequality
 //
 const bool
 icd::operator<(const icd& p_icd) const
 {
-  // Alleen gelijk als tekens gelijk zijn
-  bool isGelijk = (m_teken == p_icd.m_teken);
+  // Signs are the same
+  bool isSame = (m_sign == p_icd.m_sign);
 
-  // Kleiner als teken links negatief en teken rechts positief
-  bool isKleiner = (m_teken == Negatief && p_icd.m_teken == Positief);
+  // Smaller if the left side is negative, and the right side positive
+  bool isSmaller = (m_sign == Negative && p_icd.m_sign == Positive);
 
-  // Kleiner zolang cijfer links kleiner dan cijfer rechts
-  for (long i = icdLengte - 1; i >= 0 && isGelijk; i--)
+  // Smaller as long as number left is smaller than number right
+  for (long i = icdLength - 1; i >= 0 && isSame; i--)
   {
     if (m_data[i] != p_icd.m_data[i])
     {
-      isGelijk  = false;
-      isKleiner = m_data[i] < p_icd.m_data[i];
+      isSame    = false;
+      isSmaller = m_data[i] < p_icd.m_data[i];
+      break;
     }
   }
-  // Als beide tekens negatief, dan resultaat omdraaien, tenzij de
-  // argumenten gelijk zijn.
-  // Voorbeeld: -5<-3 is gelijk aan 5>3
-  //            -5<-5 is gelijk aan 5<5
-  if (m_teken == Negatief && p_icd.m_teken == Negatief && !isGelijk)
+  // If both signs are negative and not the same, invert the result
+  // Example: -5<-3 is equal to 5>3
+  //          -5<-5 is equal to 5<5
+  if (m_sign == Negative && p_icd.m_sign == Negative && !isSame)
   {
-    isKleiner =! isKleiner;
+    isSmaller = !isSmaller;
   }
-  return isKleiner;
+  return isSmaller;
 }
 
 // Icd::operator>
-// Omschrijving:   vergelijkingsoperator is_groter
-// Werking:        als het linker argument positief en rechter negatief, dan al groter anders:
-//                 test vanaf de meest belangrijke m_data of de m_data aan de
-//                 linkerkant van de operator kleiner is, zo ja dan stoppen, anders doorgaan
-//                 als blijkt dat de tekens beide negatief zijn, dan resultaat omdraaien
-//                 tenzij de beide argumenten gelijk zijn.
+// Description:    Comparison operator greater-than
+// What it does:   Already greater if left side is positive and right side negative
+//                 Otherwise test the m_data structure
 //
 const bool
 icd::operator>(const icd& p_icd) const
 {
-  // Alleen gelijk als tekens gelijk zijn
-  bool isGelijk = (m_teken == p_icd.m_teken);
+  // Equality of the signs
+  bool isSame = (m_sign == p_icd.m_sign);
 
-  // Groter als teken links positief en teken rechts negatief
-  bool isGroter = (m_teken == Positief && p_icd.m_teken == Negatief);
+  // Greater if left side is positive and right side not
+  bool isGreater = (m_sign == Positive && p_icd.m_sign == Negative);
 
-  // Groter zolang cijfer links groter dan cijfer rechts
-  for (long i = icdLengte - 1; i >= 0 && isGelijk; i--)
+  // Test the m_data structure
+  for (long i = icdLength - 1; i >= 0 && isSame; i--)
   {
     if (m_data[i] != p_icd.m_data[i])
     {
-      isGelijk = false;
-      isGroter = m_data[i] > p_icd.m_data[i];
+      isSame    = false;
+      isGreater = m_data[i] > p_icd.m_data[i];
+      break;
     }
   }
 
-  // Als beide tekens negatief, dan resultaat omdraaien, tenzij de
-  // argumenten gelijk zijn.
-  // Voorbeeld: -5>-3 is gelijk aan 5<3
-  //            -5>-5 is gelijk aan 5>5
-  if (m_teken == Negatief && p_icd.m_teken == Negatief && !isGelijk)
+  // If both sides are negative and not the same, invert the result
+  // Example: -5>-3 is same as 5<3
+  //          -5>-5 is same as 5>5
+  if (m_sign == Negative && p_icd.m_sign == Negative && !isSame)
   {
-    isGroter=!isGroter;
+    isGreater = !isGreater;
   }
-  return isGroter;
+  return isGreater;
 }
 
 // Icd::operator<=
-// Omschrijving:   vergelijkingsoperator is_kleiner_of_gelijk
-// Werking:        gebruikt > operator (x<=y is equivalent aan !(x>y))
+// Description:   Comparison operator smaller-than-or-equal-to
+// What it does:  Uses the inversion of the greater-than operator
 //
 const bool
 icd::operator<=(const icd& p_icd) const
 {
-  // x<=y is gelijk aan !(x>y)
+  // x<=y is equivalent to !(x>y)
   return !(*this>p_icd);
 }
 
 // Icd::operator>=
-// Omschrijving:   vergelijkingsoperator is_groter_of_gelijk
-// Werking:        gebruikt < operator (x>=y is equivalent aan !(x<y))
+// Description:   Comparison operator greater-than-or-equal-to
+// What it does:  Uses the inversion of the smaller-than operator
 //
 const bool
 icd::operator>=(const icd& p_icd) const
 {
-  // x>=y is gelijk aan !(x<y)
+  // x>=y is equivalent to !(x<y)
   return !(*this < p_icd);
 }
 
 // operator<<
-// Omschrijving:   standaard output operator
-// Werking:        gebruikt Icd.WaardeAlsString om waarde om te zetten naar String
-//                 waarna de << operator op een string wordt uitgevoerd.
+// Description:   standard output operator
+// What it does:  Uses the string 'AsString' method to serialize an icd
 //
 ostream& operator<<(ostream& os, const icd& p_icd)
 {
-  // os<<Icd is gelijk aan os<<Icd.WaardeAlsString()
-  os << p_icd.AlsString().operator const char*();
+  os << p_icd.AsString().operator const char*();
   return os;
 }
 
 //////////////////////////////////////////////////////////////////////////
 //
-// EINDE ICD OPERATOREN
+// END ICD OPERATORS
 //
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
 //
-// MATHEMATISCHE ICD FUNCTIES
+// MATHEMATICAL ICD FUNCTIONS
 //
 //////////////////////////////////////////////////////////////////////////
 
 // Icd::Floor
-// Omschrijving: Eerste gehele getal kleiner dan de input
-// Werking:      Laat decimaal deel vervallen en controleer op negatief getal
-//               Bij negatief getal er 1 aftrekken
+// Description:   First natural number not greater than the input
+// What it does:  Remove the decimal part and subtract 1 for negative numbers
+//
 icd
 icd::Floor() const
 {  
   icd res;
-  res.m_teken = m_teken;
-  for (int n = icdKommaPositie; n < icdLengte; n++)
+  res.m_sign = m_sign;
+  for (int n = icdPointPosition; n < icdLength; n++)
   {
     res.m_data[n] = m_data[n];
   }
-  if (m_teken == Negatief)
+  if (m_sign == Negative)
   {  
-    for (int n = 0; n < icdKommaPositie; n++)
+    for (int n = 0; n < icdPointPosition; n++)
     {
       if(m_data[n])
       {
-        // ICD was niet nul achter de komma, en dit is een negatief getal, dus de
-        // gefloorde versie is de afgekapte versie MIN EEN.
+        // ICD not zero behind the decimal point, and it's a negative number
+        // so the 'floored' version is the truncation MINUS ONE!
         --res;
         break;
       }
@@ -550,26 +533,26 @@ icd::Floor() const
 }
 
 // Icd::Ceiling
-// Omschrijving: Eerste gehele getal groter dan de input
-// Werking:      Laat decimaal deel vervallen en controleer op negatief getal
-//               Bij negatief getal er 1 bij optellen
+// Description:   First natural number greater than the input
+// What it does:  Remove decimal part and add 1 for negative numbers
+//
 icd
 icd::Ceil() const
 {
   icd res;
-  res.m_teken = m_teken;
-  for (int n = icdKommaPositie; n < icdLengte; n++)
+  res.m_sign = m_sign;
+  for (int n = icdPointPosition; n < icdLength; n++)
   {
     res.m_data[n] = m_data[n];
   }
-  if (m_teken == Positief)
+  if (m_sign == Positive)
   {  
-    for (int n = 0; n < icdKommaPositie; n++)
+    for (int n = 0; n < icdPointPosition; n++)
     {
       if (m_data[n])
       {
-        // ICD was niet nul achter de komma, en dit is een positief getal, dus de
-        // geceilde versie is de afgekapte versie PLUS EEN.
+        // ICD was non-zero behind the decimal point
+        // so the 'ceiled' version is truncated PLUS ONE!
         ++res;
         break;
       }
@@ -579,75 +562,75 @@ icd::Ceil() const
 }
 
 // Icd::sqrt
-// Omschrijving: Vierkantswortel van het getal
-// Werking:      Maak eerste benadering aan de hand van een double
-//               Doe daarna de Newton's benadering van de wortel
+// Description:   Square root of the number
+// What it does:  Does an estimation through a double and then
+//                Uses the Newton estimation to calculate the root
 icd
-icd::VierkantsWortel() const
+icd::SquareRoot() const
 {
-  icd getal(0L,0L);
-  icd half("0,5");
-  icd twee(2L);
-  icd drie(3L);
+  icd number(0L,0L);
+  icd half("0.5");
+  icd two(2L);
+  icd three(3L);
 
-  // Optimalisatie: wortel(0) = 0
-  if(IsNul())
+  // Optimization: sqrt(0) = 0
+  if(IsNull())
   {
-    return getal;
+    return number;
   }
-  // Bereken afbreekcriterium epsilon
+  // Getting the breaking criterion
   icd epsilon = Epsilon(10);
 
-  getal = *this; // Getal om wortel uit te trekken
-  if(getal.GeefTeken() == -1)
+  number = *this; // Number to get the square-root from
+  if(number.GetSign() == -1)
   {
-    throw CString("Kan geen wortel uit een negatief getal trekken");
+    throw CString("Cannot calculate a square-root from a negative number");
   }
-  // Reductie door te delen door een kwadraat van een geheel getal
-  // voor de snelheid hier een macht van twee
-  icd reductie(1L);
-  icd honderd(100L);
-  while(getal / (reductie * reductie) > honderd)
+  // Reduction by dividing through the square of a whole number
+  // For speed we use the powers of two
+  icd reduction(1L);
+  icd hundred(100L);
+  while(number / (reduction * reduction) > hundred)
   {
-    reductie *= twee;
+    reduction *= two;
   }
-  // Reduceren door te delen door het kwadraat van de reductie
-  // variabele reductie is feitelijk sqrt(reductie)
-  getal /= (reductie * reductie);
+  // Reduction by dividing through the square of the reduction
+  // 'reduction' is in fact sqrt(reduction)
+  number /= (reduction * reduction);
 
-  // Eerste benadering
-  double benadering1 = getal.AlsDouble();
-  double benadering2 = 1 / sqrt(benadering1);
-  icd result(benadering2);
-  icd tussen;
+  // First estimate
+  double estimate1 = number.AsDouble();
+  double estimate2 = 1 / sqrt(estimate1);
+  icd result(estimate2);
+  icd between;
 
-  // Newton's iteratie
+  // Newton's iteration
   // Un = U(3-VU^2)/2
   while(true)
   {
-    tussen  = getal * result * result;  // VU^2
-    tussen  = drie - tussen;            // 3-VU^2
-    tussen *= half;                     // (3-VU^2)/2
+    between  = number * result * result;  // VU^2
+    between  = three - between;           // 3-VU^2
+    between *= half;                      // (3-VU^2)/2
 
-    if(tussen.WaardeAchterKomma() < epsilon)
+    if(between.ValueBehindPoint() < epsilon)
     {
       break;
     }
-    result *= tussen;
+    result *= between;
   }
-  // Eind resultaat berekenen uit getal * 1/wortel
-  result *= getal;
-  // Reductie toevoegen door enkel met reductie te vermenigvuldigen
-  result *= reductie;
+  // Final result by calculating number * 1/root
+  result *= number;
+  // Adding the reduction by multiplying
+  result *= reduction;
 
   return result;
 }
 
-// Icd::Macht
-// Omschrijving: Verhef ICD getal tot een macht
-// Werking:      x^y = exp(y * ln(x))
+// Icd::Power
+// Description:   icd to the power of another icd
+// What it does:  x^y = exp(y * ln(x))
 icd
-icd::Macht(const icd& p_icd) const
+icd::Power(const icd& p_icd) const
 {
   icd result;
 
@@ -658,85 +641,85 @@ icd::Macht(const icd& p_icd) const
 }
 
 // Icd::Abs
-// Omschrijving: Retourneer de absolute waarde
-// Werking:      Zet het teken op Teken::Positief
+// Description:   Returning the absolute value
+// What it does:  Setting the sign to positive
 icd
-icd::AbsoluteWaarde() const
+icd::AbsoluteValue() const
 {
   icd icd2 = *this;
-  icd2.m_teken = Positief; 
+  icd2.m_sign = Sign::Positive; 
   return icd2;
 }
 
 // Icd::Reciproke
-// Omschrijving: Inverse van het getal = 1 / getal
-// Werking:      Gebruikt standaard Div
+// Description:   Inverse of the number = 1 / number
+// What it does:  Using the standard Div
 //
 icd
 icd::Reciproke() const
 {
-  icd getal(1L);
-  getal = getal.Div(*this);
-  return getal;
+  icd number(1L);
+  number = number.Div(*this);
+  return number;
 }
 
 // Icd::Log
-// Omschrijving: Natuurlijke logarithme
-// Werking:      Use a taylor series until their is no more change in the result
-//               Equivalent with the same standard C function call
-//               ln(x) == 2( z + z^3/3 + z^5/5 ...
-//               z = (x-1)/(x+1)
+// Description:   Natural Logarithm
+// What it does:  Use a Taylor series until their is no more change in the result
+//                Equivalent with the same standard C function call
+//                ln(x) == 2( z + z^3/3 + z^5/5 ...
+//                z = (x-1)/(x+1)
 //
 icd 
 icd::Log() const
 {
   long k;
   long expo = 0;
-  icd res, getal, z2;
-  icd getal10(10L);
-  icd fast("1,2");
+  icd res, number, z2;
+  icd number10(10L);
+  icd fast("1.2");
   icd one(1L);
   icd epsilon = Epsilon(5);
 
   if(*this <= icd(0L)) 
   { 
-    throw CString("Kan geen natuurlijke logarithme trekken uit een getal <= 0");
+    throw CString("Cannot get a natural logarithm from a number <= 0");
   }
-  // Breng getal onder de 10 en bewaar de exponent
-  getal = *this;
-  while(getal > getal10)
+  // Bringing the number under 10 and save the exponent
+  number = *this;
+  while(number > number10)
   {
-    getal /= getal10;
+    number /= number10;
     ++expo;
   }
   // In order to get a fast Taylor series result we need to get the fraction closer to one
   // The fraction part is [1.xxx-9.999] (base 10) OR [1.xxx-255.xxx] (base 256) at this point
-  // Repeat a series of square root until 'getal' < 1.2
-  for(k = 0; getal > fast; k++)
+  // Repeat a series of square root until 'number' < 1.2
+  for(k = 0; number > fast; k++)
   {
-    getal = sqrt(getal);
+    number = sqrt(number);
   }
   // Calculate the fraction part now at [1.xxx-1.1999]
-  getal = (getal - one) / (getal + one);
-  z2    = getal * getal;
-  res   = getal;
+  number = (number - one) / (number + one);
+  z2    = number * number;
+  res   = number;
   // Iterate using taylor series ln(x) == 2( z + z^3/3 + z^5/5 ... )
   icd tussen;
   for(long stap = 3; ;stap += 2)
   {
-    getal *= z2;
-    tussen = getal / icd(stap);
-    // Afbreek criterium
+    number *= z2;
+    tussen = number / icd(stap);
+    // Breaking criterion
     if(tussen < epsilon)
     {
       break;
     }
     res += tussen;
   }
-  // Machten van twee weer toevoegen (afkomstig van " < 1.2")
+  // Adding the powers of 2 again (came from " < 1.2")
   res *= icd(pow(2.0,(double)(k + 1)));
 
-  // Exponent weer toevoegen
+  // Adding the exponent again
   if(expo != 0)
   {
     // Ln(x^y) = Ln(x) + Ln(10^y) = Ln(x) + y * ln(10)
@@ -746,36 +729,36 @@ icd::Log() const
 }
 
 // Icd::Exp
-// Omschrijving: Exponent e tot de macht
-// Werking:      Use a taylor series until their is no more change in the result
-//               exp(x) == 1 + x + x^2/2!+x^3/3!+....
-//               Equivalent with the same standard C function call
+// Description:   Exponent E till the power of this icd
+// What it does:  Use a Taylor series until their is no more change in the result
+//                exp(x) == 1 + x + x^2/2!+x^3/3!+....
+//                Equivalent with the same standard C function call
 //
 icd 
 icd::Exp() const
 {
-  long stap, k = 0;
+  long step, k = 0;
   long expo;
-  icd tussen, result, getal;
-  icd half("0,5");
-  icd ten(10L);
-  icd epsilon = Epsilon(5);
+  icd  between, result, number;
+  icd  half("0.5");
+  icd  ten(10L);
+  icd  epsilon = Epsilon(5);
 
-  getal = *this;
+  number = *this;
 
-  if( getal.GeefTeken() < 0 )
+  if( number.GetSign() < 0 )
   {
-    getal = -getal;;
+    number = -number;;
   }
-  for( k = 0; getal > half; )
+  for( k = 0; number > half; )
   {
-    expo = getal.Exponent();
+    expo = number.Exponent();
     if( expo > 0 )
     {
-      stap = 3 * min( 10, expo );  // 2^3
-      result = icd((long) (1 << stap) );
+      step   = 3 * min( 10, expo );  // 2^3
+      result = icd((long) (1 << step) );
       result = result.Reciproke();
-      k += stap;
+      k += step;
     }
     else
     {
@@ -783,31 +766,31 @@ icd::Exp() const
       k++;
     }
 
-    getal *= result;
+    number *= result;
   }
 
   // Do first two iterations
-  result  = icd(1L) + getal;
-  tussen  = getal * getal * half;
-  result += tussen;
+  result  = icd(1L) + number;
+  between  = number * number * half;
+  result += between;
   // Now iterate 
-  for(stap = 3; ;stap++)
+  for(step = 3; ;step++)
   {
-    tussen *= getal / icd(stap);
-    // Afbreek criterium
-    if(tussen < epsilon)
+    between *= number / icd(step);
+    // Breaking criterion
+    if(between < epsilon)
     {
       break;
     }
-    result += tussen;
+    result += between;
   }
-  // Machten van zichzelf toevoegen
+  // Adding powers of itself again
   for( ; k > 0; k-- )
   {
     result *= result;
   }
-  // Teken goed zetten
-  if(this->GeefTeken() < 0 )
+  // Correcting the sign
+  if(this->GetSign() < 0 )
   {
     result = -result;
   }
@@ -815,16 +798,16 @@ icd::Exp() const
 }
 
 // Icd::Log10
-// Omschrijving: Logarithme van basis 10
-// Werking:      log10 = ln(x) / ln(10);
+// Description:   Logarithm on base 10
+// What it does:  log10 = ln(x) / ln(10);
 icd     
 icd::Log10() const
 {
   icd res(0L);
 
-  if(GeefTeken() <= 0) 
+  if(GetSign() <= 0) 
   { 
-    throw CString("Kan geen logarithme van een getal <= 0 bepalen");
+    throw CString("Cannot calculate a logarithm from a number <= 0");
   }
   res = *this;
   res = res.Log() / LN10();
@@ -834,84 +817,84 @@ icd::Log10() const
 
 //////////////////////////////////////////////////////////////////////////
 //
-// EINDE ICD MATHEMATISCHE FUNCTIES
+// END ICD MATHEMATICAL FUNCTIONS
 //
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
 //
-// ICD TRIGONOMETRISCHE FUNCTIES
+// ICD TRIGONOMETRIC FUNCTIONS
 //
 //////////////////////////////////////////////////////////////////////////
 
-// Icd::Sin
-// Omschrijving: Sinus van de hoek
-// Werking:      Gebruik de Taylor serie: Sin(x) = x - x^3/3! + x^5/5! ...
-//               1) Reduceer x eerst tussen 0..2*PI 
-//               2) Reduceer verder tot x tussen 0..PI door middel van sin(x+PI) = -Sin(x)
-//               3) De de Taylor expansie serie
-//   De reductie is nodig om de Taylor expansie sneller te laten lopen 
-//   en de afrondingsfouten te beperken
+// Icd::Sine
+// Description:  Sine of an angle
+// What it does: Use the Taylor series: Sin(x) = x - x^3/3! + x^5/5! ...
+//               1) Reduce x first to in between 0..2*PI 
+//               2) Reduce further until x between 0..PI by means of sin(x+PI) = -Sin(x)
+//               3) Do the Taylor expansion series
+//   This reductions are necessary to speed up the Taylor expansion and 
+//   keep the rounding errors under control
 //
 icd
-icd::Sinus() const
+icd::Sine() const
 {
   int sign;
-  icd getal;
+  icd number;
   icd pi,pi2;
-  icd tussen;
+  icd between;
   icd epsilon = Epsilon(3);
 
-  getal = *this;
+  number = *this;
 
-  sign = getal.GeefTeken();
+  sign = number.GetSign();
   if( sign < 0 )
   {
-    getal = -getal;
+    number = -number;
   }
-  // Reduceer het arugment tot het tussen 0..2PI ligt
+  // Reduce the argument until it is between 0..2PI
   pi2 = PI() * icd(2L);
-  if(getal > pi2)
+  if(number > pi2)
   {
-    tussen = getal / pi2; 
-    tussen = tussen.WaardeVoorKomma();
-    getal -= tussen * pi2;
+    between = number / pi2; 
+    between = between.ValueBeforePoint();
+    number -= between * pi2;
   }
-  if(getal < icd(0L))
+  if(number < icd(0L))
   {
-    getal += pi2;
+    number += pi2;
   }
-  // Reduceer verder tot het tussen 0..PI ligt
+  // Reduce further until it is between 0..PI 
   pi = PI();
-  if(getal > pi)
+  if(number > pi)
   { 
-    getal -= pi; 
+    number -= pi; 
     sign *= -1; 
   }
 
-  // Nu ittereren we met Taylor expansie
+  // Now we iterate with the Taylor expansion
   // Sin(x) = x - x^3/3! + x^5/5! ...
-  icd kwadraat  = getal * getal;
-  icd resultaat = getal;
-  tussen = getal;
+  icd kwadraat  = number * number;
+  icd resultaat = number;
+  between = number;
 
   for(long stap = 3; ;stap += 2)
   {
-    tussen    *= kwadraat;
-    tussen    /= icd(stap) * icd (stap - 1);
-    tussen     = -tussen; // Om de stap van teken wisselen
-    resultaat += tussen;
+    between   *= kwadraat;
+    between   /= icd(stap) * icd (stap - 1);
+    between    = -between; // switch signs each step!
+    resultaat += between;
 
     // DEBUGGING
     // printf("%02d = %40s = %40s\n",stap,tussen.AlsString(),resultaat.AlsString());
 
-    // Controleer afbreekcriterium epsilon
-    if(tussen.AbsoluteWaarde() < epsilon)
+    // Check the breaking criterion
+    if(between.AbsoluteValue() < epsilon)
     {
       break;
     }
   }
-  // Goede teken nog toepassen
+  // Add the correct sign
   if( sign < 0 )
   {
     resultaat = -resultaat;
@@ -919,9 +902,9 @@ icd::Sinus() const
   return resultaat;
 }
 
-// Icd::Cos
-// Omschrijving: Cosinus van de hoek
-// Werking:      Use the taylor series. Cos(x) = 1 - x^2/2! + x^4/4! - x^6/6! ...
+// Icd::Cosine
+// Description:  Cosine of an angle
+// What it does: Use the Taylor series. Cos(x) = 1 - x^2/2! + x^4/4! - x^6/6! ...
 //               1) However first reduce x to between 0..2*PI
 //               2) Then reduced it further to between 0..PI using cos(x)=Cos(2PI-x) for x >= PI
 //               3) Now use the trisection identity cos(3x)=-3*cos(x)+4*cos(x)^3
@@ -929,112 +912,112 @@ icd::Sinus() const
 //               4) Finally use Taylor 
 //
 icd
-icd::Cosinus() const
+icd::Cosine() const
 {
-  long trisectie, stap;
-  icd tussen, result, getal, getal2;
-  icd c05("0,5"), c1(1L), c2(2L), c3(3L), c4(4L);
+  long trisection, step;
+  icd between, result, number, number2;
+  icd c05("0.5"), c1(1L), c2(2L), c3(3L), c4(4L);
   icd epsilon = Epsilon(2);
 
-  getal = *this;
+  number = *this;
 
   // Reduce argument to between 0..2PI
   result  = PI();
   result *= c2;
-  if(getal.AbsoluteWaarde() > result )
+  if(number.AbsoluteValue() > result )
   {
-    tussen = getal / result; 
-    tussen = tussen.WaardeVoorKomma();
-    getal -= tussen * result;
+    between = number / result; 
+    between = between.ValueBeforePoint();
+    number -= between * result;
   }
-  if(getal.GeefTeken() < 0)
+  if(number.GetSign() < 0)
   {
-    getal += result;
+    number += result;
   }
   // Reduced it further to between 0..PI. u==2PI
-  tussen = PI();
-  if( getal > tussen )
+  between = PI();
+  if( number > between )
   {
-    getal = result - getal;
+    number = result - number;
   }
   // Now use the trisection identity cos(3x)=-3*cos(x)+4*cos(x)^3
   // until argument is less than 0.5
-  for( trisectie = 0, tussen = c1; getal / tussen > c05; ++trisectie)
+  for( trisection = 0, between = c1; number / between > c05; ++trisection)
   {
-    tussen *= c3;
+    between *= c3;
   }
-  getal /= tussen;
+  number /= between;
 
-  // Eerste stap van de itteratie
-  getal2 = getal * getal;
-  tussen = c1;
-  result = tussen;
-  // Itereer met Taylor expansie
-  for(stap=2; ;stap += 2)
+  // First step of the iteration
+  number2 = number * number;
+  between = c1;
+  result = between;
+  // Iterate with Taylor expansion
+  for(step=2; ;step += 2)
   {
-    getal   = getal2; 
-    getal  /= icd(stap);
-    getal  /= icd(stap-1);
-    tussen *= getal;
-    tussen  = -tussen;  // r.change_sign();
-    // Afbreek criterium
-    if(tussen.AbsoluteWaarde() < epsilon)
+    number   = number2; 
+    number  /= icd(step);
+    number  /= icd(step-1);
+    between *= number;
+    between  = -between;  // r.change_sign();
+    // Breaking criterion
+    if(between.AbsoluteValue() < epsilon)
     {
       break;
     }
-    result += tussen;
+    result += between;
   }
 
-  // Effect van trisectie weer toevoegen
-  for( ;trisectie > 0; --trisectie)
+  // Adding the effect of the tri-section again
+  for( ;trisection > 0; --trisection)
   {
     result *= ( c4 * result * result - c3 );
   }
   return result;
 }
 
-// Icd::Tan
-// Omschrijving: Tangens van de hoek
-// Werking:      Use the identity tan(x)=Sin(x)/Sqrt(1-Sin(x)^2)
-//               However first reduce x to between 0..2*PI
+// Icd::Tangent
+// Description:   Tangent of an angle
+// What it does:  Use the identity tan(x)=Sin(x)/Sqrt(1-Sin(x)^2)
+//                However first reduce x to between 0..2*PI
 //
 icd
 icd::Tangent() const
 {
-  icd result, tussen, getal;
-  icd twee(2L), drie(3L);;
+  icd result, between, number;
+  icd two(2L),three(3L);;
 
-  getal = *this;
+  number = *this;
 
   // Reduce argument to between 0..2PI
-  icd pi     = PI();
-  icd tweepi = twee * pi;
-  if(getal.AbsoluteWaarde() > tweepi )
+  icd pi    = PI();
+  icd twopi = two * pi;
+  if(number.AbsoluteValue() > twopi )
   {
-    tussen  = getal / tweepi; 
-    tussen  = tussen.WaardeVoorKomma();
-    getal  -= tussen * tweepi;
+    between  = number / twopi; 
+    between  = between.ValueBeforePoint();
+    number  -= between * twopi;
   }
 
-  if(getal.GeefTeken() < 0)
+  if(number.GetSign() < 0)
   {
-    getal += tweepi;
+    number += twopi;
   }
-  icd halfpi    = pi / twee;
-  icd anderhalf = drie * halfpi;
-  if( getal == halfpi || getal == anderhalf)
+  icd halfpi    = pi / two;
+  icd anderhalf = three * halfpi;
+  if( number == halfpi || number == anderhalf)
   { 
-    throw CString("Kan geen tangens bereken uit een hoek van 1/2 pi of 3/2 pi");
+    throw CString("Cannot calculate a tangent from an angle of 1/2 pi or 3/2 pi");
   }
   // Sin(x)/Sqrt(1-Sin(x)^2)
-  result       = getal.Sinus(); 
-  icd kwadraat = result * result;
-  icd deel     = icd(1L) - kwadraat;
-  icd wortel   = sqrt(deel);
-  result      /= wortel;
+  result     = number.Sine(); 
+  icd square = result * result;
+  icd part   = icd(1L) - square;
+  icd root   = sqrt(part);
+  result    /= root;
 
-  // Corrigeren voor teken
-  if(getal > halfpi && getal < anderhalf)
+  // Correct for the sign
+  if(number > halfpi && number < anderhalf)
   {
     result = -result;
   }
@@ -1042,56 +1025,57 @@ icd::Tangent() const
 }
 
 // Icd::Asin
-// Omschrivjing: Arcsinus (hoek) van de verhouding
-// Werking:      Use Newton by solving the equation Sin(y)=x. Then y is Arcsin(x)
+// Description:  Arcsine (angle) of a Sine ratio
+// What it does: Use Newton by solving the equation Sin(y)=x. Then y is Arcsine(x)
 //               Iterate by Newton y'=y-(sin(y)-x)/cos(y). 
 //               With initial guess using standard double precision arithmetic.
 //
 icd     
-icd::ArcSinus() const
+icd::ArcSine() const
 {
-  long stap, reductie, sign;
+  long step, reduction, sign;
   double d;
-  icd tussen, getal, result, factor;
-  icd c1(1L), c05("0,5"), c2(2L);
+  icd between, number, result, factor;
+  icd c1(1L), c05("0.5"), c2(2L);
   icd epsilon = Epsilon(5);
 
-  getal = *this;
-  if(getal > c1 || getal < -c1)
+  number = *this;
+  if(number > c1 || number < -c1)
   {
-    throw CString("Kan geen arcsinus berekenen uit een getal > 1 of < -1");
+    throw CString("Cannot calculate an arcsine from a number > 1 or < -1");
   }
-  // bewaar het teken
-  sign = getal.GeefTeken();
+  // Save the sign
+  sign = number.GetSign();
   if(sign < 0)
   {
-    getal = -getal;
+    number = -number;
   }
   // Reduce the argument to below 0.5 to make the newton run faster
-  for(reductie = 0; getal > c05; ++reductie)
+  for(reduction = 0; number > c05; ++reduction)
   {
-    getal /= sqrt(c2) * sqrt( c1 + sqrt( c1 - getal * getal ));
+    number /= sqrt(c2) * sqrt( c1 + sqrt( c1 - number * number ));
   }
-  // Snelle benadering via een double
-  d = asin(getal.AlsDouble());
+  // Fast estimate from a double
+  d = asin(number.AsDouble());
   result = icd( d );
   factor = icd( 1.0 / cos(d) ); // Constant factor 
 
   // Newton Iteration
-  for( stap=0;; stap++)
+  for( step=0;; step++)
   {
-    tussen = ( result.Sinus() - getal ) * factor;
+    between = ( result.Sine() - number ) * factor;
     // if( y - r == y )
-    if(tussen.AbsoluteWaarde() < epsilon)
+    if(between.AbsoluteValue() < epsilon)
     {
       break;
     }
-    result -= tussen;
+    result -= between;
   }
 
-  // Reductie terugverwerken in resultaat
-  result *= icd((long) (1 << reductie) );
+  // Set reduction back into the result
+  result *= icd((long) (1 << reduction) );
 
+  // Correct the sign
   if( sign < 0 )
   {
     result = -result;
@@ -1101,83 +1085,83 @@ icd::ArcSinus() const
 }
 
 // Icd::Acos
-// Omschrijving: Arccosinus (hoek) van de herhouding
-// Werking:      Use Arccos(x) = PI/2 - Arcsin(x)
+// Description:   ArcCosine (angle) of a cosine ratio
+// What it does:  Use ArcCosine(x) = PI/2 - ArcSine(x)
 icd     
-icd::ArcCosinus() const
+icd::ArcCosine() const
 {
   icd y;
 
   y  = PI();
   y /= icd(2L);
-  y -= ArcSinus();
+  y -= ArcSine();
 
   return y;
 }
 
 // Icd::Atan
-// Omschrijving: Arctangens (hoek) van de verhouding
-// Werking:      Use the taylor series. ArcTan(x) = x - x^3/3 + x^5/5 ...
-//               However first reduce x to abs(x)< 0.5 to improve taylor series
-//               using the identity. ArcTan(x)=2*ArcTan(x/(1+sqrt(1+x^2)))
+// Description:   Arctangent (angle) of a tangent ratio
+// What it does:  Use the Taylor series. ArcTan(x) = x - x^3/3 + x^5/5 ...
+//                However first reduce x to abs(x)< 0.5 to improve taylor series
+//                using the identity. ArcTan(x)=2*ArcTan(x/(1+sqrt(1+x^2)))
 //
 icd
-icd::ArcTangens() const
+icd::ArcTangent() const
 {
-  icd  result, kwadraat;
-  icd  tussen1,tussen2;
-  icd  half("0,5");
-  icd  een(1L);
+  icd  result, square;
+  icd  between1,between2;
+  icd  half("0.5");
+  icd  one(1L);
   icd  epsilon = Epsilon(5);
   long k = 2;
 
   result   = *this;
   // Transform the solution to ArcTan(x)=2*ArcTan(x/(1+sqrt(1+x^2)))
-  result = result / ( een + sqrt( een + (result * result)));
-  if( result.AbsoluteWaarde() > half) // if still to big then do it again
+  result = result / (one + sqrt( one + (result * result)));
+  if( result.AbsoluteValue() > half) // if still to big then do it again
   {
     k = 4;
-    result = result / (een + sqrt(een + (result * result)));
+    result = result / (one + sqrt(one + (result * result)));
   }
-  kwadraat = result * result;
-  tussen1  = result;
+  square   = result * result;
+  between1 = result;
   // Now iterate using Taylor expansion
   for(long stap = 3;; stap += 2)
   {
-    tussen1 *= kwadraat;
-    tussen1  = -tussen1;
-    tussen2  = tussen1 / icd(stap);
-    // Afbreek criterium
-    if(tussen2.AbsoluteWaarde() < epsilon)
+    between1 *= square;
+    between1  = -between1;
+    between2  = between1 / icd(stap);
+    // Use the breaking criterion
+    if(between2.AbsoluteValue() < epsilon)
     {
       break;
     }
-    result += tussen2;
+    result += between2;
   }
   result *= icd(k);
   return result;
 }
 
 // Icd::Atan2
-// Omschrijving: Hoek van twee punten.
-// Werking:      return the angle (in radians) from the X axis to a point (y,x).
+// Description:  Angle between two points
+// What it does: return the angle (in radians) from the X axis to a point (y,x).
 //               use atan() to calculate atan2()
 //
 icd
-icd::ArcTangens2Punten(icd p_x) const
+icd::ArcTangent2Points(icd p_x) const
 {
   icd result;
-  icd getal = *this;
-  icd nul(0L), c05("0,5");
+  icd number = *this;
+  icd zero(0L), c05("0.5");
 
-  if( p_x == nul && getal == nul)
+  if( p_x == zero && number == zero)
   {
-    return nul;
+    return zero;
   }
-  if( p_x == nul )
+  if( p_x == zero )
   {
     result = PI();
-    if( getal < nul )
+    if( number < zero )
     {
       result *= -c05;
     }
@@ -1188,25 +1172,25 @@ icd::ArcTangens2Punten(icd p_x) const
   }
   else
   {
-    if( getal == nul )
+    if( number == zero )
     {
-      if( p_x < nul )
+      if( p_x < zero )
       {
         result = PI();
       }
       else
       {
-        result = nul;
+        result = zero;
       }
     }
     else
     {
-      result = icd( getal / p_x ).ArcTangens();
-      if( p_x < nul  && getal < nul )
+      result = icd( number / p_x ).ArcTangent();
+      if( p_x < zero  && number < zero )
       {
         result -= PI();
       }
-      if( p_x < nul && getal >= nul )
+      if( p_x < zero && number >= zero )
       {
         result += PI();
       }
@@ -1217,133 +1201,130 @@ icd::ArcTangens2Punten(icd p_x) const
 
 //////////////////////////////////////////////////////////////////////////
 //
-// EINDE ICD TRIGONOMETRISCHE FUNCTIES
+// END ICD TRIGONOMETRIC FUNCTIONS
 //
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
 // 
-// ICD OPVRAGEN ALS IETS ANDERS
+// GETTING THE ICD AS SOMETHING ELSE
 //
 //////////////////////////////////////////////////////////////////////////
 
-// Icd::WaardeVoorKomma
-// Omschrjiving: Deel voor de komma opvragen (floor indien groter dan 0)
-// Werking:      Deel na de komma wordt op 0'en gezet
+// Icd::ValueBeforePoint
+// Description:   Getting the part before the decimal point 
+// What it does:  Part after the decimal point is set to zero
 icd
-icd::WaardeVoorKomma() const
+icd::ValueBeforePoint() const
 {
-  icd voor = *this;
-  for(int i = 0; i < icdKommaPositie; ++i)
+  icd before = *this;
+  for(int i = 0; i < icdPointPosition; ++i)
   {
-    voor.m_data[i] = 0;
+    before.m_data[i] = 0;
   }
-  return voor;
+  return before;
 }
 
-// Icd:: WaardeAchterKomma
-// Omschrijving: Deel achter de komman opvragen
-// Werking.      Deel voor de komma wordt op 0'en gezet
+// Icd:: ValueBehindPoint
+// Description:  Value behind the decimal point
+// What it does: Part before the decimal point is set to zero
 icd
-icd::WaardeAchterKomma() const
+icd::ValueBehindPoint() const
 {
-  icd achter = *this;
-  for(int i = icdKommaPositie; i < icdLengte; ++i)
+  icd behind = *this;
+  for(int i = icdPointPosition; i < icdLength; ++i)
   {
-    achter.m_data[i] = 0;
+    behind.m_data[i] = 0;
   }
-  return achter;
+  return behind;
 }
 
-// Icd::AlsDouble
-// Omschrijving:   geeft de waarde van de Icd als een double. Pas op: wegens afrondfouten
-//                 van de double kan het voorkomen dat de waarde van de double niet precies
-//                 gelijk is aan de waarde van de Icd.
-// Werking:        berekent eerst het deel voor de komma mbv de pow functie, en daarna
-//                 het deel achter de komma.
+// Icd::AsDouble
+// Description:    Value of the icd as a standard double
+//                 Beware for rounding errors!
+// What it does:   Calculate the parts before and after the decimal point
+//                 seperetly by means of the pow function
 //
 double
-icd::AlsDouble() const
+icd::AsDouble() const
 {
   double res = 0.0;
 
-  // Deel voor de komma bepalen
-  for (int i = icdKommaPositie; i < icdLengte; i++)
+  // Part before the decimal point
+  for (int i = icdPointPosition; i < icdLength; i++)
   {
-    res += pow(double(icdBasis), i - icdKommaPositie) * m_data[i];
+    res += pow(double(icdBase), i - icdPointPosition) * m_data[i];
   }
-  // Deel na de komma bepalen
-  for (int i = 0; i < icdKommaPositie; i++)
+  // Part after the decimal point
+  for (int i = 0; i < icdPointPosition; i++)
   {
-    res += (double)m_data[i] / pow(double(icdBasis), icdKommaPositie - i);
+    res += (double)m_data[i] / pow(double(icdBase), icdPointPosition - i);
   }
-  // Teruggeven plus het teken.
-  return (m_teken == Positief ? 1 : -1) * res; 
+  // Correct for the sign
+  return (m_sign == Positive ? 1 : -1) * res; 
 }
 
-// Icd::AlsLong
-// Omschrijving: Geeft de waarde van Icd als een long
-//               Kan throwen als de ICD te groot is voor een long
-// Werking:      Converteert eerste drie delen voor de komma
+// Icd::AsLong
+// Description:   Returns the value of the ICD as a long
+//                Can throw if the icd does not fit into a long
+// What it does:  Converts the first three parts before the decimal point
 //
 long
-icd::AlsLong() const
+icd::AsLong() const
 {
-  if(!PastInLong()) 
+  if(!FitsInLong()) 
   {
-    throw CString("Getal: Overflow in ICD");
+    throw CString("Number: Overflow in icd");
   }
-  // Bereken long
-  long result = m_data[icdKommaPositie] + 
-                m_data[icdKommaPositie  + 1] * icdBasis;
-  if(icdBasis <= 10000)
+  // Calculate long
+  long result = m_data[icdPointPosition] + 
+                m_data[icdPointPosition  + 1] * icdBase;
+  if(icdBase <= 10000)
   {
-    result += m_data[icdKommaPositie + 2] * icdBasis * icdBasis;
+    result += m_data[icdPointPosition + 2] * icdBase * icdBase;
   }
-  if (m_teken == Negatief)
+  if (m_sign == Negative)
   {
     result = -result;
   }
   return result;
 }
 
-// Icd::AlsInt64
-// Omschrijving: Geeft de waarde van de Icd als een int64
-// Werking:      Converteert het deel voor de komma
+// Icd::AsInt64
+// Description:   Gets the value of an icd as an int64
+// What it does:  Converts the part before the decimal point
 //
 int64
-icd::AlsInt64() const
+icd::AsInt64() const
 {
   int64 result = 0;
 
-  if(!PastInInt64())
+  if(!FitsInInt64())
   {
-    throw CString("Getal: Overflow in ICD");
+    throw CString("Number: Overflow in icd");
   }
-  for(int i = icdLengte -1; i >= icdKommaPositie; --i)
+  for(int i = icdLength -1; i >= icdPointPosition; --i)
   {
-    result *= icdBasis;
+    result *= icdBase;
     result += m_data[i];
   }
-  if(m_teken == Negatief)
+  if(m_sign == Negative)
   {
     return -result;
   }
   return result;
 }
 
-// Icd::AlsString
-// Omschrijving:   Geeft de waarde van de Icd terug als string
-// Werking:        Bepaald eerste het teken, waarna voor elke m_data een
-//                 conversie naar string volgt. Eventueel worden er nog extra
-//                 nullen voor geplaatst (achter de komma altijd): 3 wordt 0003
+// Icd::AsString
+// Description:    Gets the value of the icd as a string
+// What it does:   Gets the sign first, and then runs through the m_data parts
 //
 CString
-icd::AlsString() const
+icd::AsString() const
 {
-  // Teken aan het begin, indien negatief
+  // Sign at the beginning. Always add a sign
   CString str;
-  if (m_teken == icd::Negatief)
+  if (m_sign == icd::Negative)
   {
     str += "-";
   }
@@ -1351,58 +1332,58 @@ icd::AlsString() const
   {
     str += "+";
   }
-  // Als het eerste niet nul cijfer nog niet is gevonden, dan niets doen
-  // anders het getal neerzetten, eventueel vooraf laten gaan door nullen
-  // Voorbeeld: 0:2:342:2:0 wordt +20342,00020000
-  bool nogNul = true;
+  // If the first non-null number has not be found: do nothing
+  // Otherwise prefix the number with enough zeros
+  // Example: 0:0:2:342:2:0 becomes +200000342,00000002
+  bool stillZero = true;
 
-  for (int i = icdLengte - 1; i >= icdKommaPositie; i--)
+  for (int i = icdLength - 1; i >= icdPointPosition; i--)
   {
-    if (!nogNul)
+    if (!stillZero)
     {
-      // Extra nullen plaatsen
+      // Place extra zero's
       for (long j = 0; j < (icdDigits - 1) - long_log10(m_data[i]); j++)
       {
         str += "0";
       }
     }
-    nogNul = (nogNul && (m_data[i] == 0));
-    if (!nogNul || i == icdKommaPositie)
+    stillZero = (stillZero && (m_data[i] == 0));
+    if (!stillZero || i == icdPointPosition)
     {
-      str += LongNaarString(m_data[i]);
+      str += LongToString(m_data[i]);
     }
   }
 
-  CString strNaKomma;
-  for (int k = icdKommaPositie - 1; k >= 0; k--)
+  CString strAfterPoint;
+  for (int k = icdPointPosition - 1; k >= 0; k--)
   {
     for (long j = 0; j < (icdDigits - 1) - long_log10(m_data[k]); j++)
     {
-      strNaKomma += "0";
+      strAfterPoint += "0";
     }
-    strNaKomma += LongNaarString(m_data[k]);
+    strAfterPoint += LongToString(m_data[k]);
   }
   if (!str)
   {
     str += "0";
   }
-  // afronden
-  if (m_precisie < 16 && strNaKomma[m_precisie] >= '5') 
+  // Rounding
+  if (m_precision < 16 && strAfterPoint[m_precision] >= '5') 
   {
-    int pos = m_precisie-1;
+    int pos = m_precision-1;
 
-    while (pos >= 0 && strNaKomma[pos] == '9') 
+    while (pos >= 0 && strAfterPoint[pos] == '9') 
     {
-      strNaKomma.SetAt(pos, '0');
+      strAfterPoint.SetAt(pos, '0');
       pos--;
     }
     if (pos >= 0)
     {
-      strNaKomma.SetAt(pos, (char)(strNaKomma[pos] + 1)); // rond af
+      strAfterPoint.SetAt(pos, (char)(strAfterPoint[pos] + 1)); // rounding
     }
     else
     {
-      pos = str.GetLength()-1; // afronding over komma heen
+      pos = str.GetLength()-1; // Rounding past the decimal point
       while (pos >= 0 && str[pos] == '9')
       {
         str.SetAt(pos, '0');
@@ -1410,7 +1391,7 @@ icd::AlsString() const
       }
       if (pos >= 0)
       {
-        str.SetAt(pos, (char)(str[pos] + 1)); // rond af
+        str.SetAt(pos, (char)(str[pos] + 1)); // Rounding
       }
       else
       {
@@ -1418,25 +1399,23 @@ icd::AlsString() const
       }
     }
   }
-  if (m_precisie > 0)
+  if (m_precision > 0)
   {
     str += "."; // Use locale?
-    str += strNaKomma.Mid(0, m_precisie);
+    str += strAfterPoint.Mid(0, m_precision);
   }
-  str.TrimRight('0');
+  str.TrimRight(".0");
   return str;
 }
 
-// Icd::AlsDisplayString
-// Omschrijving:   Geeft de waarde van de Icd terug als geformatteerde string
-// Werking:        Bepaald eerste het teken, waarna voor elke m_data een
-//                 conversie naar string volgt. Eventueel worden er nog extra
-//                 nullen voor geplaatst (achter de komma altijd): 3 wordt 0003
+// Icd::AsDisplayString
+// Description:    Gets the value of a icd as a formatted string
+// What it does:   Gets the string first and then adds the thousands separators
 //
 CString 
-icd::AlsDisplayString() const
+icd::AsDisplayString() const
 {
-  CString display = AlsString();
+  CString display = AsString();
   CString decpart;
   CString intpart;
   CString sgnpart;
@@ -1474,86 +1453,86 @@ icd::AlsDisplayString() const
 
 //////////////////////////////////////////////////////////////////////////
 //
-// EINDE ICD OPVRAGEN ALS IETS ANDERS
+// END GETTING AN ICD AS SOMETHING DIFFERENT
 //
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
 //
-// ICD WIJZIGEN PRECISIE
+// ICD CHANGE PRECISION
 //
 //////////////////////////////////////////////////////////////////////////
 
-// Icd::ZetLengteEnPrecisie
-// Omschrijving: Nieuwe lengte en schaal zetten
-// Werking:      Controle van de argumenten
-//               Aanpassen members en afronden data
+// Icd::SetLengthAndPrecision
+// Description:   Setting a new length and precision scale
+// What it does:  Checking of all the arguments and rounding
 //               
 void
-icd::ZetLengteEnPrecisie(int lengte, int precisie)
+icd::SetLengthAndPrecision(int length, int precision)
 {
-  if (lengte == m_lengte && precisie == m_precisie)
+  if(length == m_length && precision == m_precision)
+  {
     return;
+  }
 
-  if (lengte < 1 || lengte > icdLengte * icdDigits)
+  if (length < 1 || length > icdLength * icdDigits)
   {
-    throw CString("Gebroken-getal (ICD): De lengte moet liggen tussen 1 en ") + LongNaarString(icdLengte * icdDigits);
+    throw CString("Decimal number (icd): The length must be between 1 and ") + LongToString(icdLength * icdDigits);
   }
-  if (precisie < 0 || precisie > icdKommaPositie * icdDigits)
+  if (precision < 0 || precision > icdPointPosition * icdDigits)
   {
-    throw CString("Gebroken-getal (ICD): De precisie moet liggen tussen 0 en ") + LongNaarString(icdKommaPositie * icdDigits);
+    throw CString("Decimal number (icd): The precision must be between 0 and ") + LongToString(icdPointPosition * icdDigits);
   }
-  if (lengte < precisie)
+  if (length < precision)
   {
-    throw CString("Gebroken-getal (ICD): De precisie moet kleiner of gelijk aan de lengte zijn");
+    throw CString("Decimal number (icd): The precision must be smaller than or equal to the length");
   }
-  if ((lengte - precisie) > (icdKommaPositie * icdDigits))
+  if ((length - precision) > (icdPointPosition * icdDigits))
   {
-    throw CString("Gebroken-getal (ICD): Aantal cijfers voor de komma mag niet groter zijn dan ") + LongNaarString(icdKommaPositie * icdDigits);
+    throw CString("Decimal number (icd): Number of digits before the decimal point cannot be greater than ") + LongToString(icdPointPosition * icdDigits);
   }
-  m_precisie = precisie;
+  m_precision = precision;
 
-  int hoogsteindex = (icdDigits * icdKommaPositie + (lengte - m_precisie) - 1) / icdDigits;
+  int highestIndex = (icdDigits * icdPointPosition + (length - m_precision) - 1) / icdDigits;
 
-  for (long i = icdLengte - 1; i > hoogsteindex ; i--)
+  for (long i = icdLength - 1; i > highestIndex ; i--)
   {
     if (m_data[i] != 0)
     {
-      throw CString("Gebroken getal te groot (ICD Overflow)");
+      throw CString("Decimal number too big (ICD Overflow)");
     }
   }
 
-  unsigned long maxIndexWaarde = (unsigned long)long_pow(10, (lengte - m_precisie) % icdDigits);
-  if (maxIndexWaarde == 1)
+  unsigned long maxIndexValue = (unsigned long)long_pow(10, (length - m_precision) % icdDigits);
+  if (maxIndexValue == 1)
   {
-    maxIndexWaarde = icdBasis;
+    maxIndexValue = icdBase;
   }
-  if (m_data[hoogsteindex] >= maxIndexWaarde)
+  if (m_data[highestIndex] >= maxIndexValue)
   {
-    throw CString(" Gebroken getal te groot (ICD Overflow)");
-  }
-
-  m_lengte = lengte;
-
-  // Testen of de inhoud niet de maximale waarde betreft die door afronding te lang 
-  // wordt (groter dan de lengte)
-  if ((m_precisie != (icdKommaPositie * icdDigits)) && IsInhoudGrensGeval()) 
-  {
-    throw CString("Gebroken getal te groot (ICD Overflow)");
+    throw CString("Decimal number too big (ICD Overflow)");
   }
 
-  // Clearen data achter de komma; deze hoort niet bij onze precisie en moet
-  // for all intents and purposes 0 zijn.
-  int nietSignificantieDigits = (icdKommaPositie * icdDigits - m_precisie);
-  for (int n = 0; n < nietSignificantieDigits / icdDigits; n++)
+  m_length = length;
+
+  // Test if the contents does not have a maximal value outside range after rounding
+  if ((m_precision != (icdPointPosition * icdDigits)) && IsCornerCase()) 
+  {
+    throw CString("Decimal number too big(ICD Overflow)");
+  }
+
+  // Clearing of data behind the decimal mpint; does not belong to our precision and must
+  // be for all intents and purposes 0.
+  int nonSignificantDigits = (icdPointPosition * icdDigits - m_precision);
+  for (int n = 0; n < nonSignificantDigits / icdDigits; n++)
   {
     m_data[n] = 0;
   }
-  // 1 van de elementen is gedeeltelijk wel, gedeeltelijk niet significant. We
-  // clearen het niet-significante deel.
-  static int significanties[] = {1,10,100,1000,10000,100000,1000000,10000000};
-  // Aantal digits aan de rechterkant dat niet significant is
-  int significantie = significanties[nietSignificantieDigits % icdDigits];
+  // 1 of the elements is partly significant and partly not
+  // we clear the non-significant part
+  static int significations[] = {1,10,100,1000,10000,100000,1000000,10000000};
+  // Number of digits on the right side that is non-significant
+  int significans = significations[nonSignificantDigits % icdDigits];
 
   ///////////////////////////////////////////////////////////////////////////////////
   ////  Debug
@@ -1565,55 +1544,55 @@ icd::ZetLengteEnPrecisie(int lengte, int precisie)
   ////  End Debug
   ///////////////////////////////////////////////////////////////////////////////////
 
-  m_data[ nietSignificantieDigits / icdDigits] /= significantie;
-  m_data[ nietSignificantieDigits / icdDigits] *= significantie;
+  m_data[ nonSignificantDigits / icdDigits] /= significans;
+  m_data[ nonSignificantDigits / icdDigits] *= significans;
 
-  // [EH] ITIL 130483 RONDAF(-0.01) is fout
-  // -0.0 check voor het geval we afronden vanaf negatief > -1
+  // RoundDecimals(-0.01) is an error
+  // -0.0 check for the case we round a negative number > -1
   int ind = 0;
-  while((m_data[ind] == 0) && (ind < icdLengte)) ++ind;
-  if((m_teken == Negatief) && (ind == icdLengte))
+  while((m_data[ind] == 0) && (ind < icdLength)) ++ind;
+  if((m_sign == Negative) && (ind == icdLength))
   {
-    m_teken = Positief;
+    m_sign = Positive;
   }
 }
 
-// Icd::RoundDecimal
-// Omschrijving: Afronden op aantal decimalen
-// Werking:
+// Icd::RoundDecimals
+// Description:   Rounding on a whole number of decimals
+// What it does:
 //
 long 
-icd::RoundDecimal(long decimal, int precsion)
+icd::RoundDecimals(long decimal, int precsion)
 {
   CString strDecimal = "";
   CString strNum     = "";
 
-  strDecimal = LongNaarString(decimal);
+  strDecimal = LongToString(decimal);
 
   if (!strDecimal.IsEmpty())
   {
-    int intLenght = strDecimal.GetLength() - 1;
-    for (int idx = 0; idx <= intLenght; idx++)
+    int intLength = strDecimal.GetLength() - 1;
+    for (int idx = 0; idx <= intLength; idx++)
     {
       if (idx == precsion-1)
       {
-        if (idx+1 <= intLenght)
+        if (idx+1 <= intLength)
         {
           CString strDigit  = "";
           CString strTarget = "";
 
           strDigit += strDecimal.GetAt(idx+1);
-          int digit = StringNaarLong(strDigit);
+          int digit = StringToLong(strDigit);
 
           strTarget += strDecimal.GetAt(idx);
-          int Target = StringNaarLong(strTarget);
+          int Target = StringToLong(strTarget);
 
           if (digit >= 5)
           { 
             Target++;
             strTarget = "";
-            strNum += LongNaarString(Target);
-            return StringNaarLong(strNum);
+            strNum += LongToString(Target);
+            return StringToLong(strNum);
           }
           else
           {
@@ -1631,12 +1610,12 @@ icd::RoundDecimal(long decimal, int precsion)
       }
     }
   }
-  return StringNaarLong(strNum);
+  return StringToLong(strNum);
 }
 
 //////////////////////////////////////////////////////////////////////////
 //
-// EINDE ICD PRECISIE FUNCTIES
+// END ICD PRECISION FUNCTIONS
 //
 //////////////////////////////////////////////////////////////////////////
 
@@ -1646,54 +1625,48 @@ icd::RoundDecimal(long decimal, int precsion)
 //
 //////////////////////////////////////////////////////////////////////////
 
-// Icd::IsNul
-// Omschrijving:   geeft true indien de Icd gelijk is aan 0, anders false
-// Werking:        Loopt de m_data af, totdat deze niet meer nul is. Indien de
-//                 laatste ook 0 is, dan true opleveren, anders false.
+// Icd::IsNull
+// Description:    Returns true if icd is zero, otherwise false
+// What it does:   Walks m_data to see if it is all zero
 //
 bool
-icd::IsNul() const
+icd::IsNull() const
 {
-  // IsNul geeft waar als alle datamembers gelijk zijn aan nul
-  bool isNul = true;
-  long i = 0;
-  while (isNul && i < icdLengte)
+  for(int ind = 0;ind < icdLength; ++ind)
   {
-    if (m_data[i] != 0)
+    if(m_data[ind])
     {
-      isNul = false;
-      break;
+      return false;
     }
-    i++;
   }
-  return isNul;
+  return true;
 }
 
-// Retourneert 0  -> Inhoud is 0.0
-// Retourneert 1  -> Inhoud > 0.0
-// Retourneert -1 -> Inhoud < 0.0
+// Returns 0  -> Contents are 0.0
+// Returns 1  -> Contents are > 0.0
+// Returns -1 -> Contents are < 0.0
 int 
-icd::GeefTeken() const
+icd::GetSign() const
 {
-  if (IsNul()) 
+  if (IsNull())
   {
     return 0;
   }
-  return m_teken == Positief ? 1 : -1;
+  return m_sign == Positive ? 1 : -1;
 }
 
-// Icd::PastInLong
-// Omschrijving: Retourneert true als getal in een long past
-// Werking:      Controleert de inhoud van de eerste twee decimalen
+// Icd::FitsInLong
+// Description:   Returns true if the icd fits into a basic 'long'
+// What it does:  Checks the first two data members
 //
 bool 
-icd::PastInLong() const
+icd::FitsInLong() const
 {
-  int64 result = m_data[icdKommaPositie    ] + 
-                 m_data[icdKommaPositie + 1] * icdBasis;
+  int64 result = m_data[icdPointPosition    ] + 
+                 m_data[icdPointPosition + 1] * icdBase;
 
-  // Implementatie is nu simpel geworden door grote icdBasis (10E+8)
-  if(m_teken == Positief)
+  // Implementation is now simple through bigger icdBase (10E+8)
+  if(m_sign == Positive)
   {
     if(result > LONG_MAX)
     {
@@ -1707,8 +1680,8 @@ icd::PastInLong() const
       return false;
     }
   }
-  // Kijken of het stiekum niet een nog groter getal was
-  for(int i = icdKommaPositie + 2; i < icdLengte; ++i)
+  // Check if it was still bigger
+  for(int i = icdPointPosition + 2; i < icdLength; ++i)
   {
     if(m_data[i])
     {
@@ -1718,32 +1691,32 @@ icd::PastInLong() const
   return true;
 }
 
-// Icd::PastInInt64
-// Omschrijving: Retourneert true als getal in een int64 past
-// Werking:      Controleert de inhoud van de eerste drie decimalen
+// Icd::FitsInInt64
+// Description:   Returns true if the icd fits into a __int64
+// What it does:  Checks the first m_data members
 bool
-icd::PastInInt64() const
+icd::FitsInInt64() const
 {
-  int64 result = m_data[icdKommaPositie    ] +
-                 m_data[icdKommaPositie + 1] * icdBasis;
-  if(m_teken == Positief)
+  int64 result = m_data[icdPointPosition    ] +
+                 m_data[icdPointPosition + 1] * icdBase;
+  if(m_sign == Positive)
   {
-    int64 restruimte = LLONG_MAX - ((int64)icdBasis * (int64)icdBasis);
-    if(m_data[icdKommaPositie + 2] > restruimte)
+    int64 testspace = LLONG_MAX - ((int64)icdBase * (int64)icdBase);
+    if(m_data[icdPointPosition + 2] > testspace)
     {
       return false;
     }
   }
   else
   {
-    int64 restruimte = -(LLONG_MIN + ((int64)icdBasis * (int64)icdBasis));
-    if(m_data[icdKommaPositie + 2] > restruimte)
+    int64 testspace = -(LLONG_MIN + ((int64)icdBase * (int64)icdBase));
+    if(m_data[icdPointPosition + 2] > testspace)
     {
       return false;
     }
   }
-  // Kijken of het stiekum niet een nog groter getal was
-  for(int i = icdKommaPositie + 3; i < icdLengte; ++i)
+  // Check is still bigger?
+  for(int i = icdPointPosition + 3; i < icdLength; ++i)
   {
     if(m_data[i])
     {
@@ -1753,13 +1726,13 @@ icd::PastInInt64() const
   return true;
 }
 
-// Icd::HeeftDecimalen
-// Omschrijving: Retourneert true als getal decimalen achter de komma heeft
-// Werking:      Controleert decimalen posities
+// Icd::HasDecimals
+// Description:   Returns true if the part behind the decimal point is filled
+// What it does:  Checks m_data
 bool 
-icd::HeeftDecimalen() const
+icd::HasDecimals() const
 {
-  for(int x = 0; x < icdKommaPositie; ++x)
+  for(int x = 0; x < icdPointPosition; ++x)
   {
     if(m_data[x])
     {
@@ -1770,33 +1743,33 @@ icd::HeeftDecimalen() const
 }
 
 // Icd::Exponent
-// Omschrijving: Retourneert de basis 10 exponent van het ICD getal
-// Werking:      Deelt/vermenigvuldigt net zo lang tot getal in range 0-10 ligt
+// Description:   Returns the 10 base exponent of the icd number
+// What it does:  Divides/multiplies until the icd is in the 0-10 range
 //
 int
 icd::Exponent() const
 {
-  int exponent = icdKommaPositie * icdDigits - 1;
-  for(int ind = icdLengte - 1; ind >= 0; --ind)
+  int exponent = icdPointPosition * icdDigits - 1;
+  for(int ind = icdLength - 1; ind >= 0; --ind)
   {
-    long deler = icdBasis / 10;
+    long denominator = icdBase / 10;
 
     for(int num = icdDigits; num > 0; --num)
     {
-      long test = m_data[ind] / deler;
+      long test = m_data[ind] / denominator;
       if(test)
       { 
         return exponent;
       }
       --exponent;
-      deler /= 10;
+      denominator /= 10;
     }
   }
   return 0;
 }
 
 // Icd::Mantissa
-// Omschrijving: Retourneert de basis 10 mantissa van het getal
+// Description: Returns the 10-base mantissa of the icd number
 icd
 icd::Mantissa() const
 {
@@ -1806,151 +1779,148 @@ icd::Mantissa() const
   {
     return *this;
   }
-  long schuif = expo / icdDigits;
-  long rest   = expo % icdDigits;
-  icd  getal  = *this;
-  int  teken  = getal.GeefTeken();
+  long shift  = expo / icdDigits;
+  long remain = expo % icdDigits;
+  icd  number = *this;
+  int  sign   = number.GetSign();
 
-  getal = getal.TrekGelijk(getal,-schuif);
+  number = number.BringTogether(number,-shift);
   if(expo > 0)
   {
-    while(rest--)
+    while(remain--)
     {
-      getal.Div10();
+      number.Div10();
     }
   }
   else
   {
-    while(rest++)
+    while(remain++)
     {
-      getal.Mult10();
+      number.Mult10();
     }
   }
-  // Teken weer toevoegen.
-  if(teken < 0)
+  // Adding the sign again
+  if(sign < 0)
   {
-    getal = -getal;
+    number = -number;
   }
-  return getal;
+  return number;
 }
 
 //////////////////////////////////////////////////////////////////////////
 //
-// EINDE ICD GETTERS
+// END ICD GETTERS
 //
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
 //
-// ICD BASIC OPERATIES
+// ICD BASIC OPERATIONS
 //
 //////////////////////////////////////////////////////////////////////////
 
 // Icd::Add
-// Omschrijving:   + operator, optelling van twee Icd's
-// Parameters:     const Icd& Icd
-// Werking:        eerst wordt het teken van het eindresultaat bepaald en
-//                 wordt gekeken of er positief opgeteld of afgetrokken moet
-//                 worden, hierna wordt 1 van deze twee acties uitgevoerd, waarna
-//                 het resultaat wordt teruggegeven.
+// Description:   + operator, Adding of two icd's
+// Parameters:     const icd&
+// What it does:   Getting the sign of the end result first
+//                 Then see if we must use positive addition or subtraction
 //
 icd
 icd::Add(const icd& p_icd) const
 {
-  // Bepalen of opgeteld of afgetrokken moet worden, eventueel
-  // argumenten omdraaien.
-  // (+x) + (+y) -> optellen , resultaat positief, niet omdraaien
-  // (+x) + (-y) -> aftrekken, resultaat positief, niet omdraaien
-  // (-x) + (+y) -> aftrekken, resultaat positief, omdraaien
-  // (-x) + (-y) -> optellen,  resultaat negatief, niet omdraaien
-  Teken tekenResultaat;
-  SoortOperator soortOperator;
+  // See if we must add or subtract in positive form
+  // (+x) + (+y) -> Adding,    result positive, do not turn around
+  // (+x) + (-y) -> Subtract,  result positive, do not turn around
+  // (-x) + (+y) -> Subtract,  result positive, turn around
+  // (-x) + (-y) -> Adding,    result negative, do not turn around
+  Sign signResult;
+  OperatorKind kindOperator;
   icd arg1(*this);
   icd arg2(p_icd);
-  PositioneerArgumenten(arg1, arg2, tekenResultaat, soortOperator);
+  PositionArguments(arg1, arg2, signResult, kindOperator);
 
-  if (soortOperator == Optellen)
+  if (kindOperator == Adding)
   {
-    arg1 = TelPositiefOp(arg1, arg2);
+    arg1 = AddPositive(arg1, arg2);
   }
   else
   {
-    arg1 = TrekPositiefAf(arg1, arg2);
-    //als teken negatief geworden tijdens aftrekken, dan teken omdraaien
-    if (arg1.m_teken == Negatief)
+    arg1 = SubtractPositive(arg1, arg2);
+    // If sign became negative, than turn sign around
+    if (arg1.m_sign == Negative)
     {
-      if (tekenResultaat == Positief)
+      if (signResult == Positive)
       {
-        tekenResultaat = Negatief;
+        signResult = Negative;
       }
       else
       {
-        tekenResultaat = Positief;
+        signResult = Positive;
       }
     }
   }
-  arg1.m_teken = tekenResultaat;
+  arg1.m_sign = signResult;
 
   return arg1;
 }
 
 // Icd::Sub
-// Omschrijving:   - operator, aftrekken van twee Icd's
-// Werking:        gebruikt de + operator en de prefix - (x-y is equivalent aan x+(-y))
+// Description:   - operator, Subtracting two icds
+// What it does:  Uses the + operator and the prefix - (x-y is equivalent to x+(-y))
 //
 icd
 icd::Sub(const icd& p_icd) const
 {
-  // x-y is gelijk aan x+(-y)
+  // x-y is equivalent to: x+(-y)
   return *this + (-p_icd);
 }
 
 // Icd::Mul
-// Omschrijving:   * operator, vermenigvuldiging van twee Icd's
+// Description:   * operator, Multiplies two icd's
 //
 icd
 icd::Mul(const icd& p_icd) const
 {
-  // Vermenigvuldigen zonder rekening te houden met het teken
-  icd res = VermenigvuldigPositief(*this,p_icd);
+  // Multiply without taking signs into account
+  icd res = MultiplyPositive(*this,p_icd);
 
-  // Teken bepalen
-  res.m_teken = res.IsNul() ? Positief : BepaalTeken(*this,p_icd);
+  // Getting the sign
+  res.m_sign = res.IsNull() ? Positive : CalculateSign(*this,p_icd);
 
   return res;
 }
 
 // Icd::Div
-// Omschrijving:   / operator, deling van twee Icd's
-// Werking:        als noemer ongelijk nul, dan positief delen en daarna
-//                 het teken bepalen.
+// Description:   / operator, Dividing of two icd's
+// What it does:  if denominator is zero then an exception
+//                Using positive dividing en then getting the sign
 //
 icd
 icd::Div(const icd& p_icd) const
 {
-  // Als noemer nul, dan exceptie
-  if (p_icd.IsNul())
+  // if denominator is zero -> error
+  if (p_icd.IsNull())
   {
-    throw CString("Gebroken getal (ICD): Delen door nul");
+    throw CString("Decimal number (icd): Division by zero");
   }
-  // Delen zonder rekening te houden met het teken
-  icd res = DeelPositief(*this,p_icd);
+  // Divide without taking the sign into account
+  icd res = DividePositive(*this,p_icd);
 
-  // Teken bepalen
-  res.m_teken = res.IsNul() ? Positief : BepaalTeken(*this,p_icd);
+  // Getting the sign
+  res.m_sign = res.IsNull() ? Positive : CalculateSign(*this,p_icd);
 
   return res;
 }
 
 // Icd::Mod
-// Omschrijving: Modulo operator
-// Werking:      Modulo berekening in icd zelf
+// Description:   Modulo operator
+// What it does:  Modulo calculation in icd calculations
 icd
 icd::Mod(const icd& p_icd) const
 {
-  icd aantal = ((*this) / p_icd).WaardeVoorKomma();
-  icd mod((*this) - (aantal * p_icd));
-  if (m_teken == Negatief)
+  icd number = ((*this) / p_icd).ValueBeforePoint();
+  icd mod((*this) - (number * p_icd));
+  if (m_sign == Negative)
   {
     -mod;
   }
@@ -1959,20 +1929,20 @@ icd::Mod(const icd& p_icd) const
 
 //////////////////////////////////////////////////////////////////////////
 //
-// EINDE ICD BASIC OPERATIES
+// END ICD BASIC OPERATIONS
 //
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
 //
-// ICD PRIVATE FUNCTIES
-// ALLE INTERNE FUNCTIES OM ICD MOGELIJK TE MAKEN
+// ICD PRIVATE FUNCTIONS
+// ALL INTERNAL FUNCTIONS TO MAKE ICD POSSIBLE
 //
 //////////////////////////////////////////////////////////////////////////
 
-// Neem de absolute waarde van een long
-// Deze functie gaat om de <math> bibliotheek en algemene macro's heen
-// Nodig omdat diverse versies van std::abs verkeerd linkten
+// Getting the absolute value of a long
+// This function bypasses all <math> library and general macros
+// Needed because various versions of std:abs linked wrongly in larger apps
 long 
 icd::long_abs(const long waarde) const
 {
@@ -1983,198 +1953,177 @@ icd::long_abs(const long waarde) const
   return waarde;
 }
 
-// Geeft de 10 of 10000 macht van een getal
-// Wordt gebruikt voor snelle shift operaties in een ICD
-// (operand ligt altijd tussen 0 en 4)
+// Gives the 10 or 10000 power of a number
+// Used for quick shift operations in an icd
+// (operand always between 0 en icdDigits (currently 8))
 long 
-icd::long_pow(long basis,int operand) const
+icd::long_pow(long base,int operand) const
 {
   long result = 1;
   if(operand > 0)
   {
     for(short i=0;i<operand;++i)
     {
-      result *= basis;
+      result *= base;
     }
     return result;
   }
-  // Ga er van uit dat basis tot de macht 0 = 1;
+  // number to the 0th power = 1;
   return 1;
 }
 
-// Retourneert de floor(log10(waarde)) 
-// Nodig voor snelle shift operaties
-// Result wordt maximaal 3.
+// Returns floor(log10(value)) 
+// Needed for quick shift operations
+// Result is at maximum (icdDigits - 1)
 long
-icd::long_log10(long waarde) const
+icd::long_log10(long value) const
 {
   int result = 0;
 
-  while(waarde >= 10)
+  while(value >= 10)
   {
     ++result;
-    waarde /= 10;
+    value /= 10;
   }
   return result;
 }
 
-// Icd::ZetWaardeLong
-// Omschrijving:   Geeft de Icd de waarde van twee longs. De eerste geeft het deel
-//                 voor de komma weer, de tweede het deel na de komma. Het teken wordt
-//                 bepaald door de eerste long, tenzij deze gelijk is aan nul. De tweede
-//                 long mag niet groter zijn dan de basis (=10000)
-// Parameters:     const long waarde     //waarde voor komma
-//                 const long restWaarde //waarde na de komma (precies 4 cijfers)
-// Werking:        Bepaald het teken door het teken van waarde te nemen,
-//                 tenzij waarde=0, dan wordt het teken van restWaarde genomen.
-//                 Vervolgens wordt de eerste m_data voor de komma gelijk aan
-//                 waarde, en de eerste m_data na de komma gelijk aan restWaarde,
-//                 waarbij restWaarde kleiner dan IcdBasis wordt gemaakt dmv MOD operatie
-//                 Hierna volgt een herformatteer om de Icd valide te maken.
+// Icd::SetValueLong
+// Description:    Setting the icd through two long values
+//                 First value is the number before the decimal point
+//                 The second number cannot be larger than icdBase (1000000)
+// Parameters:     const long value     // value before decimal point
+//                 const long remainder // value after decimal point (at max 8 (icdDigits) long)
+// What it does:   1) Gets the sign from the value, unless value is zero
+//                 2) gets the sign from the remainder if value == 0
+//                 3) Sets the first m_data before the decimal point
+//                 4) Sets the first m_data after the decimal point
+//                 5) Do a reformat to make the icd valid
 //
 void
-icd::ZetWaardeLong(const long waarde, const long restWaarde)
+icd::SetValueLong(const long p_value, const long p_remainder)
 {
-  // Default leeg
-  MaakLeeg();
+  // Empty the number
+  MakeEmpty();
 
-  // Bepaal het teken.
-  if (waarde == 0)
+  // Getting the sign
+  if (p_value == 0)
   {
-    m_teken = (restWaarde < 0) ? Negatief : Positief;
+    m_sign = (p_remainder < 0) ? Negative : Positive;
   }
   else
   {
-    m_teken = (waarde < 0) ? Negatief : Positief;
+    m_sign = (p_value < 0) ? Negative : Positive;
   }
-  // Vul de cijfertjes.
-  m_data[icdKommaPositie-1] = long_abs(restWaarde % icdBasis);
-  m_data[icdKommaPositie  ] = long_abs(waarde);
-  Herformatteer();
+  // Fill the digits
+  m_data[icdPointPosition-1] = long_abs(p_remainder % icdBase);
+  m_data[icdPointPosition  ] = long_abs(p_value);
+  Reformat();
 }
 
-// Icd::ZetWaardeDouble
+// Icd::SetValueDouble
 //
-// Deze versie van ZetWaardeDouble gebruikt dus géén sprintf meer, maar
-// berekent de inhoud van het m_data array vanuit de double waarde.
-// De sprintf maakt namelijk zijn eigen afrondings fouten.
-// Wij maken graag hier onze eigen bugs!
+// Setting the value of the icd from a double
 void
-icd::ZetWaardeDouble(const double waarde)
+icd::SetValueDouble(const double waarde)
 {
-  // Maak de ICD initieel leeg
-  MaakLeeg();
+  // Make icd initially empty
+  MakeEmpty();
 
-  // Bepaal het teken.
+  // Getting the sign
   double tmpwaarde = fabs(waarde);
-  m_teken = (waarde < 0.0) ? Negatief : Positief;
+  m_sign = (waarde < 0.0) ? Negative : Positive;
 
-  // Bepaal deel voor en na de komma
-  double deel = floor(tmpwaarde);
-  double frac = tmpwaarde - deel;
+  // Getting the part before and after the decimal point
+  double part = floor(tmpwaarde);
+  double frac = tmpwaarde - part;
 
-  // Vul eerst het deel voor de komma
+  // Fill in the part before the decimal point
   // 5E-9 = 5E(icdDigits + 1)
   int idx = 0;
-  while(deel && idx<=icdKommaPositie)
+  while(part && idx<=icdPointPosition)
   {
-    tmpwaarde = deel / icdBasis;
-    deel      = tmpwaarde - floor(tmpwaarde);
-    m_data[icdKommaPositie+idx] = (unsigned long)floor((deel * icdBasis) + 5E-9);
-    deel      = floor(tmpwaarde);
+    tmpwaarde = part / icdBase;
+    part      = tmpwaarde - floor(tmpwaarde);
+    m_data[icdPointPosition+idx] = (unsigned long)floor((part * icdBase) + 5E-9);
+    part      = floor(tmpwaarde);
     ++idx;
   }
-  // Vul nu het deel na de komma 
-  idx = icdKommaPositie - 1;
-  while(frac && idx >= (icdKommaPositie - 2))
+  // Fill in the part after the decimal point
+  idx = icdPointPosition - 1;
+  while(frac && idx >= (icdPointPosition - 2))
   {
-    frac       *= icdBasis;
+    frac       *= icdBase;
     tmpwaarde   = floor(frac);
     m_data[idx] = (unsigned long) (tmpwaarde + 0.5);
     frac       -= tmpwaarde;
     --idx;
   }
-  // Afronden op 14 posities
-  // Afhankelijk van icdDigits !!!
-  if(idx == (icdKommaPositie - 2))
+  // Round at 14 decimals (max precision of a double)
+  // But dependent on icdDigits !!!!
+  if(idx == (icdPointPosition - 2))
   {
     if(m_data[idx])
     {
       m_data[idx] = 100 * (m_data[idx] / 100);
     }
   }
-  Herformatteer();
+  Reformat();
 }
 
-// Icd::ZetWaardeString
-// Omschrijving:   Zet de waarde van een string in een Icd. Tekens zonder betekenis
-//								 worden genegeerd. Conversie geschiedt op basis van locale
-// Informix gaat eromheen -> fromDB is lezen uit de database altijd met '.'
+// Icd::SetValueString
+// Description:    Setting a value in an icd from a string
+//								 Characters without meaning will be ignored like in an 'atoi' conversion
 //
 void
-icd::ZetWaardeString(CString waarde, bool fromDB)
+icd::SetValueString(CString p_value)
 {
-  // Maak de ICD leeg
-  MaakLeeg();
+  // Begin with empty icd
+  MakeEmpty();
 
-  //	Lege string
-  if(!waarde.GetLength())
+  // Optimization: Ready on empty string
+  if(!p_value.GetLength())
   {
-    return; // Eigenlijk throwen?!!
+    return;
   }
 
-  // Bepaal decimaal- en duizendscheider
-  char dec[2] = { '.', 0 };
-  char dui[2] = { ',', 0 };
-  if(!fromDB)
-  {
-    dec[0] = ',';
-    dui[0] = '.';
-  }
+  // Remove the thousands separator
+  p_value.Remove(',');
 
-  // Verwijder duizendscheider
-  waarde.Remove(dui[0]);
-
-  // Vervang decimaalscheider
-  if(dec[0] != '.')
-  {
-    waarde.Replace(dec[0], '.');
-  }
-
-  // Vervang PI / LN2 / LN10
-  if(waarde.CompareNoCase("PI") == 0)
+  // Special cases: looking for our own constants: PI / LN2 / LN10
+  if(p_value.CompareNoCase("PI") == 0)
   {
     *this = PI();
     return;
   }
-  if(waarde.CompareNoCase("LN2") == 0)
+  if(p_value.CompareNoCase("LN2") == 0)
   {
     *this = LN2();
     return;
   }
-  if(waarde.CompareNoCase("LN10") == 0)
+  if(p_value.CompareNoCase("LN10") == 0)
   {
     *this = LN10();
     return;
   }
 
-  // Begin van waarde
-  char const* ptr = waarde;
+  // Beginning of the value
+  char const* ptr = p_value;
 
-  // Bepaal sign
-  m_teken = Positief;
+  // Getting the sign
+  m_sign = Positive;
   if(*ptr == '-')
   {
-    m_teken = Negatief;
+    m_sign = Negative;
     ++ptr;
   }
   else if(*ptr == '+')
   {
-    m_teken = Positief;
+    m_sign = Positive;
     ++ptr;
   }
 
-  // Bepaal de lengte van het integere deel
+  // Getting the length of the integer part
   char const* from = ptr;
   char const* next = ptr;
   while(isdigit(*next))
@@ -2182,41 +2131,41 @@ icd::ZetWaardeString(CString waarde, bool fromDB)
     ++next;
   }
 
-  // Verwerk het integere deel
+  // Process the integer part
   long power = 1;
-  long index = icdKommaPositie;
-  for(ptr = next - 1; index < icdLengte, ptr >= from; --ptr)
+  long index = icdPointPosition;
+  for(ptr = next - 1; index < icdLength, ptr >= from; --ptr)
   {
-    if(index > icdLengte - 1)
+    if(index > icdLength - 1)
     {
       // ICD Overflow
       throw CString("ICD Overflow");
     }
     m_data[index] += power * (long)(*ptr - '0');
-    if((power *= 10) >= icdBasis)
+    if((power *= 10) >= icdBase)
     {
       power = 1;
       ++index;
     }
   }
 
-  // Ga verder na het integere deel
+  // Process next part
   ptr = next;
 
-  // Verwerk decimale deel
+  // Process part after the decimal point
   if(*ptr == '.')
   {
-    power = icdBasis / 10;
-    index = icdKommaPositie - 1;
+    power = icdBase / 10;
+    index = icdPointPosition - 1;
     for (++ptr; *ptr >= '0' && *ptr <= '9'; ++ptr)
     {
       m_data[index] += power * (long)(*ptr - '0');
       if((power /= 10) == 0)
       {
-        power = icdBasis / 10;
+        power = icdBase / 10;
         if(--index < 0)
         {
-          // Negeer overgebleven decimalen
+          // Ignore left over decimals
           while(*ptr >= '0' && *ptr <= '9')
           {
             ++ptr;
@@ -2227,7 +2176,7 @@ icd::ZetWaardeString(CString waarde, bool fromDB)
     }
   }
 
-  // Bepaal exponent
+  // Getting the optional exponent
   int exponent = 0;
   if(*ptr == 'e' || *ptr == 'E')
   {
@@ -2248,80 +2197,80 @@ icd::ZetWaardeString(CString waarde, bool fromDB)
       exponent = -exponent;
     }
   }
-  // Pas exponent toe
+  // Calculate the effect of the exponent
   if(exponent)
   {
-    PasEFactorToe(exponent);
+    CalculateEFactor(exponent);
   }
 
-  // String moet nu leeg zijn
-  if(*ptr)
-  {
-    // Kan niet converteren naar Icd
-    throw CString("Kan niet converteren naar ICD");
-  }
+  // String must now be empty
+//   if(*ptr)
+//   {
+//     // Cannot convert
+//     throw CString("Cannot convert to icd");
+//   }
 }
 
-// Icd::ZetWaardeInt64
-// Omschrijving: Zet een int64 getal in de ICD
-//               En optioneel de restwaarde achter de komma
+// Icd::SetValueInt64
+// Description:  Set the icd to an int64 value
+//               and optionally a remainder after the decimal point
 void
-icd::ZetWaardeInt64(const int64 waarde, const int64 restWaarde)
+icd::SetValueInt64(const int64 p_value, const int64 p_remainder)
 {
   int64 rest = 0;
 
-  // Default leeg
-  MaakLeeg();
+  // Start with an empty icd
+  MakeEmpty();
 
-  // Bepaal het teken.
-  if (waarde == 0)
+  // Getting the sign
+  if (p_value == 0)
   {
-    m_teken = (restWaarde < 0) ? Negatief : Positief;
+    m_sign = (p_remainder < 0) ? Negative : Positive;
   }
   else
   {
-    m_teken = (waarde < 0) ? Negatief : Positief;
-    rest    = (waarde < 0) ? -waarde : waarde;
+    m_sign = (p_value < 0) ? Negative : Positive;
+    rest   = (p_value < 0) ? -p_value : p_value;
   }
 
-  // Vul de waarde in
-  for(int ind = icdKommaPositie; rest > 0 && ind < icdLengte; ++ind)
+  // Fill in the value
+  for(int ind = icdPointPosition; rest > 0 && ind < icdLength; ++ind)
   {
-    m_data[ind] = rest % icdBasis;
-    rest /= icdBasis;
+    m_data[ind] = rest % icdBase;
+    rest /= icdBase;
   }
-  // Vul de restwaarde in
-  int64 deel = restWaarde < 0 ? -restWaarde : restWaarde;
-  for(int ind = icdKommaPositie -1; deel > 0 && ind >= 0; --ind)
+  // Fill in the remainder
+  int64 deel = p_remainder < 0 ? -p_remainder : p_remainder;
+  for(int ind = icdPointPosition -1; deel > 0 && ind >= 0; --ind)
   {
-    m_data[ind] = deel % icdBasis;
-    deel /= icdBasis;
+    m_data[ind] = deel % icdBase;
+    deel /= icdBase;
   }
-  Herformatteer();
+  Reformat();
 }
 
-// Icd::PasEFactorToe
-// Omschrijving: Icd tot een 10e macht verheffen
+// Icd::CalculateEFactor
+// Description: icd to the 10th power of a factor
 void
-icd::PasEFactorToe(int factor)
+icd::CalculateEFactor(int factor)
 {
-  static const int positiesVoorDeKomma = icdKommaPositie * icdDigits;
-  static const int positiesAchterDeKomma = (icdLengte - icdKommaPositie) * icdDigits;
-  static const icd basisICD((long)icdBasis);
+  static const int positionsBeforePoint = icdPointPosition * icdDigits;
+  static const int positionsAfterPoint = (icdLength - icdPointPosition) * icdDigits;
+  static const icd basisICD((long)icdBase);
 
-  // Eerst zorgen dat de factor binnen de range [-9,+9] ligt.
+  // See to it that the factor is in the range [-9,+9].
   while (factor > 9)
   {
-    *this = Mul(1000000000L /* 9 posities */);
+    *this = Mul(1000000000L /* 9 positions */);
     factor -= 9;
   }
   while (factor < -9)
   {
-    *this = Div(1000000000L /* 9 posities */);
+    *this = Div(1000000000L /* 9 positions */);
     factor += 9;
   }
-  // En dan der rest van de verschuiving doen met een Icd-vermenigvuldiging. De
-  // long_pow kan nu, omdat 10^factor binnen de grenzen van een 32-bits long ligt.
+  // Shift the rest by doing an icd-multiply
+  // the long-pow is now possible because 10^factor is within range of a 32-bits long
   if (factor > 0)
   {
     *this = Mul(long_pow(10,factor));
@@ -2332,138 +2281,135 @@ icd::PasEFactorToe(int factor)
   }
 }
 
-// Icd::Herformatteer
-// Omschrijving:   Zorgt ervoor dat alle m_data members weer correct zijn (<IcdBasis)
-// Excepties:      Als de Icd te groot is geworden, dan volgt een BKIcdOverflow exceptie
-// Werking:        van de laagste m_data totaan de hoogste wordt de waarde van m_data
-//                 afgekapt, zodat m_data<IcdBasis. Het restant wordt opgeteld bij de
-//                 volgende m_data. (IcdOverflow als deze er niet meer is)
+// Icd::Reformat
+// Description:    See to it that all m_data members are correct again (<IcdBasis)
+// Excepties:      If icd has become too big after reformatting  we do an Overflow exception
+// What it does:   Truncate the m_data values from highest till lowest value
+//                 so that m_data[i] < IcdBase. The remainder will be added to the next 
+//                 m_data member. (IcdOverflow if no more m_data member available)
 //
 void
-icd::Herformatteer()
+icd::Reformat()
 {
-  // Doorschuiven waarden boven basis naar hogere m_data
-  long rest = 0;
-  for (long i = 0; i < icdLengte; i++)
+  // Shift values to higher members of m_data
+  long remainder = 0;
+  for (long i = 0; i < icdLength; i++)
   {
-    m_data[i] += rest;
-    rest       = m_data[i] / icdBasis;
-    m_data[i]  = m_data[i] % icdBasis;
+    m_data[i] += remainder;
+    remainder  = m_data[i] / icdBase;
+    m_data[i]  = m_data[i] % icdBase;
   }
-  if (rest > 0)
-    // Als op het einde nog een restant, dan overflow
+  // Still a remainder at the end? 
+  if (remainder > 0)
   {
-    throw CString("Gebroken getal te groot (ICD Overflow)");
+    throw CString("Decimal number too big (ICD Overflow)");
   }
 }
 
-// Icd::MaakLeeg
-// Omschrijving:   Icd gelijk maken aan 0
+// Icd::MakeEmpty
+// Description:   Make icd zero
 //
 void
-icd::MaakLeeg()
+icd::MakeEmpty()
 {
-  // data members initialiseren op +0000...0000,0000...0000
-  m_teken    = Positief;
-  m_lengte   = icdLengte * icdDigits;
-  m_precisie = m_lengte / 2;
-  for (long i = 0; i < icdLengte; ++i)
+  // initialize data members to +0000...0000,0000...0000
+  m_sign      = Positive;
+  m_length    = icdLength * icdDigits;
+  m_precision = m_length / 2;
+  for (long i = 0; i < icdLength; ++i)
   {
     m_data[i] = 0;
   }
 }
 
 // Icd::Multi
-// Omschrijving:   Vermenigvuldigt een (positieve) Icd met een (positieve) long.
-//                 Indien deze Icd te groot wordt, dan zal het teken op negatief
-//                 worden gezet.
-// Parameters:     const long multiplier //aantal keren te vermenigvuldigen
-// Retourneert:    this*multiplier
-// Preconditie:    m_teken is positief, de parameter is positief
-// Werking:        Vermenigvuldigt alle afzonderlijke m_data met de parameter
-//                 waarna een herformatteer actie volgt. Deze wordt hier uitgevoerd,
-//                 omdat er geen exceptie mag komen, maar bij een overflow het teken
-//                 negatief wordt gemaakt. (Overloading van de m_teken member!!!)
+// Description:    Multiplies a (positive) icd with a positive long
+//                 If the icd becomes to big, it's set to negative
+// Parameters:     const long multiplier // number to multiply with
+// Retourneert:    this * multiplier
+// Precondition:   Sign is positive, the parameter is positive
+// What it does:   Multiplies every member of m_data with the parameter
+//                 After this you need to do a 'Reformat'
 //
 const icd
 icd::Multi(const long multiplier) const
 {
-  int64 tussen = 0;
-  int64 rest   = 0;
+  int64 between = 0;
+  int64 remain  = 0;
   icd res(*this);
 
-  // Vermenigvuldigen
-  for(long i = 0; i < icdLengte; ++i)
+  // Multiplying
+  for(long i = 0; i < icdLength; ++i)
   {
-    tussen         = (int64)res.m_data[i] * (int64)multiplier;
-    tussen        += rest;
-    res.m_data[i]  = (long) (tussen % icdBasis);
-    rest           = tussen / icdBasis;
+    between        = (int64)res.m_data[i] * (int64)multiplier;
+    between       += remain;
+    res.m_data[i]  = (long) (between % icdBase);
+    remain         = between / icdBase;
   }
-  if(rest > 0)
+  if(remain > 0)
   {
-    // Als overflow, dan teken negatief zodat dit later nog herkenbaar is.
-    res.m_teken = Negatief;
+    // If overflow, make sign negative, so we can detect the overflow
+    res.m_sign = Negative;
   }
   return res;
 }
 
-// Icd::IsInhoudGrensgeval
-// Omschrijving: Test of Icd te groot wordt voor precisie
+// Icd::IsCornerCase
+// Description: Test if icd has become to big for the precision
 //
 const bool
-icd::IsInhoudGrensGeval() const
+icd::IsCornerCase() const
 {
-  // testen op een grensgeval waarbij door afronding de lengte te groot wordt.
-  // bijv: 9,995 met lengte = 3 en precisie = 2, wordt afgerond 10,00 (lengte = icdDigits!)
+  // Test if a corner case where the round makes the length to long
+  // E.g.: 9,995 with length = 3 and precision = 2, will be rounded to 10,00 (length = icdDigits!)
 
-  int hoogsteIndex = (icdDigits * icdKommaPositie + (m_lengte - m_precisie) - 1) / icdDigits;
-  int laagsteIndex = (icdDigits * icdKommaPositie - m_precisie) / icdDigits;
+  int highestIndex = (icdDigits * icdPointPosition + (m_length - m_precision) - 1) / icdDigits;
+  int lowestIndex  = (icdDigits * icdPointPosition - m_precision) / icdDigits;
 
 
-  int index = hoogsteIndex;
+  int index = highestIndex;
 
-  while (index >= laagsteIndex)
+  while (index >= lowestIndex)
   {
-    unsigned long dataWaarde = m_data[index];
-    unsigned long maxWaarde;
+    unsigned long dataValue = m_data[index];
+    unsigned long maxValue;
 
-    if (index == hoogsteIndex)
+    if (index == highestIndex)
     {
-      maxWaarde = (unsigned long) (long_pow(10, (m_lengte - m_precisie) % icdDigits) - 1);
-      if (maxWaarde == 0)
+      maxValue = (unsigned long) (long_pow(10, (m_length - m_precision) % icdDigits) - 1);
+      if (maxValue == 0)
       {
-        maxWaarde = 9999;
+        maxValue = 9999;
       }
-      if (dataWaarde != maxWaarde)
+      if (dataValue != maxValue)
       {
-        if (index != laagsteIndex)
+        if (index != lowestIndex)
         {
           return false;
         }
       }
     }
-    if (index == laagsteIndex)
+    if (index == lowestIndex)
     {
-      int orde = (icdDigits - (m_precisie % icdDigits)) % icdDigits;
-      unsigned long relevantDeel = dataWaarde / (unsigned long)(long_pow(10, orde));
-      maxWaarde = (unsigned long) (long_pow(10, (icdDigits - orde)) - 1);  
+      int orde = (icdDigits - (m_precision % icdDigits)) % icdDigits;
+      unsigned long relevantPart = dataValue / (unsigned long)(long_pow(10, orde));
+      maxValue = (unsigned long) (long_pow(10, (icdDigits - orde)) - 1);  
 
-      if (relevantDeel == maxWaarde)
+      if (relevantPart == maxValue)
       {
-        // bepalen van het getal dat voor de afronding zorgt. (eerste getal na precisie)
-        int getal;
+        // Getting the number that makes the rounding (first after the precision)
+        int number;
         if (orde > 0)
         {
-          getal = ((dataWaarde % (unsigned long) long_pow(10, orde)) / (unsigned long) long_pow(10, orde - 1));
+          number = ((dataValue % (unsigned long) long_pow(10, orde)) / (unsigned long) long_pow(10, orde - 1));
         }
         else
         {
-          // getal zit in het volgende datablok.
-          getal = m_data[index - 1] / 1000;
+          // Number is in next data block
+          number = m_data[index - 1] / icdBase; // 1000;
         }
 
-        if (getal >= 5)
+        if (number >= (icdDigits + 1)) // 5
         {
           return true;
         }
@@ -2477,7 +2423,7 @@ icd::IsInhoudGrensGeval() const
         return false;
       }
     }
-    if (!(((index != hoogsteIndex) || (index != laagsteIndex)) && (dataWaarde == 9999)))
+    if (!(((index != highestIndex) || (index != lowestIndex)) && (dataValue == (icdBase - 1)))) // 9999
     {
       return false;
     }
@@ -2486,134 +2432,125 @@ icd::IsInhoudGrensGeval() const
   return false;
 }
 
-// Icd::PositioneerArgumenten
+// Icd::PositionArguments
 //
-// Omschrijving:   Positioneert twee argumenten op basis van hun teken
-//                 voor optel en aftrek operaties:
-//                 (+x) + (+y) -> optellen , resultaat positief, niet omdraaien
-//                 (+x) + (-y) -> aftrekken, resultaat positief, niet omdraaien
-//                 (-x) + (+y) -> aftrekken, resultaat positief, omdraaien
-//                 (-x) + (-y) -> optellen,  resultaat negatief, niet omdraaien
+// Description:    Positions two arguments for adding and subtracting operations
+//                 (+x) + (+y) -> Adding,   result positive, flip arguments
+//                 (+x) + (-y) -> Subtract, result positive, do NOT flip arguments
+//                 (-x) + (+y) -> Subtract, result positive, flip arguments
+//                 (-x) + (-y) -> Adding,   result negative, do NOT flip arguments
 //
-// Parameters:     Icd& arg1 //argument aan de linkerkant
-//                 Icd& arg2 //argument aan de rechterkant
-//                 Teken& tekenResultaat //uiteindelijk teken
-//                 SoortOperator& soortOperator //uit te voeren operator (+ of -)
+// Parameters:     icd& arg1        // argument on the left side
+//                 icd& arg2        // argument on the right side
+//                 Sign& signResult // Total sign result
+//                 OperatorKind& kind // Operator to do (+ or -)
 //
-// Werking:        Op basis van de tekens wordt bepaald wat het teken wordt van
-//                 het eindresultaat, en welke operator moet worden uitgevoerd.
-//                 eventueel worden de argumenten verwisseld.
-//                 Als laatste worden de tekens van de argumenten positief gemaakt.
+// What it does:   On the basis of the signs we find the sign of the result
+//                 and the type of operation to perform
 //
 void
-icd::PositioneerArgumenten(icd& arg1,
-                           icd& arg2,
-                           Teken& tekenResultaat,
-                           SoortOperator& soortOperator)
+icd::PositionArguments(icd&  arg1,
+                       icd&  arg2,
+                       Sign& signResult,
+                       OperatorKind& kindOperator)
 {
-  // Bepaal resultaat teken en soort operator
-  // Indien (-x) + y dan omdraaien, dus x + (-y), wordt x - y
-  if (arg1.m_teken == Positief)
+  // Getting the result sign
+  // if (-x) + y then flip, so: x + (-y), becomes: x - y
+  if (arg1.m_sign == Positive)
   {
-    if (arg2.m_teken == Positief)
+    if (arg2.m_sign == Positive)
     {
-      tekenResultaat = Positief;
-      soortOperator = Optellen;
+      signResult   = Positive;
+      kindOperator = Adding;
     }
     else
     {
-      tekenResultaat = Positief;
-      soortOperator = Aftrekken;
+      signResult   = Positive;
+      kindOperator = Subtracting;
     }
   }
   else
   {
-    if (arg2.m_teken == Positief)
+    if (arg2.m_sign == Positive)
     {
-      tekenResultaat = Positief;
-      soortOperator = Aftrekken;
+      signResult = Positive;
+      kindOperator = Subtracting;
+      // Flip the arguments
       icd dummy(arg1);
       arg1 = arg2;
       arg2 = dummy;
     }
     else
     {
-      tekenResultaat = Negatief;
-      soortOperator = Optellen;
+      signResult   = Negative;
+      kindOperator = Adding;
     }
   }
-  //Positief doorwerken, dus teken argumenten zetten
-  arg1.m_teken = Positief;
-  arg2.m_teken = Positief;
+  // Carry on in positive in both sides
+  arg1.m_sign = Positive;
+  arg2.m_sign = Positive;
 }
 
-// Icd::TelPositiefOp
-// Omschrijving:   Telt twee Icd's bij elkaar op zonder rekening te houden met
-//                 het teken.
-// Parameters:     const Icd& arg1 //argument aan de linkerkant
-//                 const Icd& arg2 //argument aan de rechterkant
-// Retourneert:    arg1+arg2 als Icd
-// Preconditie:    arg1.m_teken=positief, arg2.m_teken=positief
-// Excepties:      BKIcdOverflow indien het resultaat niet in een Icd past
-// Werking:        telt alle m_data van het eerste argument 1-aan-1 op bij
-//                 de m_data van het twee argument. Hierna volgt een herformatteer
-//                 actie.
+// Icd::AddPositive
+// Description:    Adds two icd's without taking the sign into account
+// Parameters:     const icd& arg1 // argument on the left side
+//                 const icd& arg2 // argument on the right side
+// Returns:        arg1+arg2 as an icd
+// Precondition:   arg1.m_sign = positive, arg2.m_teken = positive
+// Exceptions:     IcdOverflow if the result does not fit into an icd
+// What it does:   Adds all m_data members one-by-one after which a reformat occurs
 //
 const icd
-icd::TelPositiefOp(const icd& arg1, const icd& arg2)
+icd::AddPositive(const icd& arg1, const icd& arg2)
 {
-  // Datamembers bij elkaar optellen
+  // Add all data members
   icd res(arg1);
-  for (long i = 0; i < icdLengte; i++)
+  for (long i = 0; i < icdLength; i++)
   {
     res.m_data[i] += arg2.m_data[i];
   }
-  // Herformatteer actie
-  res.Herformatteer();
+  // Reformat action
+  res.Reformat();
   return res;
 }
 
-// Icd::TrekPositiefAf
-// Omschrijving:   Trekt twee Icd's van elkaar af zonder rekening te houden met
-//                 het teken.
-// Parameters:     const Icd& arg1 // argument aan de linkerkant
-//                 const Icd& arg2 // argument aan de rechterkant
-// Retourneert:    arg1-arg2 als Icd
-// Preconditie:    arg1.m_teken=positief, arg2.m_teken=positief
-// Excepties:      BKIcdOverflow indien het resultaat te klein.
-// Werking:        Voor alle m_data van argument 1 en 2 wordt
-//                 m_data[i]-m_data[i] uitgevoerd. Indien de linker m_data
-//                 kleiner dan de rechter, dan wordt icdBasis bij de linker opgeteld.
-//                 vervolgens wordt 1 bij de volgende rechter m_data opgeteld, tenzij
-//                 deze niet bestaat, dan volgt een tekenwissel.
-//                 Indien op het einde blijkt dat er een tekenwissel is opgetreden,
-//                 dan moet het resultaat nog van IcdMax+1 afgetrokken.
+// Icd::SubtractPositive
+// Description:    Subtracts two icd's without taking the sign into account
+// Parameters:     const icd& arg1 // argument on the left side
+//                 const icd& arg2 // argument on the right side
+// Returns:        arg1-arg2 as an icd
+// Precondition:   arg1.m_sign = positive, arg2.m_sign = positive
+// What it does:   We do a subtract of all m_Data members
+//                 if the left data is smaller than the right data
+//                 we doe a borrow from the next data member on the left hand side
+//                 unless it does not exist, so we do a switch of the sign
+//                 to make the underflow detectable outside the function
 //
 const icd
-icd::TrekPositiefAf(const icd& arg1, const icd& arg2)
+icd::SubtractPositive(const icd& arg1, const icd& arg2)
 {
-  // Tijdelijke Icd's aanmaken
+  // Temporary icd's
   icd res(arg1);
   icd mina(arg2);
 
   // res = res - mina
-  for (long i = 0; i < icdLengte; i++)
+  for (long i = 0; i < icdLength; i++)
   {
     if (res.m_data[i] < mina.m_data[i])
     {
-      // kleiner, dus lenen van buurman
-      res.m_data[i] += icdBasis - mina.m_data[i];
-      if (i < icdLengte - 1)
+      // Smaller, so do  borrow from our neighbor
+      res.m_data[i] += icdBase - mina.m_data[i];
+      if (i < icdLength - 1)
       {
-        // Let op: We doen hier dus niet: res.m_data[i+1]--
-        // zoals we bij een het lenen zouden doen,
-        // omdat deze member op nul zou kunnen staan!!
+        // Beware: we do not do a: res.m_data[i+1]--
+        // as in a regular borrow, because the member
+        // could become below zero
         mina.m_data[i+1]++;
       }
       else
       { 
-        //tekenwissel!
-        res.m_teken = Negatief;
+        // Switch signs to flag underflow
+        res.m_sign = Negative;
       }
     }
     else
@@ -2621,232 +2558,214 @@ icd::TrekPositiefAf(const icd& arg1, const icd& arg2)
       res.m_data[i] -= mina.m_data[i];
     }
   }
-  if (res.m_teken == Negatief)
+  if (res.m_sign == Negative)
   {
-    // tekenwissel, dan klopt het resultaat nog niet, maar
-    // moet nog van maxIcd afgetrokken worden.
-    // N.B.: recursieve aanroep van TrekPositiefAf!
+    // Switched signs, the result must be corrected
+    // by subtracting the result from the theoretical maximum
+    // N.B.: It's a recursive call of SubtractPositive!
     icd maxIcd;
-    maxIcd.m_data[icdLengte-1] = icdBasis;
+    maxIcd.m_data[icdLength-1] = icdBase;
     res = -(maxIcd + res);
   }
   return res;
 }
 
-// Icd::VermenigvuldigPositief
-// Omschrijving:   Vermenigvuldigt twee Icd's zonder rekening te houden met het teken
-// Parameters:     Icd& arg1 // argument aan de linkerkant
-//                 Icd& arg2 // argument aan de rechterkant
-// Retourneert:    arg1*arg2
-// Preconditie:    arg1.m_teken=positief, arg2.m_teken=positief
-// Excepties:      BKIcdOverflow als het resultaat te groot
-// Werking:        Vermenigvuldigt alle afzonderlijke m_data's volgens de
-//                 'klassieke' handmatige vermenigvuldiging. Het resultaat komt
-//                 in een aantal longs (2x zoveel als in een normale Icd). Hierdoor
-//                 kunnen alle waarden opgeslagen worden. Als het resultaat (na het
-//                 verplaatsen van de komma) toch niet past in een Icd, dan volgt een
-//                 BKIcdOverflow exceptie. Uiteindelijk volgt nog een herformatteer om
-//                 de Icd weer correct te krijgen.
+// Icd::MultiplyPositive
+// Description:    Multiply two icd's without taking the sign into account
+// Parameters:     icd& arg1 // argument on the left side
+//                 icd& arg2 // argument on the righ tside
+// Returns:        arg1*arg2
+// Precondition:   arg1.m_sign = positive, arg2.m_sign = positive
+// Exceptions:     BKIcdOverflow if the result becomes too big
+// What it does:   Multiplies each m_data member in the classical way
+//                 The result is saved in an array that's two times bigger
+//                 then the regular m_data array. This is done so all values
+//                 can be stored. If the result doesn't fit into a regular
+//                 m_data array at the end, an ICD overflow exception will follow
+//                 As a last step we doe a 'Reformat' to get everything in line
 //
 const icd
-icd::VermenigvuldigPositief(const icd& arg1, const icd& arg2)
+icd::MultiplyPositive(const icd& arg1, const icd& arg2)
 {
-  // tijdelijke m_data's in nieuwe structuur opslaan, hierdoor
-  // geen langere Icd's noodzakelijk.
-  // alle onderdelen op 0 zetten.
-  int64 res[icdLengte * 2 + 1] = {0};
-  int64 tussen = 0;
+  // temporary m_data's so we do not need any longer icd structures elsewhere
+  int64 res[icdLength * 2 + 1] = {0};
+  int64 between = 0;
 
-  // vermenigvuldigen, tussenresultaat opslaan in res
-  for (int i = 0; i < icdLengte; i++)
+  // Multiply and store the result in the 'res' array
+  for (int i = 0; i < icdLength; i++)
   {
-    for (int j = 0; j < icdLengte; j++)
+    for (int j = 0; j < icdLength; j++)
     {
-      tussen      = (int64)arg1.m_data[i] * (int64)arg2.m_data[j];
-      res[i+j]   += (long) (tussen % icdBasis);
-      res[i+j+1] += (long) (tussen / icdBasis);
+      between      = (int64)arg1.m_data[i] * (int64)arg2.m_data[j];
+      res[i+j]   += (long) (between % icdBase);
+      res[i+j+1] += (long) (between / icdBase);
 
-      // Check op overflow
-      if (((i+j) >= (icdLengte + icdKommaPositie)) && (res[i+j] != 0))
+      // Check on overflow
+      if (((i+j) >= (icdLength + icdPointPosition)) && (res[i+j] != 0))
       {
-        // als iets opgeslagen boven de lengte en de kommapositie, dan overflow
-        throw CString("Gebroken getal te groot (ICD Overflow)");
+        // If something has been stored above the length and pointposition -> overflow
+        throw CString("Decimal number too big (ICD Overflow)");
       }
     }
   }
-  // Herformatteer
-  int64 rest = 0;
-  for (long i = 0; i < icdLengte * 2; i++)
+  // Reformat
+  int64 remain = 0;
+  for (long i = 0; i < icdLength * 2; i++)
   {
-    res[i] += rest;
-    rest    = res[i] / icdBasis;
-    res[i]  = res[i] % icdBasis;
+    res[i] += remain;
+    remain  = res[i] / icdBase;
+    res[i]  = res[i] % icdBase;
   }
-  // Als op het einde nog een restant, dan overflow
-  if (rest > 0)
+  // Still a remainder?
+  if (remain > 0)
   {
-    throw CString("Gebroken getal te groot (ICD Overflow)");
+    throw CString("Decimal number too big (ICD Overflow)");
   }
 
-
-  // resultaat in Icd zetten, hierbij rekening houden met de
-  // nieuwe positie van de komma
+  // Setting the result in an icd, taking the decimal point position into account
   icd Icdres;
-  for (int i = 0; i < icdLengte; i++)
+  for (int i = 0; i < icdLength; i++)
   {
-    Icdres.m_data[i] = (long) res[i+icdKommaPositie];
+    Icdres.m_data[i] = (long) res[i+icdPointPosition];
   }
   return Icdres;
 }
 
-// Icd::DeelPositief
-// Omschrijving:   Deelt twee Icd's zonder rekening te houden met het teken
-// Parameters:     Icd& arg1 // teller
-//                 Icd& arg2 // noemer (ongelijk aan nul)
-// Retourneert:    arg1/arg2
-// Preconditie:    arg1.m_teken=positief, arg2.m_teken=positief, arg2!=0
-// Excepties:      BKIcdOverflow als het resultaat te groot
-// Werking:        Eerst wordt bepaald wat de belangrijkste m_data!=0 is, voor zowel
-//                 arg1 als arg2. Vervolgens wordt de (uiteindelijke) positie van de
-//                 komma bepaald op basis van deze gegevens. Hierna worden de m_data in
-//                 het resultaat bepaald. Dit gaat volgens de 'klassieke' staartdeling.
-//                 Om een getal te vinden, worden de twee meest belangrijke m_data's op
-//                 elkaar gedeeld. Hiermee krijg je de hoogst mogelijke waarde van het
-//                 quotient om de laagst mogelijke waarde van het quotient te vinden,
-//                 deel je de meest belangrijke m_data van de teller door de meest
-//                 belangrijke m_data van de noemer PLUS 1. Hierna kun je mbv een binary-
-//                 search algorithme achter de werkelijke waarde van het quotient komen.
-//                 Hiervoor wordt nl. de noemer met het quotient vermenigvuldigd. Dit
-//                 quotient is nu valide indien de teller groter of gelijk is aan dit produkt.
+// Icd::DividePositive
+// Description:    Divides two icd's without taking the sign into account
+// Parameters:     icd& arg1 // numerator
+//                 icd& arg2 // denominator (non zero)
+// Returns:        arg1 / arg2
+// Precondition:   arg1.m_teken=positief, arg2.m_teken=positief, arg2!=0
+// Exceptions:     IcdOverflow if the result becomes too big
+// What it does:   First we look for the most significant m_data member that is non zero
+//                 Then we determine the placing of the decimal point.
+//                 After this we do a 'classical tail-division'
+//                 To find a next number, we divide the most significant data members
+//                 So we find the highest and lowest possible values for the quotient
+//                 Then we do a binary search to find the 'real' quotient.
 //
 const icd
-icd::DeelPositief(const icd& arg1, const icd& arg2)
+icd::DividePositive(const icd& arg1, const icd& arg2)
 {
-  // teller wordt argument 1
-  // noemer wordt argument 2
-  // res    wordt het uiteindelijke resultaat.
-  // teller wordt ook gebruikt om nog te delen gedeelte van
-  // de teller in op te slaan.
-  icd teller(arg1);
-  icd noemer(arg2);
+  // numerator   is argument 1
+  // denominator is argument 2
+  // res         Will be the result
+  // The numerator will also be used to store parts of the numerator
+  icd numerator(arg1);
+  icd denominator(arg2);
   icd res;
 
-  // Alleen positief delen, later pas teken bepalen
-  teller.m_teken = Positief;
-  noemer.m_teken = Positief;
+  // Only positive dividing, sign will be set later
+  numerator.m_sign   = Positive;
+  denominator.m_sign = Positive;
 
-  // index1 is hoogste teller.m_data die ongelijk is aan nul
-  // index2 is hoogste noemer.m_data die ongelijk is aan nul
-  long index1 = icdLengte - 1;
-  long index2 = icdLengte - 1;
-  while (index1 > 0 && teller.m_data[index1] == 0)
+  // Index1 is the highest numerator.m_data that is not null
+  // index2 is the highest denominator.m_data that is not null
+  long index1 = icdLength - 1;
+  long index2 = icdLength - 1;
+  while (index1 > 0 && numerator.m_data[index1] == 0)
   {
     index1--;
   }
-  while (index2 > 0 && noemer.m_data[index2] == 0)
+  while (index2 > 0 && denominator.m_data[index2] == 0)
   {
     index2--;
   }
 
-  // resindex bepaald de positie van waaraf het resultaat wordt
-  // ingevuld. Hierdoor wordt de kommapositie vooraf al goed gezet.
-  long resindex = index1 - index2 + icdKommaPositie;
+  // resindex is the position in the array where the result will set
+  // the decimal point position is defined in this way beforehand
+  long resindex = index1 - index2 + icdPointPosition;
 
-  // quotient is het 1 resultaat-getalletje van een stap in het deelproces
-  // (vergelijk de staart-deling)
-  // noemerGelijk is de noemer gelijkgetrokken met de teller (dwz:
-  // het meest belangrijke cijfer van de noemer staat op dezelfde plaats
-  // als de meest belangrijke cijfer van de teller.
-  // Voorbeeld: als teller is 12:32:43 en noemer 32:43, dan wordt de
-  //            noemer 32:43:00.
-  // multires is de te testen waarde (=quotient*noemer, gelijkgetrokken met
-  // de teller)
+  // multires is the result number from a step in the dividing process
+  // denominatorSame is the denominator that has been aligned with the numerator
+  // The most-significant number of the denominator is on the same place as the
+  // most-significant number of the numerator
+  // Example: numerator is 12:32:43 and denominator is 32:43, then the
+  // denominator will be shifted to "32:43:00"
   icd multires;
-  icd noemerGelijk;
+  icd denominatorSame;
 
-  // feitelijke deelactie, doorgaan totdat het einde van het resultaat bereikt is
-  // (omdat doorgaan toch niet relevant is, dan worden slechts getallen verder dan
-  // 8 cijfers achter de komma bepaald.
-
+  // The actual dividing action, go on until the number of digits is reached
   while (resindex >= 0 && index1 >= 0)
   {
-    // quotient_test is gelijk aan het meest belangrijke cijfer uit de teller
-    // gedeeld door het meest belangrijke getal uit de noemer. Indien er nog
-    // een rest was van de vorige deling, dan wordt dit ook meegenomen
-    // Voor optimalisatie wordt een binary search algorithme toegepast.
-    // Hierbij wordt aangenomen dat a/b een te groot quotient kan opleveren en
-    // a/(b+1) een te klein quotient. Hierdoor is een bovengrens en een ondergrens
-    // te bepalen. quotient_test zit nu altijd precies tussen de grenzen.
-    // quotient_onder_oud is de hoogste ondergrens die nog kon.
-    int64 quotient_boven = ((int64)teller.m_data[index1] + ((index1 == icdLengte-1) ? 0 : (int64)teller.m_data[index1+1] * icdBasis)) / (int64)noemer.m_data[index2];
-    int64 quotient_onder = ((int64)teller.m_data[index1] + ((index1 == icdLengte-1) ? 0 : (int64)teller.m_data[index1+1] * icdBasis)) / (int64)(noemer.m_data[index2] + 1);
-    int64 quotient_onder_oud = 0;
-    int64 quotient_test = (quotient_boven + quotient_onder) / 2;
+    // quotient_test is equal to the most-significant number from the numerator
+    // divided by the most-significant number from the denominator.
+    // If there was a remainder from the last division, than take that into account
+    // For optimalisation we do a binary search.
+    // We assume that a/b is can give a quotient that is too big and 
+    // (a/(b+1) a quotient that is too small. In this way we find an upper and lower
+    // border. quotient_test will be between these borders and quotient_below_old
+    // was the lowest border that is still possible
+    int64 quotient_above = ((int64)numerator.m_data[index1] + ((index1 == icdLength-1) ? 0 : (int64)numerator.m_data[index1+1] * icdBase)) / (int64)denominator.m_data[index2];
+    int64 quotient_below = ((int64)numerator.m_data[index1] + ((index1 == icdLength-1) ? 0 : (int64)numerator.m_data[index1+1] * icdBase)) / (int64)(denominator.m_data[index2] + 1);
+    int64 quotient_below_old = 0;
+    int64 quotient_test = (quotient_above + quotient_below) / 2;
 
-    // bepalen van multires. Als de vermenigvuldiging een overflow veroorzaakt, dan
-    // wordt het teken negatief, en moet het quotient (dus) kleiner worden
-    noemerGelijk = TrekGelijk(noemer, index1 - index2);
-    bool teGroot;
-    multires = noemerGelijk.Multi((long)quotient_test);
-    teGroot = multires.m_teken == Negatief;
+    // Betting multires. If the multiplication gets into overflow, 
+    // the sign will be negative, so the quotient must be smaller!
+    denominatorSame = BringTogether(denominator, index1 - index2);
+    bool tooBig;
+    multires = denominatorSame.Multi((long)quotient_test);
+    tooBig   = multires.m_sign == Negative;
 
-    // doorgaan zolang ondergrens niet gelijk aan de bovengrens
-    while (quotient_boven != quotient_onder)
+    // Continue until we reach the lower border not equal to the upperborder
+    while (quotient_above != quotient_below)
     {
-      if (teller < multires || teGroot)
+      if (numerator < multires || tooBig)
       {
-        quotient_boven = quotient_test;
+        quotient_above = quotient_test;
       }
       else
       {
-        // valide ondergrens bewaren!
-        quotient_onder_oud = quotient_test;
-        if (((quotient_onder + quotient_boven) % 2) == 1)
+        // Save valid lower border!
+        quotient_below_old = quotient_test;
+        if (((quotient_below + quotient_above) % 2) == 1)
         {
-          // Bij afrondfouten de ondergrens 1 hoger kiezen
-          quotient_onder = quotient_test + 1;
+          // If we get into a rounding error, choose the lower border 1 higher
+          quotient_below = quotient_test + 1;
         }
         else
         {
-          quotient_onder = quotient_test;
+          quotient_below = quotient_test;
         }
       }
-      quotient_test = (quotient_boven + quotient_onder) / 2;
-      noemerGelijk = TrekGelijk(noemer, index1 - index2);
-      multires = noemerGelijk.Multi((long)quotient_test);
-      teGroot = multires.m_teken == Negatief;
+      quotient_test = (quotient_above + quotient_below) / 2;
+      denominatorSame = BringTogether(denominator, index1 - index2);
+      multires = denominatorSame.Multi((long)quotient_test);
+      tooBig = multires.m_sign == Negative;
     }
-    // Als quotient toch nog te hoog, dan oude ondergrens pakken
-    if (teller < multires || teGroot)
+    // If the quotient is still too high, use old lower border
+    if (numerator < multires || tooBig)
     {
-      quotient_test = quotient_onder_oud;
-      noemerGelijk = TrekGelijk(noemer, index1 - index2);
-      multires = noemerGelijk.Multi((long)quotient_test);
+      quotient_test   = quotient_below_old;
+      denominatorSame = BringTogether(denominator, index1 - index2);
+      multires = denominatorSame.Multi((long)quotient_test);
     }
-    // Quotient toekennen, indien ongelijk aan nul
+    // If non zero, use the quotient 
     if (quotient_test != 0)
     {
-      if (resindex >= icdLengte)
+      if (resindex >= icdLength)
       {
-        // overflow bij te groot getal in resultaat
-        throw CString("Gebroken getal te groot (ICD Overflow)");
+        // Overflow if it became too big
+        throw CString("Decimal number too big (ICD Overflow)");
       }
       else
       {
         res.m_data[resindex] = (long)quotient_test;
       }
     }
-    // teller verkleinen. Indien er nu een positie aan de linkerkant vrij gekomen is,
-    // dan de teller doorschuiven (hierdoor voorkom je dat je later aan de rechterkant
-    // posities te weinig hebt. (het zgn. 0 bijplakken bij een staart-deling)
-    teller = teller - multires;
-    if (teller.m_data[icdLengte-1] == 0)
+    // Subtract from the numerator. If a position on the left hand side became free
+    // then shift the numerator, so we do not lack on the right hand side
+    // (equivalent to getting and extra '0' in a tail division)
+    numerator = numerator - multires;
+    if (numerator.m_data[icdLength-1] == 0)
     {
-      for (long i = icdLengte - 1; i > 0; i--)
+      for (long i = icdLength - 1; i > 0; i--)
       {
-        teller.m_data[i] = teller.m_data[i-1];
+        numerator.m_data[i] = numerator.m_data[i-1];
       }
-      teller.m_data[0] = 0;
+      numerator.m_data[0] = 0;
     }
     else
     {
@@ -2857,228 +2776,158 @@ icd::DeelPositief(const icd& arg1, const icd& arg2)
   return res;
 }
 
-// Icd::BepaalTeken
-// Omschrijving:   Bepaalt het teken van een vermenigvuldiging of deling:
-//                 x of y is nul -> positief
-//                 (+x)*(+y) -> positief
-//                 (+x)*(-y) -> negatief
-//                 (-x)*(+y) -> negatief
-//                 (-x)*(-y) -> positief
+// Icd::CalculateSign
+// Description:    Calculates the sign for a multiplication or a division
+// Parameters:     const icd& arg1 // 1th argument
+//                 const icd& arg2 // 2th argument
+// What it does:   First see if one of both arguments is zero
+//                 Then calculates the sign
 //
-// Parameters:     const Icd& arg1 // 1e argument
-//                 const Icd& arg2 // 2e argument
-//
-// Werking:        Kijkt eerst of 1 van de argumenten gelijk is aan 0, anders
-//                 wordt het nieuwe teken bepaald uit de tekens van de argumenten.
-//
-const icd::Teken
-icd::BepaalTeken(const icd& arg1, const icd& arg2)
+const icd::Sign
+icd::CalculateSign(const icd& arg1, const icd& arg2)
 {
-  // Teken bepalen bij vermenigvuldiging en delen
-  // - 1 van beide argumenten 0 -> positief
-  // (+x) * (+y) -> positief
-  // (-x) * (+y) -> negatief
-  // (-x) * (-y) -> positief
-  // (+x) * (-y) -> negatief
-  if (arg1.IsNul() || arg2.IsNul())
+  // Getting the sign
+  // If both arguments are 0 -> positive
+  // (+x) * (+y) -> positive
+  // (-x) * (+y) -> negative
+  // (-x) * (-y) -> positive
+  // (+x) * (-y) -> negative
+  if (arg1.IsNull() || arg2.IsNull())
   {
-    return Positief;
+    return Positive;
   }
-  if (arg1.m_teken == Positief)
+  if (arg1.m_sign == Positive)
   {
-    if (arg2.m_teken == Positief)
+    if (arg2.m_sign == Positive)
     {
-      return Positief;
+      return Positive;
     }
     else
     {
-      return Negatief;
+      return Negative;
     }
   }
   else
   {
-    if (arg2.m_teken == Negatief)
+    if (arg2.m_sign == Negative)
     {
-      return Positief;
+      return Positive;
     }
     else
     {
-      return Negatief;
+      return Negative;
     }
   }
 }
 
-// Icd::TrekGelijk
-// Omschrijving:   Schuift een Icd een aantal plaatsen naar links of naar rechts,
-//                 afhankelijk van het tweede argumenten.
-// Parameters:     const Icd& arg1 // gelijk te trekken Icd
-//                 const long verschil // verschil in grootte tussen twee Icd's
-// Retourneert:    opgeschoven Icd
-// Werking:        wordt gebruikt bij deling om noemer en teller op hetzelfde niveau
-//                 te brengen. Afhankelijk van het teken van het twee argument worden
-//                 de m_data's verschoven.
+// Icd::BringTogether
+// Description:    Shifts the icd a number of places left or right
+//                 dependent on the second argument
+// Parameters:     const icd& arg1   // icd to shift
+//                 const long places // places to shift
+// Returns:        Shifted icd
+// What it does:   Used to shift an icd to bring it in line with another one
+//                 second argument shifts right (negative) or left (positive)
 //
 const icd
-icd::TrekGelijk(const icd& arg1, const long verschil)
+icd::BringTogether(const icd& arg1, const long places)
 {
   icd res;
 
-  // Geen verschil, dan niks doen.
-  if (verschil == 0)
+  // if no displacement: do nothing
+  if (places == 0)
   {
     res = arg1;
   }
   else
   {
-    if (verschil < 0)
+    if (places < 0)
     {
-      // noemer groter dan teller, dan noemer naar rechts opschuiven
-      // voorbeeld: 31:12:00 wordt 00:31:12 bij verschil van -1
-      for (long i = 0; i < icdLengte + verschil; i++)
+      // denominator is bigger than the numerator, shift the denominator to the right
+      // example: 31:12:00 becomes 00:31:12 at a shift of -1
+      for (long i = 0; i < icdLength + places; i++)
       {
-        res.m_data[i] = arg1.m_data[i-verschil];
+        res.m_data[i] = arg1.m_data[i-places];
       }
     }
     else
     {
-      // noemer kleiner dan teller, dan noemer naar links opschuiven
-      // voorbeeld: 00:31:12 wordt 31:12:00 bij verschil van 1
-      for (long i = icdLengte - 1; i >= verschil; i--)
+      // denominator is smaller than the numerator, shift the denominator to the left
+      // example: 00:31:12 becomes 31:12:00 at a shift of 1
+      for (long i = icdLength - 1; i >= places; i--)
       {
-        res.m_data[i] = arg1.m_data[i-verschil];
+        res.m_data[i] = arg1.m_data[i-places];
       }
     }
   }
   return res;
 }
 
-// Icd::Div10
-// Omschrijving: Deel mantissa (m_data) door 10
-// Werking:      Puur schuifregister om door 10 te delen
-//               Functioneel een deel van "TrekGelijk", maar dan met 
-//               een verschuiving kleiner dan 'icdBasis'.
+// Icd::Div10 
+// Description:  Divide mantissa (m_data) by 10
+// What it does: Purely a shift register operation by dividing everything by 10
 void
 icd::Div10()
 {
-  for(int ind = icdLengte - 1;ind >= 0; --ind)
+  for(int ind = icdLength - 1;ind >= 0; --ind)
   {
     long tussen = m_data[ind] / 10;
     if(ind > 0)
     {
       long extra = m_data[ind] % 10;
-      m_data[ind - 1] = (extra * icdBasis) + m_data[ind - 1];
+      m_data[ind - 1] = (extra * icdBase) + m_data[ind - 1];
     }
     m_data[ind] = tussen;
   }
 }
 
 // Icd::Mult10
-// Omschrijving: Vermenigvuldig mantissa (m_data) met 10
-// Werking:      Puur schuifregister om met 10 te vermenigvuldigen
-//               Functioneel een deel van "TrekGelijk", maar dan met 
-//               een verschuiving kleiner dan 'icdBasis'.
+// Description:   Multiplies mantissa (m_data) with 10
+// What it does:  Purely a shift register operation by multiplying everything by 10
 void
 icd::Mult10()
 {
   long carry = 0;
-  for(int ind = 0; ind < icdLengte; ++ind)
+  for(int ind = 0; ind < icdLength; ++ind)
   {
     long tussen = m_data[ind] * 10 + carry;
-    m_data[ind] = tussen % icdBasis;
-    carry       = tussen / icdBasis;
+    m_data[ind] = tussen % icdBase;
+    carry       = tussen / icdBase;
   }
   if(carry)
   {
-    // Zou niet op mogen treden, omdat Mult10 alleen 'save' mag worden aangeroepen
-    throw CString("Internal: ICD Overflow in suboperation");
+    // Should not occur: Mult10 should be safely called internally!
+    throw CString("Internal: ICD Overflow in sub operation");
   }
 }
 
-// Icd::LongNaarString
-// Omschrijving: Long naar een string omzetten in radix 10
+// Icd::LongToString
+// Description: Long to a string in radix 10
 CString
-icd::LongNaarString(long p_getal) const
+icd::LongToString(long p_getal) const
 {
   char buffer[20];
   _itoa_s(p_getal,buffer,20,10);
   return CString(buffer);
 }
 
-// Icd::StringNaarLong
-// Omschrijving: String naar een long omzetten
+// Icd::StringToLong
+// Description: String to a long
 long
-icd::StringNaarLong(CString& p_string) const
+icd::StringToLong(CString& p_string) const
 {
   return atoi(p_string);
 }
 
 // Icd::Epsilon
-// Omschrijving: Afbreek criterium voor iteraties
-// Werking:      Transleert de fractie naar de laagste decimaal positie
-//               10 -> 0,00000000000000000010
-//                5 -> 0,00000000000000000005
+// Description:  Getting the breaking criterion epsilon
+// What it does: Transposes the fraction to the lowest m_data position
+//               10 -> 0.0000000000000000000000000000000000000010
+//                5 -> 0.0000000000000000000000000000000000000005
 icd&
 icd::Epsilon(long p_fraction) const
 {
-  // Bereken afbreekcriterium epsilon
   static icd epsilon;
   epsilon.m_data[0] = p_fraction;
   return epsilon;
 }
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// Icd::AlsSQLString
-//
-// Omschrijving:   Geeft de waarde van de Icd terug als string met punt
-//                 voor decimaalscheiding.
-//
-// CString
-// Icd::AlsSQLString(const DBInfo *,bool strip /*=false*/) const
-// {
-//   String str = AlsString();
-//   if(strip)
-//   {
-//     // Strip mechanisme wordt alleen gebruikt in de CBS om een
-//     // patch op schijf te zetten en het schijfbeslag in te korten
-//     char ch = '.';
-//     int ind = str.Find(ch);
-//     if(ind < 0) 
-//     {
-//       ch  = sessie->GeefLocale().DecimaalChar();
-//       ind = str.Find(ch);
-//     }
-//     if(ind >=0)
-//     {
-//       int pos = str.GetLength() - 1;
-//       while(pos && str.GetAt(pos) == '0')
-//       {
-//         --pos;
-//       }
-//       if(pos && str.GetAt(pos) == ch)
-//       {
-//         --pos;
-//       }
-//       str = str.Left(pos+1);
-//       if(str.IsEmpty())
-//       {
-//         str = "0";
-//       }
-//     }
-//   }
-//   char decimaal = sessie->GeefLocale().DecimaalChar();
-//   if(decimaal != '.')
-//   {
-//     str.Replace(decimaal, '.');
-//   }
-//   return str;
-// }
-
-
-
-
-
-
-
-
-

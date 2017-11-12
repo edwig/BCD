@@ -1,17 +1,22 @@
-#ifndef Icd_h
-#define Icd_h
+// ICD = INTEGER CODED DECIMAL
+// A class to work with large decimal numbers
+// in exact precisions in decimals as opposed to
+// the built in datatypes (float, double) that
+// do a binary approximation 
+//
+#pragma once
 
 #include <ostream>
 using std::ostream;
 
-static const long  icdBasis        = 100000000L; // Basis  per element van m_data
-static const short icdDigits       = 8;          // Digits per element van m_data
-static const short icdLengte       = 10;         // Totale opslag lengte in m_data
-static const short icdKommaPositie = 5;          // Geimpliceerde positie van decimale ','
-// icd heeft nu als vorm: 0 0 0 0 0, 0 0 0 0 0
-// Voorbeeld 2,5 is       0 0 0 0 5, 2 0 0 0 0
+static const long  icdBase          = 100000000L; // Base   per element of m_data
+static const short icdDigits        = 8;          // Digits per element of m_data
+static const short icdLength        = 10;         // Total storage length in m_data
+static const short icdPointPosition = 5;          // Implied position of the decimal '.'
+// icd now has the form of: 0 0 0 0 0. 0 0 0 0 0
+// Example: 2.5 is stored:  0 0 0 0 5. 2 0 0 0 0
 
-// Interne registers worden in 64 bits verwerkt
+// All internal registers are in 64 bits
 #define int64 __int64
 
 class icd
@@ -20,35 +25,35 @@ public:
   // Default constructor.
   icd();
 
-  // ICD van een long
-  icd(const long waarde, const long restWaarde = 0);
+  // ICD of a long
+  icd(const long value, const long remainder = 0);
 
-  // ICD van een 64bits int
-  icd(const int64 waarde,const int64 restWaarde = 0);
+  // ICD of a 64bits int
+  icd(const int64 value,const int64 remainder = 0);
 
   // Copy constructor.
   icd(const icd& icd);
 
-  // ICD van een double
-  icd(const double waarde);
+  // ICD of a double
+  icd(const double value);
 
-  // Assignment-constructor van de klasse Icd.
-  icd(const CString& p_string,bool p_fromDB = false);
+  // Assignment-constructor from a string.
+  icd(const CString& p_string);
 
-  // Destructor van de klasse Icd.
+  // Destructor of the icd
   ~icd();
 
   // CONSTANTS
 
-  static icd PI();     // Radius verhouding van een cirkel
-  static icd LN2();    // Natuurlijke logarithme van 2
-  static icd LN10();   // Natuurlijke logarithme van 10
+  static icd PI();     // Ratio between radius and circumference of a circle
+  static icd LN2();    // Natural logarithm of 2
+  static icd LN10();   // Natural logarithm of 10
 
-  // OPERATOREN
+  // OPERATORS
 
   const icd& operator=( const icd& icd);
-  const icd& operator=( const long waarde);
-  const icd& operator=( const double waarde);
+  const icd& operator=( const long value);
+  const icd& operator=( const double value);
   const icd& operator=( const CString& str);
   const icd& operator+=(const icd& icd);
   const icd& operator-=(const icd& icd);
@@ -65,204 +70,202 @@ public:
   // Prefix decrement
   icd& operator--();
 
-  // vergelijkingsoperators
+  // Comparison operators
   const bool operator==(const icd& icd) const;
   const bool operator!=(const icd& icd) const;
-  const bool operator<(const icd& icd) const;
-  const bool operator>(const icd& icd) const;
+  const bool operator< (const icd& icd) const;
+  const bool operator> (const icd& icd) const;
   const bool operator<=(const icd& icd) const;
   const bool operator>=(const icd& icd) const;
 
-  // standaard output operator
+  // standard output operator
   friend ostream& operator<<(ostream& os, const icd& icd);
 
-  // MATHEMATISCHE FUNCTIES
+  // MATHEMATICAL FUNCTIONS
 
   // Floor functie
   icd     Floor() const;
   // Ceiling functie
   icd     Ceil() const;
-  // Vierkants wortel
-  icd     VierkantsWortel() const;
-  // Verheffen tot een macht.
-  icd     Macht(const icd& macht) const;
-  // Absolute waarde (ABS)
-  icd     AbsoluteWaarde() const;
+  // Square root
+  icd     SquareRoot() const;
+  // To the power of 
+  icd     Power(const icd& macht) const;
+  // Absolute value (ABS)
+  icd     AbsoluteValue() const;
   // Reciproke / Inverse = 1/x
   icd     Reciproke() const;
-  // Natuurlijke logarithme
+  // Natural logarithm
   icd     Log() const;
-  // Exponent e tot de macht
+  // Exponent e til the power of this number
   icd     Exp() const;
   // Log with base 10
   icd     Log10() const;
 
-  // TRIGONOMETRISCHE FUNCTIES
+  // TRIGONOMETRICAL FUNCTIONS
   
-  // Sinus van de hoek
-  icd     Sinus() const;
-  // Cosinus van de hoek
-  icd     Cosinus() const;
-  // Tangens van de hoek
+  // Sine of an angle
+  icd     Sine() const;
+  // Cosine of an angle
+  icd     Cosine() const;
+  // Tangent of an angle
   icd     Tangent() const;
-  // Arcsinus (hoek) van de verhouding
-  icd     ArcSinus() const;
-  // Arccosinus (hoek) van de herhouding
-  icd     ArcCosinus() const;
-  // Arctangens (hoek) van de verhouding
-  icd     ArcTangens() const;
-  // Hoek van twee punten.
-  icd     ArcTangens2Punten(icd p_x) const;
+  // Arcsine (angle) of a Sine ratio
+  icd     ArcSine() const;
+  // Arccosine (angle) of a Cosine ratio
+  icd     ArcCosine() const;
+  // Arctangent (angle) of a Tangent ratio
+  icd     ArcTangent() const;
+  // Angle from 2 points
+  icd     ArcTangent2Points(icd p_x) const;
 
-  // OPVRAGEN ALS IETS ANDERS
-  // Deel voor de komma opvragen (floor indien groter dan 0)
-  icd     WaardeVoorKomma() const;
-  // Deel achter de komman opvragen
-  icd     WaardeAchterKomma() const;
-  // Opvragen geconverteerd als double
-  double  AlsDouble() const;
-  // Opvragen geconverteerd als long
-  long    AlsLong() const;
-  // Opvragen geconverteerd als 64 bits long
-  int64   AlsInt64() const;
-  // Opvragen als mathematische string (met .)
-  CString AlsString() const;
-  // Opvragen als display string (volgens desktop locale)
-  CString AlsDisplayString() const;
-  // Hier niet gebruikt. 
-//CString AlsSQLString() const;
+  // REQUEST AS SOMETHING DIFFERENT
+  // Part before the decimal point (floor if greater than 0)
+  icd     ValueBeforePoint() const;
+  // Part behind the decimal point
+  icd     ValueBehindPoint() const;
+  // Get as a converted double
+  double  AsDouble() const;
+  // Get as a converted long
+  long    AsLong() const;
+  // Get as a converted int-64
+  int64   AsInt64() const;
+  // Get as mathematical string
+  CString AsString() const;
+  // Get as a display string (for UI purposes)
+  CString AsDisplayString() const;
   
-  // PRECISIE WIJZIGEN
+  // CHANGE PRECISION
 
-  // Verander de lengte en precisie van de ICD
-  void  ZetLengteEnPrecisie(int lengte = 80, int precisie = 40);
-  // Afronden op decimalen en precisie
-  long  RoundDecimal(long decimal,int precsion);
+  // Change length and precision
+  void  SetLengthAndPrecision(int length = 80, int precision = 40);
+  // Rounding on decimals and precision
+  long  RoundDecimals(long decimal,int precsion);
 
   // GETTER FUNCTIES
 
-  // Is de waarde van de ICD 0.0 ?
-  // maakt geen onderscheid tussen +0 en -0
-  bool  IsNul() const; 
-  // Geeft het teken terug als 0 (= 0.0), 1 (groter dan 0) of -1 (kleiner dan 0)
-  int   GeefTeken() const;
-  // Totale lengte (voor en na de komma)
-  int   Lengte();
-  // Precisie na de komma
-  int   Precisie();
-  // Geeft max grootte van een ICD
-  static int GeefMaxGroote(int precisie = 0);
-  // Geeft aan of een ICD in een long past qua waarde
-  bool  PastInLong() const;
-  // Geeft aan of een ICD in een int64 past qua waarde
-  bool  PastInInt64() const;
-  // Geeft aan of het decimaal deel ongelijk is aan nul (geen scalar)
-  bool  HeeftDecimalen() const;
-  // Berekent de exponent van het Icd getal
+  // Is the value of the icd exactly 0.0 ?
+  // With no distinction between +0 en -0
+  bool  IsNull() const; 
+  // Getting the sign as 0 (= 0.0), 1 (greater than 0) or -1 (smaller than 0)
+  int   GetSign() const;
+  // Total length (before and after the decimal .)
+  int   Length();
+  // Precision after the decimal '.'
+  int   Precision();
+  // Get the max size of an icd
+  static int GetMaxSize(int precision = 0);
+  // See if the icd fits into a long
+  bool  FitsInLong() const;
+  // See if the icd fits into a int64
+  bool  FitsInInt64() const;
+  // See if the icd has decimals after the '.' (geen scalar)
+  bool  HasDecimals() const;
+  // Getting the exponent of the icd
   int   Exponent() const;
-  // Berkent de 10macht mantissa
+  // Getting the 10th power mantissa of the icd
   icd   Mantissa() const;
 
-  // BASIS OPERATIES.
-  // Moeten public zijn om operatoren mogelijk te maken
+  // BASIC OPERATIONS.
+  // Has te be public for the operators
 
-  // optel operatie
+  // Add operation
   icd Add(const icd& icd) const;
-  // aftrek operatie
+  // Subtraction operation
   icd Sub(const icd& icd) const;
-  // vermenigvuldiging operatie
+  // Multiply operation
   icd Mul(const icd& icd) const;
-  // deling operatie
+  // Dividing operation
   icd Div(const icd& icd) const;
-  // modulus operatie
+  // Modulo operation
   icd Mod(const icd& icd) const;
 
 private:
-  enum Teken          { Positief, Negatief  };
-  enum SoortOperator  { Optellen, Aftrekken };
+  enum Sign          { Positive, Negative    };
+  enum OperatorKind  { Adding,   Subtracting };
   
-  // Eigen abs(long) functie
-  long long_abs(const long waarde) const;
-  // Eigen long tot de macht 1,2,3
-  long long_pow(long basis,int operand) const;
-  // Eigen log10 functie
-  long long_log10(long waarde) const;
+  // Our own abs(long) function
+  long long_abs(const long value) const;
+  // Our own long to the power 1,2,3.. function
+  long long_pow(long base,int operand) const;
+  // Our own log10 function
+  long long_log10(long value) const;
   
-  // Zet een long in de ICD
-  void ZetWaardeLong  (const long waarde, const long restWaarde);
-  // Zet een double in de ICD
-  void ZetWaardeDouble(const double waarde);
-  // Zet een string in de ICD
-  void ZetWaardeString(CString waarde, bool fromDB = false);
-  // Zet een int64 in de ICD
-  void ZetWaardeInt64 (const int64 waarde, const int64 restWaarde);
+  // Put a long in the icd
+  void SetValueLong  (const long value, const long remainder);
+  // Put a double in the icd
+  void SetValueDouble(const double value);
+  // Convert a string in the icd
+  void SetValueString(CString value);
+  // Put an int64 in the icd
+  void SetValueInt64 (const int64 value, const int64 remainder);
 
-  // Verhef tot een 10e macht
-  void PasEFactorToe(int factor);
-  // Intern m_data herformatteren zodat ze < icdBasis zijn
-  void Herformatteer();
-  // Leeg maken naar 0.0
-  void MaakLeeg();
-  // Vermenigvuldig Icd met 1 (een) multiplier deel
+  // To the 10th power
+  void CalculateEFactor(int factor);
+  // Internal reformatting of m_data so that members are < icdBase
+  void Reformat();
+  // Empty icd to be 0.0
+  void MakeEmpty();
+  // Internal multiply icd with one icd m_data member
   const icd Multi(const long multiplier) const;
-  // Grensgeval waarbij door afronding Icd buiten precisie valt
-  const bool IsInhoudGrensGeval() const;
-  // Bepaalt de tekens voor een basis-operatie
-  static void PositioneerArgumenten(icd& arg1,
-                                    icd& arg2,
-                                    Teken& tekenResultaat,
-                                    SoortOperator& soortOperator);
-  // Telt twee ICD's bij elkaar op zonder op het teken te letten
-  static const icd    TelPositiefOp(const icd& arg1, const icd& arg2);
-  // Trekt een ICD van een andere af zonder op het teken te letten
-  static const icd    TrekPositiefAf(const icd& arg1, const icd& arg2);
-  // Vermenigvuldigt twee ICD's zonder op het teken te letten
-  static const icd    VermenigvuldigPositief(const icd& arg1, const icd& arg2);
-  // Deelt een ICD door een andere zonder op het teken te letten
-  static const icd    DeelPositief(const icd& arg1, const icd& arg2);
-  // Bepaalt het teken van een vermenigvuldiging of deling
-  static const Teken  BepaalTeken(const icd& arg1, const icd& arg2);
-  // Deler en noemer op hetzelfde exponent brengen
-  static const icd    TrekGelijk(const icd& arg1, const long verschil);
-  // Mantissa door 10 delen (schuifoperatie)
+  // Corner case where the round brings icd outside the precision
+  const bool IsCornerCase() const;
+  // Getting the sign and alignments for a basic operation
+  static void PositionArguments(icd& arg1,
+                                icd& arg2,
+                                Sign& signResult,
+                                OperatorKind& kindOfOperator);
+  // Adds two icd's without taking the sign into account
+  static const icd  AddPositive(const icd& arg1, const icd& arg2);
+  // Subtracts two icd's without taking the sign into account
+  static const icd  SubtractPositive(const icd& arg1, const icd& arg2);
+  // Multiplies two icd's without taking the sign into account
+  static const icd  MultiplyPositive(const icd& arg1, const icd& arg2);
+  // Divide an icd by another icd without taking the sign into account
+  static const icd  DividePositive(const icd& arg1, const icd& arg2);
+  // Getting the sign of a mutiplication or a division
+  static const Sign CalculateSign(const icd& arg1, const icd& arg2);
+  // Bringing sides to the same exponent
+  static const icd  BringTogether(const icd& arg1, const long verschil);
+  // Divide the mantissa by 10 (shiftoperation)
   void Div10();
-  // Mantissa met 10 vermenigvuldigen (Schuifoperatie)
+  // Multiply the mantissa by 10 (shiftoperation)
   void Mult10();
 
-  // String <-> Long omzetten
-  CString LongNaarString(long p_getal) const;
-  long    StringNaarLong(CString& p_string) const;
+  // String <-> Long conversions
+  CString LongToString(long p_number) const;
+  long    StringToLong(CString& p_string) const;
 
-  // Afbreek criterium voor interne iteraties
+  // Breaking criterion for internal iterations
   icd&    Epsilon(long p_fraction) const;
 
   //
-  // Datamembers: Opslag van het getal
+  // Datamembers: Storing the number
   //
-  Teken         m_teken;
-  int           m_lengte;
-  int           m_precisie;
-  unsigned long m_data[icdLengte];
+  Sign          m_sign;
+  int           m_length;
+  int           m_precision;
+  unsigned long m_data[icdLength];
 };
 
 // Getters
 
 inline int
-icd::Lengte()
+icd::Length()
 {
-  return m_lengte;
+  return m_length;
 }
 
 inline int
-icd::Precisie()
+icd::Precision()
 {
-  return m_precisie;
+  return m_precision;
 }
 
 inline int 
-icd::GeefMaxGroote(int precisie)
+icd::GetMaxSize(int precisie)
 {
-  return ((icdLengte * 2) + precisie); 
+  return ((icdLength * 2) + precisie); 
 }
 
 // Overloaded basic operators
@@ -297,8 +300,8 @@ inline icd operator % (const icd& lhs, const icd& rhs)
 
 inline icd modf(icd p_number, icd* p_intpart)
 {
-  *p_intpart = p_number.WaardeVoorKomma();
-  return p_number.WaardeAchterKomma();
+  *p_intpart = p_number.ValueBeforePoint();
+  return p_number.ValueBehindPoint();
 }
 
 inline icd fmod(icd p_number,icd p_divisor)
@@ -318,12 +321,12 @@ inline icd ceil(icd p_number)
 
 inline icd fabs(icd p_number)
 {
-  return p_number.AbsoluteWaarde();
+  return p_number.AbsoluteValue();
 }
 
 inline icd sqrt(icd p_number)
 {
-  return p_number.VierkantsWortel();
+  return p_number.SquareRoot();
 }
 
 inline icd log10(icd p_number)
@@ -343,7 +346,7 @@ inline icd exp(icd p_number)
 
 inline icd pow(icd p_number,icd  p_power)
 {
-  return p_number.Macht(p_power);
+  return p_number.Power(p_power);
 }
 
 inline icd frexp(icd p_number,int* p_exponent)
@@ -369,37 +372,35 @@ inline icd ldexp(icd p_number,int p_power)
 
 inline icd atan (icd p_number) 
 { 
-  return p_number.ArcTangens(); 
+  return p_number.ArcTangent(); 
 }
 
 inline icd atan2(icd p_y,icd p_x)
 {
-  return p_y.ArcTangens2Punten(p_x);
+  return p_y.ArcTangent2Points(p_x);
 }
 
 inline icd asin(icd p_number)
 {
-  return p_number.ArcSinus();
+  return p_number.ArcSine();
 }
 
 inline icd acos(icd p_number)
 {
-  return p_number.ArcCosinus();
+  return p_number.ArcCosine();
 }
 
 inline icd sin(icd p_number)
 {
-  return p_number.Sinus();
+  return p_number.Sine();
 }
 
 inline icd cos(icd p_number)
 {
-  return p_number.Cosinus();
+  return p_number.Cosine();
 }
 
 inline icd tan(icd p_number)
 {
   return p_number.Tangent();
 }
-
-#endif  // Icd_h

@@ -230,19 +230,9 @@ DoFunctionTest(TestFunction p_function
     printf("                  %s\n",_afp_ftoa(b_number2,40,40).c_str());
   }
 
-  // ICD
-  char buf1[200];
-  char buf2[200];
-  strcpy_s(buf1,200,p_number1);
-  strcpy_s(buf2,200,p_number2);
-  char* pos1 = strchr(buf1,'.');
-  char* pos2 = strchr(buf2,'.');
-  if(pos1) *pos1 = ',';
-  if(pos2) *pos2 = ',';
-
   // ICD8
-  icd i_number1(buf1);
-  icd i_number2(buf2);
+  icd i_number1(p_number1);
+  icd i_number2(p_number2);
   icd i_result;
 
   HPFCounter counter3;
@@ -274,14 +264,14 @@ DoFunctionTest(TestFunction p_function
     }
   }
   counter3.Stop();
-  printf("icd    %10.6f %s\n",counter3.GetCounter(),i_result.AlsString());
+  printf("icd    %10.6f %s\n",counter3.GetCounter(),i_result.AsString());
   if(extraInteger)
   {
     printf("                  +%d\n",exponent);
   }
   if(extraFloat)
   {
-    printf("                  %s\n",i_number2.AlsString());
+    printf("                  %s\n",i_number2.AsString());
   }
 
 
@@ -382,20 +372,10 @@ DoOperatorTest(TestOperator p_operator,char* p_een,char* p_two,char* p_expect,in
   counter2.Stop();
   printf("afp    %10.6f %s\n",counter2.GetCounter(),_afp_ftoa(b_result,60,60).c_str());
 
-  // ICD 4 and improved
-  char buf1[200];
-  char buf2[200];
-  strcpy_s(buf1,200,p_een);
-  strcpy_s(buf2,200,p_two);
-  char* pos1 = strchr(buf1,'.');
-  char* pos2 = strchr(buf2,'.');
-  if(pos1) *pos1 = ',';
-  if(pos2) *pos2 = ',';
-
-
+ 
   // ICD (Improved)
-  icd i_getal1(buf1);
-  icd i_getal2(buf2);
+  icd i_getal1(p_een);
+  icd i_getal2(p_two);
   icd i_result;
 
   HPFCounter counter4;
@@ -411,7 +391,7 @@ DoOperatorTest(TestOperator p_operator,char* p_een,char* p_two,char* p_expect,in
     }
   }
   counter4.Stop();
-  printf("icd    %10.6f %s\n",counter4.GetCounter(),i_result.AlsString());
+  printf("icd    %10.6f %s\n",counter4.GetCounter(),i_result.AsString());
 
   bcd c_number1(p_een);
   bcd c_number2(p_two);
@@ -473,7 +453,7 @@ PrintConstants(int p_count)
 
   printf("PI       Calc   0.000000 +3.1415926535897932384626433832795\n");
   printf("         afp    %0.6f %s\n",count1.GetCounter(),_afp_ftoa(b_pi,41,41).c_str());
-  printf("         icd    %0.6f %s\n",count2.GetCounter(),i_pi.AlsString());
+  printf("         icd    %0.6f %s\n",count2.GetCounter(),i_pi.AsString());
   printf("         bcd    %0.6f %s\n",count3.GetCounter(),c_pi.AsString(bcd::Bookkeeping,true));
 
   // BEREKEN LN(10)
@@ -498,7 +478,7 @@ PrintConstants(int p_count)
 
   printf("LN10     Calc   0.000000 +2.3025850929940456840179914546844\n");
   printf("         afp    %0.6f %s\n",count1.GetCounter(),_afp_ftoa(b_ln10,41).c_str());
-  printf("         icd    %0.6f %s\n",count2.GetCounter(),i_ln10.AlsString());
+  printf("         icd    %0.6f %s\n",count2.GetCounter(),i_ln10.AsString());
   printf("         bcd    %0.6f %s\n",count3.GetCounter(),c_ln10.AsString(bcd::Bookkeeping,true));
 
   // BEREKEN LN(2)
@@ -523,7 +503,7 @@ PrintConstants(int p_count)
 
   printf("LN2      Calc   0.000000 +0.69314718055994530941723212145818\n");
   printf("         afp    %0.6f %s\n",count1.GetCounter(),_afp_ftoa(b_ln2,41).c_str());
-  printf("         icd    %0.6f %s\n",count2.GetCounter(),i_ln2.AlsString());
+  printf("         icd    %0.6f %s\n",count2.GetCounter(),i_ln2.AsString());
   printf("         bcd    %0.6f %s\n",count3.GetCounter(),c_ln2.AsString(bcd::Bookkeeping,true));
 
   printf("\n\n");
