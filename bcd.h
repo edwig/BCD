@@ -103,9 +103,6 @@ public:
   // BCD from a 64bits int
   bcd(const int64 p_value,const int64 p_restvalue = 0);
 
-  // BCD from a 64bits int
-  bcd(const uint64 p_value,const int64 p_restvalue = 0);
-
   // Copy constructor.
   bcd(const bcd& icd);
 

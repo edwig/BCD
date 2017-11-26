@@ -91,11 +91,6 @@ bcd::bcd(const int64 p_value,const int64 p_restvalue /*= 0*/)
   SetValueInt64(p_value,p_restvalue);
 }
 
-bcd::bcd(const uint64 p_value,const int64 p_restvalue)
-{
-  SetValueUInt64(p_value,p_restvalue);
-}
-
 // bcd::bcd(double)
 // Description: Construct a bcd from a double
 // 
@@ -2241,14 +2236,25 @@ bcd::SetValueLong(const long p_value, const long p_restValue)
   }
   if(p_value)
   {
+    int exp = bcdDigits - 1;
     if(p_restValue)
     {
       ShiftRight();
     }
-    m_mantissa[0] = long_abs(p_value);
-
+    long value = abs(p_value);
+    if(value < bcdBase)
+    {
+      m_mantissa[0] = long_abs(p_value);
+    }
+    else
+    {
+      ShiftRight();
+      exp += bcdDigits;
+      m_mantissa[1] = value % bcdBase;
+      m_mantissa[0] = value / bcdBase;
+    }
     // Normalize with exponent set
-    Normalize(bcdDigits - 1);
+    Normalize(exp);
   }
 }
 
