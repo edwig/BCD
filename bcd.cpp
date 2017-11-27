@@ -568,9 +568,7 @@ bcd::Round(int p_precision /*=0*/)
   int precision = p_precision;
   
   // Precision is dependent on the exponent
-  precision -= m_exponent;
-  // Precision is 1 based, because 1 position before decimal point is implied
-  precision += 1;
+  precision += m_exponent;
 
   // Quick optimization
   if(precision <= 0)
@@ -605,7 +603,7 @@ bcd::Round(int p_precision /*=0*/)
 
       if(digitNext >= 5)
       {
-        // The rounding in optimised form
+        // The rounding in optimized form
         m_mantissa[mant] = ++mm;
       }
     }
@@ -615,13 +613,13 @@ bcd::Round(int p_precision /*=0*/)
     // In-between optimalisation
     int base = bcdBase;
     // Calculate base
-    for(int p2 = 0;p2 < pos; ++p2)
+    for(int p2 = 0;p2 <= pos; ++p2)
     {
       base /= 10;
     }
-    // Rouding this digit
+    // Rounding this digit
     int mantBefore = mm / base;
-    // Next rouding digit
+    // Next rounding digit
     int digitNext = mm % base;
     digitNext /= (base / 10);
 
@@ -656,9 +654,7 @@ bcd::Truncate(int p_precision /*=0*/)
   int precision = p_precision;
 
   // Precision is dependent on the exponent
-  precision -= m_exponent;
-  // Precision is 1 based, because 1 position before decimal point is implied
-  precision += 1;
+  precision += m_exponent;
 
   // Quick optimization
   if(precision <= 0)
@@ -682,7 +678,7 @@ bcd::Truncate(int p_precision /*=0*/)
   {
     // Calculate base
     int base = bcdBase;
-    for(int p2 = 0;p2 < pos; ++p2)
+    for(int p2 = 0;p2 <= pos; ++p2)
     {
       base /= 10;
     }

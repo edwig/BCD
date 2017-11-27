@@ -602,5 +602,273 @@ namespace UnitTest
 
       Assert::IsTrue(expect == result);
     }
+
+    TEST_METHOD(T048_Round)
+    {
+      Logger::WriteMessage("Test rounding of a number with : bcd.Round(5)");
+      
+      // 9988776655,4433277112
+      bcd one("9988776655.4433277112");
+      one.Round(5);
+      bcd expect("9988776655.44333");
+      CString test = one.AsString();
+
+      Assert::IsTrue(expect == one);
+
+      one = CString("9988776655.64433277112");
+      expect = CString("9988776655.644333");
+      one.Round(6);
+      Assert::IsTrue(expect == one);
+
+      one = CString("9988776655.64433277112");
+      expect = CString("9988776656");
+      one.Round(0);
+      Assert::IsTrue(expect == one);
+    }
+
+    TEST_METHOD(T049_Truncate)
+    {
+      Logger::WriteMessage("Test truncation of a number with : bcd.Truncate(5)");
+      
+      // 9988776655,4433277112
+      bcd one("9988776655.4433277112");
+      one.Truncate(5);
+      bcd expect("9988776655.44332");
+
+      Assert::IsTrue(expect == one);
+
+      one = CString("9988776655.64433277112");
+      expect = CString("9988776655");
+      one.Truncate(0);
+      Assert::IsTrue(expect == one);
+    }
+
+    TEST_METHOD(T050_Sine)
+    {
+      Logger::WriteMessage("Test Sine function of a radian with : bcd.Sine()");
+
+      // 0,9876543210123456
+      char* a_angle = "0.9876543210123456";
+      char* r_sine  = "8.347366295099261173476093153791068840984E-1";
+
+      bcd one(a_angle);
+      bcd expect(r_sine);
+      bcd result = one.Sine();
+
+      Assert::IsTrue(expect == result);
+    }
+
+    TEST_METHOD(T051_Cosine)
+    {
+      Logger::WriteMessage("Test Cosine function of a radian with : bcd.Cosine()");
+
+      // 0,9876543210123456
+      char* a_angle  = "0.9876543210123456";
+      char* r_cosine = "5.506493978516714425340844117564672940338E-1";
+
+      bcd one(a_angle);
+      bcd expect(r_cosine);
+      bcd result = one.Cosine();
+
+      Assert::IsTrue(expect == result);
+    }
+
+    TEST_METHOD(T052_Tangent)
+    {
+      Logger::WriteMessage("Test Tangent function of a radian with : bcd.Tangent()");
+
+      // 0,9876543210123456
+      char* a_angle   = "0.9876543210123456";
+      char* r_tangent = "1.515913088739596368439240774287234302490";
+
+      bcd one(a_angle);
+      bcd expect(r_tangent);
+      bcd result = one.Tangent();
+
+      Assert::IsTrue(expect == result);
+    }
+
+    TEST_METHOD(T053_ArcSine)
+    {
+      Logger::WriteMessage("Test ArcSine function of a ratio with : bcd.ArcSine()");
+
+      char* a_ratio = "0.765498765404321098765";
+      char* r_asine = "8.7181613107055910102494602134303437728E-1";
+
+      bcd one(a_ratio);
+      bcd expect(r_asine);
+      bcd result = one.ArcSine();
+
+      Assert::IsTrue(expect == result);
+    }
+
+    TEST_METHOD(T054_ArcCosine)
+    {
+      Logger::WriteMessage("Test ArcCosine function of a ratio with : bcd.ArcCosine()");
+
+      char* a_ratio   = "0.765498765404321098765";
+      char* r_acosine = "6.98980195724337518206375670296717064818E-1";
+
+      bcd one(a_ratio);
+      bcd expect(r_acosine);
+      bcd result = one.ArcCosine();
+
+      Assert::IsTrue(expect == result);
+    }
+
+    TEST_METHOD(T055_ArcTangent)
+    {
+      Logger::WriteMessage("Test ArcTangent function of a ratio with : bcd.ArcTangent()");
+
+      char* a_ratio    = "0.765498765404321098765";
+      char* r_atangent = "6.53346752384431270749403109172000942006E-1";
+
+      bcd one(a_ratio);
+      bcd expect(r_atangent);
+      bcd result = one.ArcTangent();
+
+      Assert::IsTrue(expect == result);
+    }
+
+    TEST_METHOD(T056_SQL_NUMERIC_STRUCT)
+    {
+      Logger::WriteMessage("Test SQL_NUMERIC_STRUCT by assigning and converting to");
+
+      // num = 10.001 (ten and 1 thousandth)
+      SQL_NUMERIC_STRUCT num;
+      SQL_NUMERIC_STRUCT res;
+      memset(&num,0,sizeof(SQL_NUMERIC_STRUCT));
+      memset(&res,0,sizeof(SQL_NUMERIC_STRUCT));
+
+      // Filling NUM
+      num.sign      = 1; // Positive
+      num.precision = 6;
+      num.scale     = 4;
+      num.val[0] = 0xAA;
+      num.val[1] = 0x86;
+      num.val[2] = 0x01;
+
+      bcd one(&num);
+      one.AsNumeric(&res);
+
+      bcd result(&res);
+
+      Assert::IsTrue(one == result);
+    }
+
+    TEST_METHOD(T057_AsDouble)
+    {
+      Logger::WriteMessage("Test as-other-datatype: bcd.AsDouble()");
+
+      // 9988776655,4433221112
+      bcd one("9988776655.4433");
+      double result = one.AsDouble();
+      double expect = 9988776655.4433;
+
+      Assert::IsTrue(expect == result);
+    }
+
+    TEST_METHOD(T058_AsShort)
+    {
+      Logger::WriteMessage("Test as-other-datatype: bcd.AsShort()");
+
+      bcd one("4433");
+      short result = one.AsShort();
+      short expect = 4433;
+
+      Assert::IsTrue(expect == result);
+    }
+
+    TEST_METHOD(T059_AsUShort)
+    {
+      Logger::WriteMessage("Test as-other-datatype: bcd.AsUShort()");
+
+      bcd one("54873");
+      unsigned short result = one.AsUShort();
+      unsigned short expect = 54873;
+
+      Assert::IsTrue(expect == result);
+    }
+
+    TEST_METHOD(T060_AsLong)
+    {
+      Logger::WriteMessage("Test as-other-datatype: bcd.AsLong()");
+
+      bcd one("98854873");
+      long result = one.AsLong();
+      long expect = 98854873;
+
+      Assert::IsTrue(expect == result);
+      Assert::IsTrue(one.GetFitsInLong());
+    }
+
+    TEST_METHOD(T061_AsULong)
+    {
+      Logger::WriteMessage("Test as-other-datatype: bcd.AsULong()");
+
+      bcd one("2974276950");
+      unsigned long result = one.AsULong();
+      unsigned long expect = 2974276950;
+
+      Assert::IsTrue(expect == result);
+    }
+
+    TEST_METHOD(T062_AsInt64)
+    {
+      Logger::WriteMessage("Test as-other-datatype: bcd.AsInt64()");
+
+      bcd one("23154765019");
+      __int64 result = one.AsInt64();
+      __int64 expect = 23154765019L;
+
+      Assert::IsTrue(expect == result);
+      Assert::IsTrue(one.GetFitsInInt64());
+    }
+
+    TEST_METHOD(T063_Operator_assign_long)
+    {
+      Logger::WriteMessage("Test operator = long");
+
+      // 123456,789012345678
+      // 9988776655,4433221100
+      long one = 1234567890L;
+      bcd result;
+      result = one;
+      CString resstring = result.AsString();
+      char* expect = "1234567890";
+
+      Assert::IsTrue(strcmp(expect,resstring.GetString()) == 0);
+    }
+
+    TEST_METHOD(T064_Operator_assign_double)
+    {
+      Logger::WriteMessage("Test operator = double");
+
+      // 123456,789012345678
+      // 9988776655,4433221100
+      double one = 1234567890.5432L;
+      bcd result;
+      result = one;
+      CString resstring = result.AsString();
+      char* expect = "1234567890.5432";
+
+      Assert::IsTrue(strcmp(expect,resstring.GetString()) == 0);
+    }
+    
+    
+//     Don't know how to test this!!
+//
+//     TEST_METHOD(T063_AsUInt64)
+//     {
+//       Logger::WriteMessage("Test as-other-datatype: bcd.AsUInt64()");
+// 
+//       bcd one("23154765019");
+//       unsigned __int64 result = one.AsUInt64();
+//       unsigned __int64 expect = 0xC12378901234DD99L;
+// 
+//       Assert::IsTrue(expect == result);
+//     }
+    
+
   };
 }
