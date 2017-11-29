@@ -1994,6 +1994,7 @@ bcd::GetLength() const
 
       // See if there is a digit here
       long num = number / base;
+      number  %= base;
       base    /= 10;
       if(num)
       {
@@ -2112,7 +2113,7 @@ bcd::GetHasDecimals() const
   // Compare the length with the exponent.
   // If exponent smaller, the rest is behind the decimal point
   int length = GetLength();
-  if(m_exponent < length)
+  if(m_exponent < (length - 1))
   {
     return true;
   }

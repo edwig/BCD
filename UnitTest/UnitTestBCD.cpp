@@ -854,21 +854,162 @@ namespace UnitTest
 
       Assert::IsTrue(strcmp(expect,resstring.GetString()) == 0);
     }
-    
-    
-//     Don't know how to test this!!
-//
-//     TEST_METHOD(T063_AsUInt64)
-//     {
-//       Logger::WriteMessage("Test as-other-datatype: bcd.AsUInt64()");
-// 
-//       bcd one("23154765019");
-//       unsigned __int64 result = one.AsUInt64();
-//       unsigned __int64 expect = 0xC12378901234DD99L;
-// 
-//       Assert::IsTrue(expect == result);
-//     }
-    
 
+    TEST_METHOD(T065_ArcTangent2)
+    {
+      Logger::WriteMessage("Test ArcTangent2Points function of bcd with bcd::ArcTangent2Points");
+
+      // 1.0456788
+      // 7.89991232E-1
+
+      bcd one("1.0456788");
+      bcd two("7.89991232E-1");
+
+      bcd result = one.ArcTangent2Points(two);
+      CString resstring = result.AsString();
+      char* expect = "4.065388783692102294632898803723974485214";
+
+      Assert::IsTrue(strcmp(expect,resstring.GetString()) == 0);
+    }
+    
+    TEST_METHOD(T066_Negate)
+    {
+      Logger::WriteMessage("Test the Negate method for unary -");
+
+      bcd one("45523.89901");
+      one.Negate();
+      CString resstring = one.AsString();
+      char* expect = "-45523.89901";
+
+      Assert::IsTrue(strcmp(expect,resstring.GetString()) == 0);
+    }
+    
+    TEST_METHOD(T067_IsNull)
+    {
+      Logger::WriteMessage("Test the status function IsNull");
+
+      bcd one;
+      bcd two(12);
+
+      Assert::IsTrue(one.IsNull());
+      Assert::IsFalse(two.IsNull());
+    }
+
+    TEST_METHOD(T068_GetSign)
+    {
+      Logger::WriteMessage("Test the status function GetSign");
+
+      bcd zero;
+      bcd one(12);
+      bcd two(-12);
+
+      Assert::IsTrue(zero.GetSign() ==  0);
+      Assert::IsTrue(one.GetSign()  ==  1);
+      Assert::IsTrue(two.GetSign()  == -1);
+    }
+
+    TEST_METHOD(T069_GetLength)
+    {
+      Logger::WriteMessage("Test the status function GetLength");
+
+      // 123456,789012345678
+      bcd one("123456.789012345678");
+      Assert::IsTrue(one.GetLength() == 18);
+    }
+
+    TEST_METHOD(T070_GetPrecision)
+    {
+      Logger::WriteMessage("Test the status function GetPrecision");
+
+      // 123456,789012345678
+      bcd one("123456.789012345678");
+      Assert::IsTrue(one.GetPrecision() == 12);
+    }
+
+    TEST_METHOD(T071_GetMaxSize)
+    {
+      Logger::WriteMessage("Test the status function GetMaxSize");
+
+      // 123456,789012345678
+      bcd one("123456.789012345678");
+      Assert::IsTrue(one.GetMaxSize() == 40);
+    }
+
+    TEST_METHOD(T072_GetHasDecimals)
+    {
+      Logger::WriteMessage("Test the status function GetHasDecimals");
+
+      // 123456,789012345678
+      bcd one("123456.789012345678");
+      bcd two("877234");
+      bcd three("123.9");
+      Assert::IsTrue  (one.GetHasDecimals());
+      Assert::IsFalse (two.GetHasDecimals());
+      Assert::IsTrue(three.GetHasDecimals());
+    }
+
+    TEST_METHOD(T073_GetExponent)
+    {
+      Logger::WriteMessage("Test the function GetExponent");
+
+      // 123456,789012345678
+      bcd one("123456.789012345678");
+      bcd two("877234");
+      bcd three("123.9");
+      bcd four("0.0066");
+
+      Assert::IsTrue(one.GetExponent() == 5);
+      Assert::IsTrue(two.GetExponent() == 5);
+      Assert::IsTrue(three.GetExponent() == 2);
+      Assert::IsTrue(four.GetExponent() == -3);
+    }
+
+    TEST_METHOD(T074_GetMantissa)
+    {
+      Logger::WriteMessage("Test the function GetMantissa");
+
+      // 123456,789012345678
+      bcd one("123456.789012345678");
+      bcd two("123.9");
+
+      bcd mant1 = one.GetMantissa();
+      bcd mant2 = two.GetMantissa();
+
+      CString m1res = mant1.AsString();
+      CString m2res = mant2.AsString();
+
+      CString expect1("1.23456789012345678");
+      CString expect2("1.239");
+
+      Assert::AreEqual(expect1.GetString(),m1res.GetString());
+      Assert::AreEqual(expect2.GetString(),m2res.GetString());
+    }
+
+    TEST_METHOD(T075_ReadWriteFile)
+    {
+      Logger::WriteMessage("Test writing to file");
+
+      // 123456,789012345678
+      bcd one("123456.789012345678");
+      FILE* file = nullptr;
+      fopen_s(&file,"C:\\TMP\\bcd.test","wb");
+      if(file)
+      {
+        one.WriteToFile(file);
+        fclose(file);
+      }
+
+      bcd result;
+      Logger::WriteMessage("Test reading from file");
+      file = nullptr;
+      fopen_s(&file,"C:\\TMP\\bcd.test","rb");
+      if(file)
+      {
+        result.ReadFromFile(file);
+        fclose(file);
+      }
+
+      Assert::IsTrue(one == result);
+    }
   };
 }
