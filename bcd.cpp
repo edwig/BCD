@@ -629,7 +629,7 @@ bcd::Round(int p_precision /*=0*/)
       // Calculate new mantissa
       ++mantBefore;
       int newMant = mantBefore * base;
-      if(pos > 0)
+      if(pos >= 0)
       {
         m_mantissa[mant] = newMant;
       }
@@ -1834,9 +1834,34 @@ bcd::AsString(int p_format /*=Bookkeeping*/,bool p_printPositive /*=false*/) con
 }
 
 CString 
-bcd::AsDisplayString() const
+bcd::AsDisplayString(int p_decimals /*=2*/) const
 {
-  return AsString();
+  // Not in the bookkeeping range
+  if(m_exponent > 12 || m_exponent < -2)
+  {
+    return AsString();
+  }
+  bcd number(*this);
+  number.Round(p_decimals);
+
+  CString str = number.AsString();
+  str.Replace(".",",");
+
+  int pos = str.Find(",");
+  if(pos > 0)
+  {
+    CString result = str.Mid(pos);
+    str = str.Left(pos);
+
+    while(str.GetLength() > 3)
+    {
+      result = "." + str.Right(3) + result;
+      str = str.Left(str.GetLength() - 3);
+    }
+    result = str + result;
+    return result;
+  }
+  return str;
 }
 
 // Get as an ODBC SQL NUMERIC

@@ -238,7 +238,7 @@ public:
   // Get as a mathematical string
   CString AsString(int p_format = Bookkeeping,bool p_printPositive = false) const;
   // Get as a display string (by desktop locale)
-  CString AsDisplayString() const;
+  CString AsDisplayString(int p_decimals = 2) const;
   // Get as an ODBC SQL NUMERIC(p,s)
   void    AsNumeric(SQL_NUMERIC_STRUCT* p_numeric) const;
   

@@ -1011,5 +1011,47 @@ namespace UnitTest
 
       Assert::IsTrue(one == result);
     }
+
+    TEST_METHOD(T076_math_floor)
+    {
+      Logger::WriteMessage("Test math style floor");
+
+      // 123456,789012345678
+      bcd one("123456.789012345678");
+      bcd result = floor(one);
+      CString resstring = result.AsString();
+      char* expect("123456");
+
+      Assert::AreEqual(expect,resstring.GetString());
+    }
+
+    TEST_METHOD(T077_math_ceil)
+    {
+      Logger::WriteMessage("Test math style ceil");
+
+      // 123456,789012345678
+      bcd one("123456.789012345678");
+      bcd result = ceil(one);
+      CString resstring = result.AsString();
+      char* expect("123457");
+
+      Assert::AreEqual(expect,resstring.GetString());
+    }
+
+    TEST_METHOD(T078_AsDisplayString)
+    {
+      Logger::WriteMessage("Test AsDisplayString");
+
+      // 123456,789012345678
+      bcd one("123456.789012345678");
+      CString result = one.AsDisplayString();
+      char* expect = "123.456,79";
+      Assert::AreEqual(expect,result.GetString());
+
+      bcd two("9123456.789012345678");
+      CString result2 = two.AsDisplayString();
+      char* expect2 = "9.123.456,79";
+      Assert::AreEqual(expect2,result2.GetString());
+    }
   };
 }
