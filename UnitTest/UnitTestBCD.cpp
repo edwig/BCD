@@ -754,6 +754,7 @@ namespace UnitTest
       bcd result(&res);
 
       Assert::IsTrue(one == result);
+      Assert::IsTrue(one == bcd("10.001"));
     }
 
     TEST_METHOD(T057_AsDouble)
