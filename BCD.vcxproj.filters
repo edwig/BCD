@@ -17,6 +17,7 @@
   <ItemGroup>
     <None Include="test.txt" />
     <None Include="ReadMe" />
+    <None Include="LICENSE" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -43,6 +44,9 @@
     <ClInclude Include="Testing.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="StdException.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -63,10 +67,16 @@
     <ClCompile Include="Testing.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="StdException.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="BCD.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Releasenotes.txt" />
   </ItemGroup>
 </Project>

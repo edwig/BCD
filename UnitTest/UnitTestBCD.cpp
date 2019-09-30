@@ -1043,6 +1043,10 @@ namespace UnitTest
     {
       Logger::WriteMessage("Test AsDisplayString");
 
+      // BEWARE: I am testing this in the Dutch locale
+      // Thousands separator is a decimal point
+      // Decimals  separator is a comma
+
       // 123456,789012345678
       bcd one("123456.789012345678");
       CString result = one.AsDisplayString();

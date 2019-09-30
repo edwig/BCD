@@ -7,10 +7,8 @@
 // Numbers are stored in 1E8 based mantissa with a digital . implied at the second position
 // The mantissa array exists of a series of integers with 8 functional digits each
 //
-// Copyright (c) 2013-2017 ir W. E. Huisman
+// Copyright (c) 1998-2019 ir W. E. Huisman
 //
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
 //
 #pragma once
 #include <sqltypes.h>   // Needed for conversions of SQL_NUMERIC_STRUCT
@@ -102,6 +100,9 @@ public:
 
   // BCD from a 64bits int
   bcd(const int64 p_value,const int64 p_restvalue = 0);
+
+  // BCD from a 64bits int
+  bcd(const uint64 p_value,const int64 p_restvalue = 0);
 
   // Copy constructor.
   bcd(const bcd& icd);

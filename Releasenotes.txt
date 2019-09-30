@@ -1,0 +1,11 @@
+BCD Releasenotes
+----------------
+
+Version September 2019
+----------------------
+1) Added the dynamic discovery of the locale settings for the thousands 
+   and decimal separators in "AsDisplayString()"
+2) Improved on AsDisplayString as borrowed from the SQLComponents project
+3) Upgraded to VS2019 and made all 4 configurations work
+   Win32/x64 Debug/Release combinations
+4) Added StdException handling and converted to /EHa compilation

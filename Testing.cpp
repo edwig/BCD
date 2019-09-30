@@ -677,7 +677,7 @@ _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
   printf("\n");
 
 #ifdef DEBUG
-  int count = 1;      // Quicker in debug mode 
+  int count = 10;     // Quicker in debug mode 
 #else
   int count = 1000;   // The real deal!!!
 #endif
