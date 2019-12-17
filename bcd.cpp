@@ -43,6 +43,8 @@ InitValutaString()
 {
   if(g_locale_valutaInit == false)
   {
+    setlocale(LC_NUMERIC, "");
+
     GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SDECIMAL,  g_locale_decimalSep, SEP_LEN);
     GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_STHOUSAND, g_locale_thousandSep,SEP_LEN);
     GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SCURRENCY, g_locale_strCurrency,SEP_LEN);
@@ -50,7 +52,6 @@ InitValutaString()
     g_locale_thousandSepLen = (int)strlen(g_locale_thousandSep);
     g_locale_strCurrencyLen = (int)strlen(g_locale_strCurrency);
 
-    setlocale(LC_NUMERIC, "C");
     g_locale_valutaInit = true;
   }
 }
@@ -88,9 +89,24 @@ bcd::bcd(const char p_value)
 }
 
 // bcd::bcd(value)
+// Description: BCD from an unsigned char value
+bcd::bcd(const unsigned char p_value)
+{
+  SetValueInt((int)p_value);
+}
+
+// bcd::bcd(value)
 // Description: BCD from a short value
 // 
 bcd::bcd(const short p_value)
+{
+  SetValueInt((int)p_value);
+}
+
+// bcd::bcd(value)
+// Description: BCD from an unsigned short value
+//
+bcd::bcd(const unsigned short p_value)
 {
   SetValueInt((int)p_value);
 }
@@ -102,6 +118,13 @@ bcd::bcd(const int p_value)
   SetValueInt(p_value);
 }
 
+// bcd::bcd(value)
+// BCD from an unsigned integer
+bcd::bcd(const unsigned int p_value)
+{
+  SetValueInt64((int64)p_value,0);
+}
+
 // bcd::bcd(value,value)
 // Description: Construct a BCD from a long and an option long
 // Technical:   See description of SetValueLong
@@ -109,6 +132,14 @@ bcd::bcd(const int p_value)
 bcd::bcd(const long p_value, const long p_restValue /*= 0*/)
 {
   SetValueLong(p_value,p_restValue);
+}
+
+// bcd::bcd(value, value)
+// Description: Construct a BCD from an unsigned long and an unsigned optional long
+// Technical:   See description of SetValueLong
+bcd::bcd(const unsigned long p_value, const unsigned long p_restValue /*= 0*/)
+{
+  SetValueInt64((int64)p_value,(int64)p_restValue);
 }
 
 // bcd::bcd(value,value)
@@ -123,6 +154,14 @@ bcd::bcd(const int64 p_value,const int64 p_restvalue /*= 0*/)
 bcd::bcd(const uint64 p_value,const int64 p_restvalue)
 {
   SetValueUInt64(p_value,p_restvalue);
+}
+
+// bcd::bcd(float)
+// Description: Construct a bcd from a float
+// 
+bcd::bcd(const float p_value)
+{
+  SetValueDouble((double)p_value);
 }
 
 // bcd::bcd(double)
@@ -735,7 +774,14 @@ bcd::Truncate(int p_precision /*=0*/)
 void
 bcd::Negate()
 {
-  m_sign = (m_sign == Positive) ? Negative : Positive;
+  if(IsNull())
+  {
+    m_sign = Positive;
+  }
+  else
+  {
+    m_sign = (m_sign == Positive) ? Negative : Positive;
+  }
 }
   
 //////////////////////////////////////////////////////////////////////////
@@ -851,7 +897,7 @@ bcd::SquareRoot() const
   number = *this; // Number to get the root from
   if(number.GetSign() == -1)
   {
-    throw StdException("Cannot get a square root from a negative number.");
+    throw new StdException("BCD: Cannot get a square root from a negative number.");
   }
   // Reduction by dividing through square of a whole number
   // for speed a power of two
@@ -945,7 +991,7 @@ bcd::Log() const
 
   if(*this <= bcd(0L)) 
   { 
-    throw StdException("Cannot calculate a natural logarithme of a number <= 0");
+    throw new StdException("BCD: Cannot calculate a natural logarithm of a number <= 0");
   }
   // Bring number under 10 and save exponent
   number = *this;
@@ -956,7 +1002,7 @@ bcd::Log() const
   }
   // In order to get a fast Taylor series result we need to get the fraction closer to one
   // The fraction part is [1.xxx-9.999] (base 10) OR [1.xxx-255.xxx] (base 256) at this point
-  // Repeat a series of square root until 'getal' < 1.2
+  // Repeat a series of square root until 'number' < 1.2
   for(k = 0; number > fast; k++)
   {
     number = number.SquareRoot();
@@ -1060,7 +1106,7 @@ bcd::Exp() const
 }
 
 // bcd::Log10
-// Description: Logarithme in base 10
+// Description: Logarithm in base 10
 // Technical:   log10 = ln(x) / ln(10);
 bcd     
 bcd::Log10() const
@@ -1069,7 +1115,7 @@ bcd::Log10() const
 
   if(GetSign() <= 0) 
   { 
-    throw StdException("Cannot get a 10-logarithme of a number <= 0");
+    throw new StdException("BCD: Cannot get a 10-logarithm of a number <= 0");
   }
   res = *this;
   res = res.Log() / LN10();
@@ -1079,7 +1125,7 @@ bcd::Log10() const
 
 // Ten Power
 // Description: bcd . 10^n
-// Technical:   add n to the expponent of the number
+// Technical:   add n to the exponent of the number
 bcd
 bcd::TenPower(int n)
 {
@@ -1108,7 +1154,7 @@ bcd::TenPower(int n)
 //              1) Reduce x to between 0..2*PI 
 //              2) Reduce further until x between 0..PI by means of sin(x+PI) = -Sin(x)
 //              3) Then do the Taylor expansion series
-// Reduction is needed to speed up the Tayler expansion and reduce rounding errors
+// Reduction is needed to speed up the Taylor expansion and reduce rounding errors
 //
 bcd
 bcd::Sine() const
@@ -1291,7 +1337,7 @@ bcd::Tangent() const
   bcd oneandhalf = three * halfpi;
   if( number == halfpi || number == oneandhalf)
   { 
-    throw StdException("Cannot calculate a tangent from a angle of 1/2 pi or 3/2 pi");
+    throw new StdException("BCD: Cannot calculate a tangent from a angle of 1/2 pi or 3/2 pi");
   }
   // Sin(x)/Sqrt(1-Sin(x)^2)
   result     = number.Sine(); 
@@ -1326,7 +1372,7 @@ bcd::ArcSine() const
   number = *this;
   if(number > c1 || number < -c1)
   {
-    throw StdException("Cannot calculate an arcsine from a number > 1 or < -1");
+    throw new StdException("BCD: Cannot calculate an arcsine from a number > 1 or < -1");
   }
 
   // Save the sign
@@ -1498,7 +1544,7 @@ bcd::ArcTangent2Points(bcd p_x) const
 
 //////////////////////////////////////////////////////////////////////////
 //
-// GET A SOMETHING DIFFERENT THAN THE BCD
+// GET AS SOMETHING DIFFERENT THAN THE BCD
 //
 //////////////////////////////////////////////////////////////////////////
 
@@ -1568,14 +1614,14 @@ bcd::AsShort() const
   {
     if(result > SHORT_MAX)
     {
-      throw StdException("BCD: Overflow in conversion to short number.");
+      throw new StdException("BCD: Overflow in conversion to short number.");
     }
   }
   else
   {
     if(result < SHORT_MIN)
     {
-      throw StdException("BCD: Underflow in conversion to short number.");
+      throw new StdException("BCD: Underflow in conversion to short number.");
     }
   }
   return (short) result;
@@ -1589,7 +1635,7 @@ bcd::AsUShort() const
   // Check for unsigned
   if(m_sign == Negative)
   {
-    throw StdException("BCD: Cannot convert a negative number to an unsigned short number.");
+    throw new StdException("BCD: Cannot convert a negative number to an unsigned short number.");
   }
   // Quick check for zero
   if(m_exponent < 0)
@@ -1610,7 +1656,7 @@ bcd::AsUShort() const
   // Take care of overflow
   if(result > USHORT_MAX)
   {
-    throw StdException("BCD: Overflow in conversion to unsigned short number.");
+    throw new StdException("BCD: Overflow in conversion to unsigned short number.");
   }
 
   return (short)result;
@@ -1642,14 +1688,14 @@ bcd::AsLong() const
   {
     if(result > LONG_MAX)
     {
-      throw StdException("BCD: Overflow in conversion to integer number.");
+      throw new StdException("BCD: Overflow in conversion to integer number.");
     }
   }
   else
   {
     if(result < LONG_MIN)
     {
-      throw StdException("BCD: Underflow in conversion to integer number.");
+      throw new StdException("BCD: Underflow in conversion to integer number.");
     }
     result = -result;
   }
@@ -1664,7 +1710,7 @@ bcd::AsULong() const
   // Check for unsigned
   if(m_sign == Negative)
   {
-    throw StdException("BCD: Cannot convert a negative number to an unsigned long.");
+    throw new StdException("BCD: Cannot convert a negative number to an unsigned long.");
   }
 
   // Quick optimization for really small numbers
@@ -1686,7 +1732,7 @@ bcd::AsULong() const
   // Take care of overflow
   if(result > ULONG_MAX)
   {
-    throw StdException("BCD: Overflow in conversion to unsigned long integer.");
+    throw new StdException("BCD: Overflow in conversion to unsigned long integer.");
   }
   return (long)result;
 }
@@ -1725,7 +1771,7 @@ bcd::AsInt64() const
   // Take care of overflow
   if(result1 > (LLONG_MAX / base2))
   {
-    throw StdException("BCD: Overflow in conversion to 64 bits integer number.");
+    throw new StdException("BCD: Overflow in conversion to 64 bits integer number.");
   }
   result2 += (result1 * base2);
 
@@ -1744,7 +1790,7 @@ bcd::AsUInt64() const
   // Check for negative
   if(m_sign == Negative)
   {
-    throw StdException("BCD: Cannot convert a negative number to an unsigned 64 bits integer");
+    throw new StdException("BCD: Cannot convert a negative number to an unsigned 64 bits integer");
   }
   // Quick optimization for really small numbers
   if(m_exponent < 0)
@@ -1774,7 +1820,7 @@ bcd::AsUInt64() const
   // Take care of overflow
   if(result1 > (ULLONG_MAX / base2))
   {
-    throw StdException("BCD: Overflow in conversion to 64 bits unsigned integer number.");
+    throw new StdException("BCD: Overflow in conversion to 64 bits unsigned integer number.");
   }
   result2 += (result1 * base2);
 
@@ -1870,7 +1916,7 @@ bcd::AsString(int p_format /*=Bookkeeping*/,bool p_printPositive /*=false*/) con
 CString 
 bcd::AsDisplayString(int p_decimals /*=2*/) const
 {
-  // Initalize locale strings
+  // Initialize locale strings
   InitValutaString();
 
   // Not in the bookkeeping range
@@ -1888,7 +1934,7 @@ bcd::AsDisplayString(int p_decimals /*=2*/) const
     str.Replace(".",g_locale_decimalSep);
   }
 
-  // Apply thousand seperators in first part of the number
+  // Apply thousand separators in first part of the number
   if((pos > 0) || (pos == -1 && str.GetLength() > 3))
   {
     CString result = pos > 0 ? str.Mid(pos) : "";
@@ -1944,7 +1990,7 @@ bcd::AsNumeric(SQL_NUMERIC_STRUCT* p_numeric) const
   // Check for overflow. Cannot be greater than 9.999999999E+37
   if(m_exponent >= SQLNUM_MAX_PREC)
   {
-    throw StdException("Overflow in converting bcd to SQL NUMERIC/DECIMAL");
+    throw new StdException("BCD: Overflow in converting bcd to SQL NUMERIC/DECIMAL");
   }
 
   // Calculate the scale of the number
@@ -2521,7 +2567,7 @@ bcd::SetValueString(const CString& p_string,bool /*p_fromDB*/)
       default:  // Now must be a digit. No other chars allowed
                 if(isdigit(c) == false)
                 {
-                  throw StdException("BCD: Conversion from string. Bad format in decimal number");
+                  throw new StdException("BCD: Conversion from string. Bad format in decimal number");
                 }
                 break;
     }
@@ -2878,8 +2924,8 @@ bcd::DebugPrint(char* p_name)
 // bcd::Epsilon
 // Description: Stopping criterion for iterations
 // Technical:   Translates fraction to lowest decimal position
-//               10 -> 0,00000000000000000010
-//                5 -> 0,00000000000000000005
+//               10 -> 0.00000000000000000010
+//                5 -> 0.00000000000000000005
 bcd&
 bcd::Epsilon(long p_fraction) const
 {
@@ -2967,7 +3013,7 @@ bcd::Div(const bcd& p_number) const
   // If divisor is zero -> ERROR
   if (p_number.IsNull())
   {
-    throw StdException("BCD: Division by zero.");
+    throw new StdException("BCD: Division by zero.");
   }
   // Shortcut: result is zero if this is zero
   if(IsNull())
@@ -3526,6 +3572,7 @@ bcd tan(bcd p_number)
 //////////////////////////////////////////////////////////////////////////
 //
 // FILE STREAM FUNCTIONS
+// Used for binary storage in a binary-mode file stream!
 //
 //////////////////////////////////////////////////////////////////////////
 

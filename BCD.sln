@@ -1,11 +1,16 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27004.2009
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29609.76
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BCD", "BCD.vcxproj", "{73E93272-ED5F-4FCB-BE5C-0071A3C63830}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTest", "UnitTest\UnitTest.vcxproj", "{3B819FD1-8B09-4764-8442-38463B4A0818}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution parts", "Solution parts", "{C4C5F241-0D68-4A94-807D-8BA1B7773E5F}"
+	ProjectSection(SolutionItems) = preProject
+		Binary Coded Decimal.docx = Binary Coded Decimal.docx
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

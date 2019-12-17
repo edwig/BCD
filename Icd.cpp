@@ -584,7 +584,7 @@ icd::SquareRoot() const
   number = *this; // Number to get the square-root from
   if(number.GetSign() == -1)
   {
-    throw CString("Cannot calculate a square-root from a negative number");
+    throw new CString("Cannot calculate a square-root from a negative number");
   }
   // Reduction by dividing through the square of a whole number
   // For speed we use the powers of two
@@ -683,7 +683,7 @@ icd::Log() const
 
   if(*this <= icd(0L)) 
   { 
-    throw CString("Cannot get a natural logarithm from a number <= 0");
+    throw new CString("Cannot get a natural logarithm from a number <= 0");
   }
   // Bringing the number under 10 and save the exponent
   number = *this;
@@ -807,7 +807,7 @@ icd::Log10() const
 
   if(GetSign() <= 0) 
   { 
-    throw CString("Cannot calculate a logarithm from a number <= 0");
+    throw new CString("Cannot calculate a logarithm from a number <= 0");
   }
   res = *this;
   res = res.Log() / LN10();
@@ -1007,7 +1007,7 @@ icd::Tangent() const
   icd anderhalf = three * halfpi;
   if( number == halfpi || number == anderhalf)
   { 
-    throw CString("Cannot calculate a tangent from an angle of 1/2 pi or 3/2 pi");
+    throw new CString("Cannot calculate a tangent from an angle of 1/2 pi or 3/2 pi");
   }
   // Sin(x)/Sqrt(1-Sin(x)^2)
   result     = number.Sine(); 
@@ -1042,7 +1042,7 @@ icd::ArcSine() const
   number = *this;
   if(number > c1 || number < -c1)
   {
-    throw CString("Cannot calculate an arcsine from a number > 1 or < -1");
+    throw new CString("Cannot calculate an arcsine from a number > 1 or < -1");
   }
   // Save the sign
   sign = number.GetSign();
@@ -1274,7 +1274,7 @@ icd::AsLong() const
 {
   if(!FitsInLong()) 
   {
-    throw CString("Number: Overflow in icd");
+    throw new CString("Number: Overflow in icd");
   }
   // Calculate long
   long result = m_data[icdPointPosition] + 
@@ -1301,7 +1301,7 @@ icd::AsInt64() const
 
   if(!FitsInInt64())
   {
-    throw CString("Number: Overflow in icd");
+    throw new CString("Number: Overflow in icd");
   }
   for(int i = icdLength -1; i >= icdPointPosition; --i)
   {
@@ -1485,7 +1485,7 @@ icd::SetLengthAndPrecision(int length, int precision)
   }
   if (length < precision)
   {
-    throw CString("Decimal number (icd): The precision must be smaller than or equal to the length");
+    throw new CString("Decimal number (icd): The precision must be smaller than or equal to the length");
   }
   if ((length - precision) > (icdPointPosition * icdDigits))
   {
@@ -1499,7 +1499,7 @@ icd::SetLengthAndPrecision(int length, int precision)
   {
     if (m_data[i] != 0)
     {
-      throw CString("Decimal number too big (ICD Overflow)");
+      throw new CString("Decimal number too big (ICD Overflow)");
     }
   }
 
@@ -1510,7 +1510,7 @@ icd::SetLengthAndPrecision(int length, int precision)
   }
   if (m_data[highestIndex] >= maxIndexValue)
   {
-    throw CString("Decimal number too big (ICD Overflow)");
+    throw new CString("Decimal number too big (ICD Overflow)");
   }
 
   m_length = length;
@@ -1518,7 +1518,7 @@ icd::SetLengthAndPrecision(int length, int precision)
   // Test if the contents does not have a maximal value outside range after rounding
   if ((m_precision != (icdPointPosition * icdDigits)) && IsCornerCase()) 
   {
-    throw CString("Decimal number too big(ICD Overflow)");
+    throw new CString("Decimal number too big(ICD Overflow)");
   }
 
   // Clearing of data behind the decimal mpint; does not belong to our precision and must
@@ -1901,7 +1901,7 @@ icd::Div(const icd& p_icd) const
   // if denominator is zero -> error
   if (p_icd.IsNull())
   {
-    throw CString("Decimal number (icd): Division by zero");
+    throw new CString("Decimal number (icd): Division by zero");
   }
   // Divide without taking the sign into account
   icd res = DividePositive(*this,p_icd);
@@ -2139,7 +2139,7 @@ icd::SetValueString(CString p_value)
     if(index > icdLength - 1)
     {
       // ICD Overflow
-      throw CString("ICD Overflow");
+      throw new CString("ICD Overflow");
     }
     m_data[index] += power * (long)(*ptr - '0');
     if((power *= 10) >= icdBase)
@@ -2207,7 +2207,7 @@ icd::SetValueString(CString p_value)
 //   if(*ptr)
 //   {
 //     // Cannot convert
-//     throw CString("Cannot convert to icd");
+//     throw new CString("Cannot convert to icd");
 //   }
 }
 
@@ -2302,7 +2302,7 @@ icd::Reformat()
   // Still a remainder at the end? 
   if (remainder > 0)
   {
-    throw CString("Decimal number too big (ICD Overflow)");
+    throw new CString("Decimal number too big (ICD Overflow)");
   }
 }
 
@@ -2604,7 +2604,7 @@ icd::MultiplyPositive(const icd& arg1, const icd& arg2)
       if (((i+j) >= (icdLength + icdPointPosition)) && (res[i+j] != 0))
       {
         // If something has been stored above the length and pointposition -> overflow
-        throw CString("Decimal number too big (ICD Overflow)");
+        throw new CString("Decimal number too big (ICD Overflow)");
       }
     }
   }
@@ -2619,7 +2619,7 @@ icd::MultiplyPositive(const icd& arg1, const icd& arg2)
   // Still a remainder?
   if (remain > 0)
   {
-    throw CString("Decimal number too big (ICD Overflow)");
+    throw new CString("Decimal number too big (ICD Overflow)");
   }
 
   // Setting the result in an icd, taking the decimal point position into account
@@ -2748,7 +2748,7 @@ icd::DividePositive(const icd& arg1, const icd& arg2)
       if (resindex >= icdLength)
       {
         // Overflow if it became too big
-        throw CString("Decimal number too big (ICD Overflow)");
+        throw new CString("Decimal number too big (ICD Overflow)");
       }
       else
       {
@@ -2897,7 +2897,7 @@ icd::Mult10()
   if(carry)
   {
     // Should not occur: Mult10 should be safely called internally!
-    throw CString("Internal: ICD Overflow in sub operation");
+    throw new CString("Internal: ICD Overflow in sub operation");
   }
 }
 

@@ -9,7 +9,6 @@
 //
 // Copyright (c) 1998-2019 ir W. E. Huisman
 //
-//
 #pragma once
 #include <sqltypes.h>   // Needed for conversions of SQL_NUMERIC_STRUCT
 
@@ -89,23 +88,38 @@ public:
   // BCD from a char value
   bcd(const char p_value);
 
+  // BCD from an unsigned char value
+  bcd(const unsigned char p_value);
+
   // BCD from a short value
   bcd(const short p_value);
+
+  // BCD from an unsigned short value
+  bcd(const unsigned short p_value);
 
   // BCD from an integer
   bcd(const int p_value);
 
+  // BCD from an unsigned integer
+  bcd(const unsigned int p_value);
+
   // BCD from a long
   bcd(const long p_value, const long p_restValue = 0);
+
+  // BCD from an unsigned long
+  bcd(const unsigned long p_value, const unsigned long p_restValue = 0);
 
   // BCD from a 64bits int
   bcd(const int64 p_value,const int64 p_restvalue = 0);
 
-  // BCD from a 64bits int
+  // BCD from an unsigned 64bits int
   bcd(const uint64 p_value,const int64 p_restvalue = 0);
 
   // Copy constructor.
   bcd(const bcd& icd);
+
+  // BCD from a float
+  bcd(const float p_value);
 
   // BCD from a double
   bcd(const double p_value);
@@ -342,6 +356,6 @@ private:
 
   // STORAGE OF THE NUMBER
   Sign   m_sign;                // 0 = Positive, 1 = Negative
-  short  m_exponent;            // +/- 10E32768
+  short  m_exponent;            // +/- 10E32767
   long   m_mantissa[bcdLength]; // Up to (bcdDigits * bcdLength) digits
 };
