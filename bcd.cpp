@@ -9,17 +9,20 @@
 //  with an implied decimal point between the first and second position
 //
 // Copyright (c) 1998-2019 ir. W.E. Huisman
+// Version 1.2 of 18-12-2019
 //
 //  Examples:
 //  E+03 15456712 45000000 00000000 -> 1545.671245
 //  E+01 34125600 00000000 00000000 -> 3.41256
 //  E-05 78976543 12388770 00000000 -> 0.0000789765431238877
 //
-#include "Stdafx.h"
-#include "bcd.h"
-#include "StdException.h"
+//////////////////////////////////////////////////////////////////////////
+
+#include "Stdafx.h"         // MFC is a requirement
+#include "bcd.h"            // OUR INTERFACE
+#include "StdException.h"   // Throwing exceptions
 #include <math.h>           // Still needed for conversions of double
-#include <intsafe.h>
+#include <intsafe.h>        // Min/Max sizes of integer datatypes
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -27,6 +30,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+// Theoretical maximum of numerical separators
 #define SEP_LEN 10
 
 // string format number and money format functions
@@ -38,6 +42,7 @@ int  g_locale_decimalSepLen   = 0;
 int  g_locale_thousandSepLen  = 0;
 int  g_locale_strCurrencyLen  = 0;
 
+// One-time initialization for printing numbers in the current locale
 void 
 InitValutaString()
 {
@@ -172,23 +177,13 @@ bcd::bcd(const double p_value)
   SetValueDouble(p_value);
 }
 
-// bcd::bcd(string)
-// Description: Assignment-constructor of class bcd from a string
-// Parameters:  p_string -> Input string with number
-//              p_fromDB -> Input comes from a database (always American format)
-bcd::bcd(const CString& p_string,bool p_fromDB /*= false*/)
-{
-  SetValueString(p_string,p_fromDB);
-}
-
 // BCD From a character string
 // Description: Assignment-constructor from an elementary character data pointer
 // Parameters:  p_string -> Input character pointer (containing a number)
 //              p_fromDB -> Input comes from a  database (always American format)
 bcd::bcd(const char* p_string,bool p_fromDB /*= false*/)
 {
-  CString str(p_string);
-  SetValueString(str,p_fromDB);
+  SetValueString(p_string,p_fromDB);
 }
 
 // bcd::bcd(numeric)
@@ -206,6 +201,7 @@ bcd::bcd(const SQL_NUMERIC_STRUCT* p_numeric)
 //
 bcd::~bcd()
 {
+  // Nothing interesting here :-)
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -305,12 +301,48 @@ bcd::operator+(const bcd& p_value) const
   return Add(p_value);
 }
 
+const bcd
+bcd::operator+(const int p_value) const
+{
+  return Add(bcd(p_value));
+}
+
+const bcd
+bcd::operator+(const double p_value) const
+{
+  return Add(bcd(p_value));
+}
+
+const bcd
+bcd::operator+(const char* p_value) const
+{
+  return Add(bcd(p_value));
+}
+
 // bcd::-
 // Description: Subtraction operator
 const bcd
 bcd::operator-(const bcd& p_value) const
 {
   return Sub(p_value);
+}
+
+const bcd
+bcd::operator-(const int p_value) const
+{
+  return Sub(bcd(p_value));
+}
+
+const bcd
+bcd::operator-(const double p_value) const
+{
+  return Sub(bcd(p_value));
+}
+
+const bcd
+bcd::operator-(const char* p_value) const
+{
+  return Sub(bcd(p_value));
 }
 
 // bcd::*
@@ -321,12 +353,48 @@ bcd::operator*(const bcd& p_value) const
   return Mul(p_value);
 }
 
+const bcd
+bcd::operator*(const int p_value) const
+{
+  return Mul(bcd(p_value));
+}
+
+const bcd
+bcd::operator*(const double p_value) const
+{
+  return Mul(bcd(p_value));
+}
+
+const bcd
+bcd::operator*(const char* p_value) const
+{
+  return Mul(bcd(p_value));
+}
+
 // bcd::/
 // Description: Division operator
 const bcd
 bcd::operator/(const bcd& p_value) const
 {
   return Div(p_value);
+}
+
+const bcd
+bcd::operator/(const int p_value) const
+{
+  return Div(bcd(p_value));
+}
+
+const bcd
+bcd::operator/(const double p_value) const
+{
+  return Div(bcd(p_value));
+}
+
+const bcd
+bcd::operator/(const char* p_value) const
+{
+  return Div(bcd(p_value));
 }
 
 // bcd::%
@@ -337,12 +405,51 @@ bcd::operator%(const bcd& p_value) const
   return Mod(p_value);
 }
 
+const bcd  
+bcd::operator%(const int p_value) const
+{
+  return Mod(bcd(p_value));
+}
+
+const bcd
+bcd::operator%(const double p_value) const
+{
+  return Mod(bcd(p_value));
+}
+
+const bcd
+bcd::operator%(const char* p_value) const
+{
+  return Mod(bcd(p_value));
+}
+
 // bcd::operator +=
 // Description: Operator to add a bcd to this one
 bcd&
 bcd::operator+=(const bcd& p_value)
 {
-  *this = this->Add(p_value);
+  *this = Add(p_value);
+  return *this;
+}
+
+bcd&
+bcd::operator+=(const int p_value)
+{
+  *this = Add(bcd(p_value));
+  return *this;
+}
+
+bcd&
+bcd::operator+=(const double p_value)
+{
+  *this = Add(bcd(p_value));
+  return *this;
+}
+
+bcd&
+bcd::operator+=(const char* p_value)
+{
+  *this = Add(bcd(p_value));
   return *this;
 }
 
@@ -351,7 +458,28 @@ bcd::operator+=(const bcd& p_value)
 bcd&
 bcd::operator-=(const bcd& p_value)
 {
-  *this = this->Sub(p_value);
+  *this = Sub(p_value);
+  return *this;
+}
+
+bcd& 
+bcd::operator-=(const int p_value)
+{
+  *this = Sub(bcd(p_value));
+  return *this;
+}
+
+bcd&
+bcd::operator-=(const double p_value)
+{
+  *this = Sub(bcd(p_value));
+  return *this;
+}
+
+bcd&
+bcd::operator-=(const char* p_value)
+{
+  *this = Sub(bcd(p_value));
   return *this;
 }
 
@@ -360,7 +488,28 @@ bcd::operator-=(const bcd& p_value)
 bcd& 
 bcd::operator*=(const bcd& p_value)
 {
-  *this = this->Mul(p_value);
+  *this = Mul(p_value);
+  return *this;
+}
+
+bcd&
+bcd::operator*=(const int p_value)
+{
+  *this = Mul(bcd(p_value));
+  return *this;
+}
+
+bcd&
+bcd::operator*=(const double p_value)
+{
+  *this = Mul(bcd(p_value));
+  return *this;
+}
+
+bcd&
+bcd::operator*=(const char* p_value)
+{
+  *this = Mul(bcd(p_value));
   return *this;
 }
 
@@ -369,7 +518,28 @@ bcd::operator*=(const bcd& p_value)
 bcd& 
 bcd::operator/=(const bcd& p_value)
 {
-  *this = this->Div(p_value);
+  *this = Div(p_value);
+  return *this;
+}
+
+bcd&
+bcd::operator/=(const int p_value)
+{
+  *this = Div(bcd(p_value));
+  return *this;
+}
+
+bcd&
+bcd::operator/=(const double p_value)
+{
+  *this = Div(bcd(p_value));
+  return *this;
+}
+
+bcd&
+bcd::operator/=(const char* p_value)
+{
+  *this = Div(bcd(p_value));
   return *this;
 }
 
@@ -378,7 +548,28 @@ bcd::operator/=(const bcd& p_value)
 bcd& 
 bcd::operator%=(const bcd& p_value)
 {
-  *this = this->Mod(p_value);
+  *this = Mod(p_value);
+  return *this;
+}
+
+bcd&
+bcd::operator%=(const int p_value)
+{
+  *this = Mod(bcd(p_value));
+  return *this;
+}
+
+bcd&
+bcd::operator%=(const double p_value)
+{
+  *this = Mod(bcd(p_value));
+  return *this;
+}
+
+bcd&
+bcd::operator%=(const char* p_value)
+{
+  *this = Mod(bcd(p_value));
   return *this;
 }
 
@@ -465,7 +656,7 @@ bcd::operator=(const bcd& p_value)
 // bcd::=
 // Description: Assignment operator from a long
 bcd& 
-bcd::operator=(const long p_value)
+bcd::operator=(const int p_value)
 {
   SetValueLong(p_value,0);
   return *this;
@@ -483,7 +674,7 @@ bcd::operator=(const double p_value)
 // bcd::=
 // Description: Assignment operator from a string
 bcd& 
-bcd::operator=(const CString& p_value)
+bcd::operator=(const char* p_value)
 {
   SetValueString(p_value);
   return *this;
@@ -522,6 +713,27 @@ bcd::operator==(const bcd& p_value) const
   return true;
 }
 
+bool
+bcd::operator==(const int p_value) const
+{
+  bcd value(p_value);
+  return *this == value;
+}
+
+bool
+bcd::operator==(const double p_value) const
+{
+  bcd value(p_value);
+  return *this == value;
+}
+
+bool
+bcd::operator==(const char* p_value) const
+{
+  bcd value(p_value);
+  return *this == value;
+}
+
 // bcd::operator!=
 // Description: Inequality comparison of two bcd's
 //
@@ -530,6 +742,27 @@ bcd::operator!=(const bcd& p_value) const
 {
   // (x != y) is equal to !(x == y)
   return !(*this == p_value);
+}
+
+bool
+bcd::operator!=(const int p_value) const
+{
+  bcd value(p_value);
+  return !(*this == value);
+}
+
+bool
+bcd::operator!=(const double p_value) const
+{
+  bcd value(p_value);
+  return !(*this == value);
+}
+
+bool
+bcd::operator!=(const char* p_value) const
+{
+  bcd value(p_value);
+  return !(*this == value);
 }
 
 bool
@@ -571,6 +804,27 @@ bcd::operator<(const bcd& p_value) const
 }
 
 bool
+bcd::operator<(const int p_value) const
+{
+  bcd value(p_value);
+  return *this < value;
+}
+
+bool
+bcd::operator<(const double p_value) const
+{
+  bcd value(p_value);
+  return *this < value;
+}
+
+bool
+bcd::operator<(const char* p_value) const
+{
+  bcd value(p_value);
+  return *this < value;
+}
+
+bool
 bcd::operator>(const bcd& p_value) const
 {
   // Shortcut: Negative numbers are smaller than positive ones
@@ -608,18 +862,81 @@ bcd::operator>(const bcd& p_value) const
   return false;
 }
 
-bool 
+bool
+bcd::operator>(const int p_value) const
+{
+  bcd value(p_value);
+  return *this > value;
+}
+
+bool
+bcd::operator>(const double p_value) const
+{
+  bcd value(p_value);
+  return *this > value;
+}
+
+bool
+bcd::operator>(const char* p_value) const
+{
+  bcd value(p_value);
+  return *this > value;
+}
+
+bool
 bcd::operator<=(const bcd& p_value) const
 {
   // (x <= y) equals !(x > y)
   return !(*this > p_value);
 }
 
-bool 
+bool
+bcd::operator<=(const int p_value) const
+{
+  bcd value(p_value);
+  return !(*this > value);
+}
+
+bool
+bcd::operator<=(const double p_value) const
+{
+  bcd value(p_value);
+  return !(*this > value);
+}
+
+bool
+bcd::operator<=(const char* p_value) const
+{
+  bcd value(p_value);
+  return !(*this > value);
+}
+
+bool
 bcd::operator>=(const bcd& p_value) const
 {
   // (x >= y) equals !(x < y)
   return !(*this < p_value);
+}
+
+bool
+bcd::operator>=(const int p_value) const
+{
+  bcd value(p_value);
+  return !(*this < value);
+}
+
+bool
+bcd::operator>=(const double p_value) const
+{
+  bcd value(p_value);
+  return !(*this < value);
+}
+
+bool
+bcd::operator>=(const char* p_value) const
+{
+  bcd value(p_value);
+  return !(*this < value);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -683,7 +1000,7 @@ bcd::Round(int p_precision /*=0*/)
   }
   else
   {
-    // In-between optimalisation
+    // In-between Optimalisation
     int base = bcdBase;
     // Calculate base
     for(int p2 = 0;p2 <= pos; ++p2)
@@ -1555,26 +1872,40 @@ double
 bcd::AsDouble() const
 {
   double result = 0.0;
-  double factor = 1.0;
 
-  // Get the mantissa into the result
-  for(int ind = 0; ind < bcdLength; ++ind)
+  if(bcdDigits >= 8)
   {
-    long base    = bcdBase / 10;
-    long between = m_mantissa[ind];
-
-    for(int pos = bcdDigits; pos > 0; --pos)
+    // SHORTCUT FOR PERFORMANCE: 
+    // A double cannot have more than 16 digits
+    // so everything over 16 digits gets discarded
+    result  = ((double)m_mantissa[0]) * 10.0 / (double) bcdBase;
+    result += ((double)m_mantissa[1]) * 10.0 / (double) bcdBase / (double) bcdBase;
+    //result += ((double)m_mantissa[2]) / bcdBase / bcdBase / bcdBase;
+  }
+  else
+  {
+    // Works for ALL implementations of bcdDigits  and bcdLength
+    // Get the mantissa into the result
+    double factor = 1.0;
+    for(int ind = 0; ind < bcdLength; ++ind)
     {
-      // Get next number
-      long number = between / base;
-      between    %= base;
-      base       /= 10;
+      long base    = bcdBase / 10;
+      long between = m_mantissa[ind];
 
-      // Set in the result
-      result += (double)number * factor;
-      factor /= 10;
+      for(int pos = bcdDigits; pos > 0; --pos)
+      {
+        // Get next number
+        long number = between / base;
+        between %= base;
+        base /= 10;
+
+        // Set in the result
+        result += (double)number * factor;
+        factor /= 10;
+      }
     }
   }
+
   // Take care of exponent
   if(m_exponent)
   {
@@ -1831,7 +2162,7 @@ bcd::AsUInt64() const
 // Description: Get as a mathematical string
 // Technical:   Convert back to "[sign][digit][.[digit]*][E[sign][digits]+]"
 CString 
-bcd::AsString(int p_format /*=Bookkeeping*/,bool p_printPositive /*=false*/) const
+bcd::AsString(bcd::Format p_format /*=Bookkeeping*/,bool p_printPositive /*=false*/) const
 {
   CString result;
   int exp    = m_exponent;
@@ -2504,7 +2835,7 @@ bcd::SetValueDouble(const double p_value)
 // Technical:   Scans [sign][digit][.[digit]*][E[sign][digits]+]
 //              part =       1        2          3    
 void
-bcd::SetValueString(const CString& p_string,bool /*p_fromDB*/)
+bcd::SetValueString(const char* p_string,bool /*p_fromDB*/)
 {
   // Zero out this number
   Zero();
@@ -2522,10 +2853,10 @@ bcd::SetValueString(const CString& p_string,bool /*p_fromDB*/)
   m_exponent = -1;
 
   // Scan the entire string
-  for(int pos = 0; pos < p_string.GetLength(); ++pos)
+  for(const char* pos = p_string; *pos; ++pos)
   {
     // Get a char at the next position
-    unsigned char c = p_string.GetAt(pos);
+    unsigned char c = *pos;
 
     // Skip whitespace at the beginning
     if(spacing)
@@ -2820,7 +3151,7 @@ bcd::LongToString(long p_value) const
 // bcd::StringNaarLong
 // Description: Convert a string to a single long value
 long
-bcd::StringToLong(CString& p_string) const
+bcd::StringToLong(const char* p_string) const
 {
   return atoi(p_string);
 }
@@ -3633,3 +3964,15 @@ bcd::ReadFromFile(FILE* p_fp)
   }
   return true;
 }
+
+//////////////////////////////////////////////////////////////////////////
+//
+// END OF FILE STREAM FUNCTIONS
+//
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+//
+// END OF BCD IMPLEMENTATION
+//
+//////////////////////////////////////////////////////////////////////////

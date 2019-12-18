@@ -1,7 +1,14 @@
 BCD Releasenotes
 ----------------
 
-Version September 2019
+Version 1.2 December 2019
+-------------------------
+1) Added a lot of operators
+2) Added performance optimalisation in double conversion
+3) Added MS-Word documentation of the class
+4) Changed a lot of parameters from 'CString' to 'const char*'
+
+Version 1.1 September 2019
 ----------------------
 1) Added the dynamic discovery of the locale settings for the thousands 
    and decimal separators in "AsDisplayString()"

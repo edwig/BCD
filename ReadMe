@@ -12,3 +12,5 @@ Double: C++ datatype 'double' as build in in the MS-VC++ compiler
 AFP   : A public domain implementation by Henrik Vestermark
 ICD   : Integer Coded Decimal 
 BCD   : Binary Coded Decimal
+
+Read the documentation in the "Binary Coded Decimal.pdf" file

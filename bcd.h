@@ -8,10 +8,13 @@
 // The mantissa array exists of a series of integers with 8 functional digits each
 //
 // Copyright (c) 1998-2019 ir W. E. Huisman
+// Version 1.2 of 18-12-2019
 //
 #pragma once
 #include <sqltypes.h>   // Needed for conversions of SQL_NUMERIC_STRUCT
 
+// The ODBC standard has a maximum of 38 decimal places
+// At least one database (Oracle) implements these numbers
 #ifndef SQLNUM_MAX_PREC
 #define SQLNUM_MAX_PREC 38
 #endif
@@ -124,9 +127,6 @@ public:
   // BCD from a double
   bcd(const double p_value);
 
-  // Assignment-constructor of class bcd.
-  bcd(const CString& p_string,bool p_fromDB = false);
-
   // BCD From a character string
   bcd(const char* p_string,bool p_fromDB = false);
 
@@ -145,11 +145,29 @@ public:
   // OPERATORS
 
   // Standard mathematical operators
-  const bcd  operator+(const bcd& p_value) const;
-  const bcd  operator-(const bcd& p_value) const;
-  const bcd  operator*(const bcd& p_value) const;
-  const bcd  operator/(const bcd& p_value) const;
-  const bcd  operator%(const bcd& p_value) const;
+  const bcd  operator+(const bcd&   p_value) const;
+  const bcd  operator-(const bcd&   p_value) const;
+  const bcd  operator*(const bcd&   p_value) const;
+  const bcd  operator/(const bcd&   p_value) const;
+  const bcd  operator%(const bcd&   p_value) const;
+
+  const bcd  operator+(const int    p_value) const;
+  const bcd  operator-(const int    p_value) const;
+  const bcd  operator*(const int    p_value) const;
+  const bcd  operator/(const int    p_value) const;
+  const bcd  operator%(const int    p_value) const;
+
+  const bcd  operator+(const double p_value) const;
+  const bcd  operator-(const double p_value) const;
+  const bcd  operator*(const double p_value) const;
+  const bcd  operator/(const double p_value) const;
+  const bcd  operator%(const double p_value) const;
+
+  const bcd  operator+(const char*  p_value) const;
+  const bcd  operator-(const char*  p_value) const;
+  const bcd  operator*(const char*  p_value) const;
+  const bcd  operator/(const char*  p_value) const;
+  const bcd  operator%(const char*  p_value) const;
 
   // Standard math/assignment operators
   bcd& operator+=(const bcd& p_value);
@@ -157,6 +175,24 @@ public:
   bcd& operator*=(const bcd& p_value);
   bcd& operator/=(const bcd& p_value);
   bcd& operator%=(const bcd& p_value);
+
+  bcd& operator+=(const int p_value);
+  bcd& operator-=(const int p_value);
+  bcd& operator*=(const int p_value);
+  bcd& operator/=(const int p_value);
+  bcd& operator%=(const int p_value);
+
+  bcd& operator+=(const double p_value);
+  bcd& operator-=(const double p_value);
+  bcd& operator*=(const double p_value);
+  bcd& operator/=(const double p_value);
+  bcd& operator%=(const double p_value);
+
+  bcd& operator+=(const char*  p_value);
+  bcd& operator-=(const char*  p_value);
+  bcd& operator*=(const char*  p_value);
+  bcd& operator/=(const char*  p_value);
+  bcd& operator%=(const char*  p_value);
 
   // Prefix unary minus (negation)
   bcd  operator-() const;
@@ -168,18 +204,39 @@ public:
   bcd& operator--();     // Prefix  decrement
 
   // Assignment operators
-  bcd& operator=(const bcd&     p_value);
-  bcd& operator=(const long     p_value);
-  bcd& operator=(const double   p_value);
-  bcd& operator=(const CString& p_value);
+  bcd& operator=(const bcd&   p_value);
+  bcd& operator=(const int    p_value);
+  bcd& operator=(const double p_value);
+  bcd& operator=(const char*  p_value);
 
   // comparison operators
-  bool operator==(const bcd& p_value) const;
-  bool operator!=(const bcd& p_value) const;
-  bool operator< (const bcd& p_value) const;
-  bool operator> (const bcd& p_value) const;
-  bool operator<=(const bcd& p_value) const;
-  bool operator>=(const bcd& p_value) const;
+  bool operator==(const bcd&   p_value) const;
+  bool operator!=(const bcd&   p_value) const;
+  bool operator< (const bcd&   p_value) const;
+  bool operator> (const bcd&   p_value) const;
+  bool operator<=(const bcd&   p_value) const;
+  bool operator>=(const bcd&   p_value) const;
+
+  bool operator==(const int    p_value) const;
+  bool operator!=(const int    p_value) const;
+  bool operator< (const int    p_value) const;
+  bool operator> (const int    p_value) const;
+  bool operator<=(const int    p_value) const;
+  bool operator>=(const int    p_value) const;
+
+  bool operator==(const double p_value) const;
+  bool operator!=(const double p_value) const;
+  bool operator< (const double p_value) const;
+  bool operator> (const double p_value) const;
+  bool operator<=(const double p_value) const;
+  bool operator>=(const double p_value) const;
+
+  bool operator==(const char*  p_value) const;
+  bool operator!=(const char*  p_value) const;
+  bool operator< (const char*  p_value) const;
+  bool operator> (const char*  p_value) const;
+  bool operator<=(const char*  p_value) const;
+  bool operator>=(const char*  p_value) const;
 
   // MAKING AN EXACT NUMERIC value
   
@@ -251,7 +308,7 @@ public:
   // Get as an unsigned 64 bits long
   uint64  AsUInt64() const;
   // Get as a mathematical string
-  CString AsString(int p_format = Bookkeeping,bool p_printPositive = false) const;
+  CString AsString(bcd::Format p_format = Bookkeeping,bool p_printPositive = false) const;
   // Get as a display string (by desktop locale)
   CString AsDisplayString(int p_decimals = 2) const;
   // Get as an ODBC SQL NUMERIC(p,s)
@@ -298,7 +355,7 @@ private:
   // Sets the value from a double
   void    SetValueDouble(const double p_value);
   // Sets the value from a string
-  void    SetValueString(const CString& p_string,bool p_fromDB = false);
+  void    SetValueString(const char* p_string,bool p_fromDB = false);
   // Sets the value from a SQL NUMERIC
   void    SetValueNumeric(const SQL_NUMERIC_STRUCT* p_numeric);
   // Take the absolute value of a long
@@ -314,7 +371,7 @@ private:
   // Shift mantissa 1 position left
   void    ShiftLeft();
   // Convert a string to a single long value
-  long    StringToLong(CString& p_string) const;
+  long    StringToLong(const char* p_string) const;
   // Convert a long to a string
   CString LongToString(long p_value) const;
   // Split the mantissa for floor/ceiling operations

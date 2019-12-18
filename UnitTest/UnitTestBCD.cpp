@@ -615,13 +615,13 @@ namespace UnitTest
 
       Assert::IsTrue(expect == one);
 
-      one = CString("9988776655.64433277112");
-      expect = CString("9988776655.644333");
+      one = "9988776655.64433277112";
+      expect = "9988776655.644333";
       one.Round(6);
       Assert::IsTrue(expect == one);
 
-      one = CString("9988776655.64433277112");
-      expect = CString("9988776656");
+      one = "9988776655.64433277112";
+      expect = "9988776656";
       one.Round(0);
       Assert::IsTrue(expect == one);
     }
@@ -637,8 +637,8 @@ namespace UnitTest
 
       Assert::IsTrue(expect == one);
 
-      one = CString("9988776655.64433277112");
-      expect = CString("9988776655");
+      one = "9988776655.64433277112";
+      expect = "9988776655";
       one.Truncate(0);
       Assert::IsTrue(expect == one);
     }
@@ -761,12 +761,11 @@ namespace UnitTest
     {
       Logger::WriteMessage("Test as-other-datatype: bcd.AsDouble()");
 
-      // 9988776655,4433221112
-      bcd one("9988776655.4433");
+      bcd one("99887766.554433");
       double result = one.AsDouble();
-      double expect = 9988776655.4433;
+      double expect = 99887766.554433;
 
-      Assert::IsTrue(expect == result);
+      Assert::IsTrue(abs(expect - result) < 0.00005);
     }
 
     TEST_METHOD(T058_AsShort)
