@@ -6,7 +6,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace UnitTest
 {		
-	TEST_CLASS(UnitTest1)
+	TEST_CLASS(UnitTestBCD)
 	{
 	public:
 		
@@ -744,9 +744,9 @@ namespace UnitTest
       num.sign      = 1; // Positive
       num.precision = 6;
       num.scale     = 4;
-      num.val[0] = 0xAA;
-      num.val[1] = 0x86;
-      num.val[2] = 0x01;
+      num.val[0] = 0xAA;  // 1010 1010
+      num.val[1] = 0x86;  // 1000 0110
+      num.val[2] = 0x01;  // 0000 0001
 
       bcd one(&num);
       one.AsNumeric(&res);

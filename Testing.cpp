@@ -6,6 +6,7 @@
 #include "afp.h"
 #include "icd.h"
 #include "bcd.h"
+#include "numeric.h"
 #include "HPFCounter.h"
 
 #pragma warning (disable: 4477)
@@ -412,6 +413,26 @@ DoOperatorTest(TestOperator p_operator,char* p_een,char* p_two,char* p_expect,in
   counter5.Stop();
   printf("bcd    %10.6f %s\n",counter5.GetCounter(),c_result.AsString(bcd::Bookkeeping,true));
 
+
+  numeric n_number1(32,16,p_een);
+  numeric n_number2(32,16,p_two);
+  numeric n_result;
+
+  HPFCounter counter6;
+  for (int x = 0; x < p_count; ++x)
+  {
+    switch(p_operator)
+    {
+      case Operator_add:    n_result = n_number1 + n_number2; break;
+      case Operator_minus:  n_result = n_number1 - n_number2; break;
+      case Operator_mult:   n_result = n_number1 * n_number2; break;
+      case Operator_div:    n_result = n_number1 / n_number2; break;
+      case Operator_mod:    n_result = n_number1 % n_number2; break;
+    }
+  }
+  counter6.Stop();
+  printf("numeric%10.6f %s\n", counter6.GetCounter(), n_result.AsString(numeric::Format::Bookkeeping,true));
+
   printf("\n\n");
 }
 
@@ -427,6 +448,7 @@ PrintConstants(int p_count)
   bcd  c_pi;
   bcd  c_ln10;
   bcd  c_ln2;
+  numeric n_pi;
 
   printf("Floating point constants in [%d] iterations are:\n\n",p_count);
   printf("Constant Type   Time     Value\n");
@@ -450,11 +472,18 @@ PrintConstants(int p_count)
     c_pi = bcd::PI();
   }
   count3.Stop();
+  HPFCounter count4;
+  for (int x = 0; x < p_count; ++x)
+  {
+    n_pi = numeric::PI();
+  }
+  count4.Stop();
 
   printf("PI       Calc   0.000000 +3.1415926535897932384626433832795\n");
   printf("         afp    %0.6f %s\n",count1.GetCounter(),_afp_ftoa(b_pi,41,41).c_str());
   printf("         icd    %0.6f %s\n",count2.GetCounter(),i_pi.AsString());
   printf("         bcd    %0.6f %s\n",count3.GetCounter(),c_pi.AsString(bcd::Bookkeeping,true));
+  printf("         numeric%0.6f %s\n",count4.GetCounter(),n_pi.AsString(numeric::Format::Bookkeeping,true));
 
   // BEREKEN LN(10)
   count1.Start();
@@ -669,11 +698,12 @@ _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
   printf("\n");
   printf("Legenda:\n");
   printf("--------\n");
-  printf("calc   -> Calculations in MS-Calc (standard calculator)\n");
-  printf("double -> Build in C++ datatype 'double'\n");
-  printf("afp    -> Datatype 'Arbitrairy Floating Point' of Henrik Vestermark\n");
-  printf("icd    -> Datatype 'Integer Coded Decimal'\n");
-  printf("bcd    -> Datatype 'Binairy Coded Decimal'\n");
+  printf("calc    -> Calculations in MS-Calc (standard calculator)\n");
+  printf("double  -> Build in C++ datatype 'double'\n");
+  printf("afp     -> Datatype 'Arbitrairy Floating Point' of Henrik Vestermark\n");
+  printf("icd     -> Datatype 'Integer Coded Decimal'\n");
+  printf("bcd     -> Datatype 'Binairy Coded Decimal'\n");
+  printf("numeric -> Datatype 'Numeric / Decimal'\n");
   printf("\n");
 
 #ifdef DEBUG

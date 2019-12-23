@@ -1,6 +1,13 @@
 BCD Releasenotes
 ----------------
 
+Next version  xx januari 2020 (not released yet)
+------------------------------------------------
+1) Added internal class uint128
+2) Added new class "numeric" for NUMERIC/DECIMAL
+   No conversion of SQL_NUMERIC_STRUCT needed!!
+   It's a work in progress....
+
 Version 1.2 December 2019
 -------------------------
 1) Added a lot of operators
