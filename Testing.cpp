@@ -475,7 +475,7 @@ PrintConstants(int p_count)
   HPFCounter count4;
   for (int x = 0; x < p_count; ++x)
   {
-    n_pi = numeric::PI();
+    n_pi = numeric::PI(32,30);
   }
   count4.Stop();
 

@@ -1057,5 +1057,71 @@ namespace UnitTest
       char* expect2 = "9.123.456,79";
       Assert::AreEqual(expect2,result2.GetString());
     }
+
+    TEST_METHOD(T079_Sine_zero)
+    {
+      Logger::WriteMessage("Test Sine(0.0)");
+
+      // Reputated to enter and endless loop
+      bcd zero;
+      bcd sineZero = zero.Sine();
+
+      CString zeroResult("0");
+      CString zeroSine = sineZero.AsString();
+
+      Assert::AreEqual(zeroSine.GetString(),zeroResult.GetString());
+    }
+
+    TEST_METHOD(T080_Cosine_zero)
+    {
+      Logger::WriteMessage("Test Cosine(0.0)");
+
+      // Reputated to enter and endless loop
+      bcd zero;
+      bcd cosineZero = zero.Cosine();
+
+      CString zeroResult("1");
+      CString zeroCosine = cosineZero.AsString();
+
+      Assert::AreEqual(zeroCosine.GetString(), zeroResult.GetString());
+    }
+
+    TEST_METHOD(T081_Exponent_zero)
+    {
+      Logger::WriteMessage("Test Exp(0.0)");
+
+      // Reputated to enter and endless loop
+      bcd zero;
+      bcd expZero = zero.Exp();
+
+      CString zeroResult("0");
+      CString zeroExponent = expZero.AsString();
+
+      Assert::AreEqual(zeroExponent.GetString(), zeroResult.GetString());
+    }
+
+    TEST_METHOD(T082_Sine_pi)
+    {
+      Logger::WriteMessage("Test Sine(180 degrees)");
+
+      // Reputated to enter and endless loop
+      bcd valuepi = bcd::PI();
+      bcd sinepi = valuepi.Sine();
+
+      Assert::IsTrue(sinepi.IsNearZero());
+    }
+
+    TEST_METHOD(T083_Cosine_pi)
+    {
+      Logger::WriteMessage("Test Cosine(180 degrees)");
+
+      // Reputated to enter and endless loop
+      bcd valuepi = bcd::PI();
+      bcd cosinepi = valuepi.Cosine();
+      cosinepi += 1;
+
+      Assert::IsTrue(cosinepi.IsNearZero());
+    }
+
   };
 }

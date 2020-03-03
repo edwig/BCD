@@ -318,6 +318,8 @@ public:
 
   // Is bcd exactly 0.0?
   bool    IsNull() const; 
+  // Is bcd nearly 0.0 (smaller than epsilon)
+  bool    IsNearZero();
   // Gets the sign 0 (= 0.0), 1 (greater than 0) of -1 (smaller than 0)
   int     GetSign() const;
   // Total length (before and after decimal point)

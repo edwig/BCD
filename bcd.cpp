@@ -776,6 +776,13 @@ bcd::operator<(const bcd& p_value) const
     // If this one is positive "smaller than" is false
     return (m_sign == Negative);
   }
+
+  // Zero is always smaller than everything else
+  if(IsNull() && !p_value.IsNull())
+  {
+    return (m_sign == Positive);
+  }
+
   // Shortcut: If the exponent differ, the mantissa's don't matter
   if(m_exponent != p_value.m_exponent)
   {
@@ -1371,7 +1378,13 @@ bcd::Exp() const
 
   number = *this;
 
-  if( number.GetSign () < 0 )
+  // Can not calculate: will always be zero
+  if(number.IsNull())
+  {
+    return number;
+  }
+
+  if(number.GetSign () < 0 )
   {
     number = -number;;
   }
@@ -1586,6 +1599,13 @@ bcd::Cosine() const
   {
     number = result - number;
   }
+
+  // Breaking criterion, cosine close to 1 if number is close to zero
+  if(number.AbsoluteValue() < epsilon)
+  {
+    return (result = 1);
+  }
+
   // Now use the trisection identity cos(3x)=-3*cos(x)+4*cos(x)^3
   // until argument is less than 0.5
   for( trisection = 0, between = c1; number / between > c05; ++trisection)
@@ -2405,6 +2425,15 @@ bcd::IsNull() const
     return false;
   }
   return true;
+}
+
+// bcd::IsNearZero
+// Description: Nearly zero or zero
+bool
+bcd::IsNearZero()
+{
+  bcd epsilon = Epsilon(2);
+  return AbsoluteValue() < epsilon;
 }
 
 // bcd::GetSign
