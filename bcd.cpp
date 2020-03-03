@@ -777,6 +777,7 @@ bcd::operator<(const bcd& p_value) const
     return (m_sign == Negative);
   }
 
+  // Issue #2 at github
   // Zero is always smaller than everything else
   if(IsNull() && !p_value.IsNull())
   {
