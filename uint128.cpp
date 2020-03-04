@@ -769,11 +769,13 @@ uint128::SetNumeric(const SQL_NUMERIC_STRUCT* p_numeric)
   }
 }
 
+#ifdef _DEBUG
 void   
 uint128::PrintDebug()
 {
   // TRACE("UINT128 hi:%llX lo:%llX\n", hi, lo);
 }
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 //
