@@ -343,6 +343,11 @@ public:
   bool    WriteToFile (FILE* p_fp);
   bool    ReadFromFile(FILE* p_fp);
 
+#ifdef _DEBUG
+  // Debug print of the mantissa
+  CString DebugPrint(char* p_name);
+#endif
+
 private:
 
   // INTERNALS
@@ -380,8 +385,6 @@ private:
   bcd     SplitMantissa() const;
   // Compare two mantissa
   int     CompareMantissa(const bcd& p_value) const;
-  // Debug print of the mantissa
-  void    DebugPrint(char* p_name);
   // Stopping criterion for internal iterations
   bcd&    Epsilon(long p_fraction) const;
 

@@ -1123,5 +1123,79 @@ namespace UnitTest
       Assert::IsTrue(cosinepi.IsNearZero());
     }
 
+    TEST_METHOD(T084_Exponents1)
+    {
+      Logger::WriteMessage("Test various exponents");
+
+      bcd number("0.01");
+      bcd expnumber = number.Exp();
+      expnumber.Round(15);
+      double expdouble = ::exp(0.01);
+      CString expected("1.010050167084168");
+
+      CString bcdResult;
+      CString dblResult;
+      bcdResult = expnumber.AsString();
+      dblResult.Format("%0.16g", expdouble);
+
+      // Be sure to eliminate the locale differences
+      bcdResult.Replace(",", ".");
+      dblResult.Replace(",", ".");
+
+      Assert::AreEqual(expected.GetString(),dblResult.GetString());
+      Assert::AreEqual(expected.GetString(),bcdResult.GetString());
+    }
+
+    TEST_METHOD(T085_Exponents2)
+    {
+      Logger::WriteMessage("Test various exponents");
+
+      bcd number("0.03");
+      bcd expnumber = number.Exp();
+      expnumber.Round(15);
+      double expdouble = ::exp(0.03);
+      CString expected("1.030454533953517");
+
+      CString bcdResult;
+      CString dblResult;
+      bcdResult = expnumber.AsString();
+      dblResult.Format("%0.16g", expdouble);
+
+      // Be sure to eliminate the locale differences
+      bcdResult.Replace(",", ".");
+      dblResult.Replace(",", ".");
+
+      Assert::AreEqual(expected.GetString(), dblResult.GetString());
+      Assert::AreEqual(expected.GetString(), bcdResult.GetString());
+    }
+
+    TEST_METHOD(T086_Divide10)
+    {
+      Logger::WriteMessage("Test division by 10");
+
+      bcd number("0.1");
+      bcd numresult = number / 10.0;
+
+      CString expected("0.01");
+      CString result = numresult.AsString();
+      
+      Assert::AreEqual(expected.GetString(),result.GetString());
+    }
+
+    TEST_METHOD(T087_Divide10_Wrong)
+    {
+      Logger::WriteMessage("Test division by 10 wrong?");
+
+      bcd numresult = .2 / 10.0;
+
+      CString expected("0.02");
+      CString result = numresult.AsString();
+
+      CString mantissa = numresult.DebugPrint("Correct 0.02");
+      Logger::WriteMessage(mantissa);
+
+      Assert::AreEqual(expected.GetString(), result.GetString());
+    }
+
   };
 }

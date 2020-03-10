@@ -2818,6 +2818,7 @@ bcd::SetValueUInt64(const uint64 p_value,const int64 p_restValue)
   {
     *this += bcd((long)LONG_MAX);
   }
+  Normalize();
 }
 
 // bcd::SetValueDouble
@@ -2858,6 +2859,7 @@ bcd::SetValueDouble(const double p_value)
       base /= 10;
     }
   }
+  Normalize();
 }
 
 // bcd::SetValueString
@@ -3258,27 +3260,31 @@ bcd::CompareMantissa(const bcd& p_value) const
   return 0;
 }
 
-#ifdef DEBUG
+#ifdef _DEBUG
 // Debug print of the mantissa
-void 
+CString
 bcd::DebugPrint(char* p_name)
 {
+  CString debug;
+
   // Print the debug name
-  printf("%-14s ",p_name);
+  debug.Format("%-14s ",p_name);
 
   // Print the sign
-  printf("%c ",m_sign == Positive ? '+' : '-');
+  debug.AppendFormat("%c ",m_sign == Positive ? '+' : '-');
 
   // Print the exponent
-  printf("E%+d ",m_exponent);
+  debug.AppendFormat("E%+d ",m_exponent);
 
   // Print the mantissa in special format
   for(int ind = 0;ind < bcdLength; ++ind)
   {
     // Text "%08ld" dependent on bcdDigits
-    printf(" %08ld",m_mantissa[ind]);
+    debug.AppendFormat(" %08ld",m_mantissa[ind]);
   }
-  printf("\n");
+  debug += "\n";
+
+  return debug;
 }
 #endif
 
