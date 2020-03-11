@@ -525,8 +525,9 @@ namespace UnitTest
       // 3,78123764321234
       bcd one("9988776655.4433221112");
       bcd two("3.78123764321234");
-      bcd expect("6.464461188746553021750322457303347299096E+37");
+      bcd expect("6.46446118874655302175032245730334730318E+37");
       bcd result = one.Power(two);
+      Logger::WriteMessage(result.AsString());
 
       Assert::IsTrue(expect == result);
     }
@@ -561,8 +562,11 @@ namespace UnitTest
 
       // 9988776655,4433221112
       bcd one("9988776655.4433221112");
-      bcd expect("23.02472796519583305299405544350891551917");
+      bcd expect("23.02472796519583305299405544350891551931");
+
       bcd result = one.Log();
+
+      Logger::WriteMessage(result.AsString());
 
       Assert::IsTrue(expect == result);
     }
@@ -573,8 +577,11 @@ namespace UnitTest
 
       // 9988776655,4433221112
       bcd one("9988776655.4433221112");
-      bcd expect("9.999512302608037994845893651154684789013");
+      bcd expect("9.99951230260803799484589365115468478907");
+
       bcd result = one.Log10();
+
+      Logger::WriteMessage(result.AsString());
 
       Assert::IsTrue(expect == result);
     }
@@ -693,11 +700,13 @@ namespace UnitTest
       Logger::WriteMessage("Test ArcSine function of a ratio with : bcd.ArcSine()");
 
       char* a_ratio = "0.765498765404321098765";
-      char* r_asine = "8.7181613107055910102494602134303437728E-1";
+      char* r_asine = "8.71816131070559101024946021343034377293E-1";
 
       bcd one(a_ratio);
       bcd expect(r_asine);
       bcd result = one.ArcSine();
+
+      Logger::WriteMessage(result.AsString());
 
       Assert::IsTrue(expect == result);
     }
@@ -707,11 +716,13 @@ namespace UnitTest
       Logger::WriteMessage("Test ArcCosine function of a ratio with : bcd.ArcCosine()");
 
       char* a_ratio   = "0.765498765404321098765";
-      char* r_acosine = "6.98980195724337518206375670296717064818E-1";
+      char* r_acosine = "6.98980195724337518206375670296717064805E-1";
 
       bcd one(a_ratio);
       bcd expect(r_acosine);
       bcd result = one.ArcCosine();
+
+      Logger::WriteMessage(result.AsString());
 
       Assert::IsTrue(expect == result);
     }
@@ -1230,6 +1241,33 @@ namespace UnitTest
       Assert::AreEqual(expected.GetString(), bcdResult.GetString());
     }
 
+    TEST_METHOD(T090_Adding_negative_small)
+    {
+      Logger::WriteMessage("Adding small negative number to 0.01");
 
+      bcd tinynum("0.01");
+      bcd number("-0.05");
+
+      bcd result = tinynum + number;
+      CString expected("-0.04");
+      CString resstring = result.AsString();
+
+      Assert::AreEqual(expected.GetString(),resstring.GetString());
+    }
+
+    TEST_METHOD(T091_Adding_negative)
+    {
+      Logger::WriteMessage("Adding small negative number to 0.0");
+
+      // Original values provided by sisirajaya
+      bcd tinynum("0.0");
+      bcd number("-0.05");
+
+      bcd result = tinynum + number;
+      CString expected("-0.05");
+      CString resstring = result.AsString();
+
+      Assert::AreEqual(expected.GetString(), resstring.GetString());
+    }
   };
 }

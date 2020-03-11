@@ -843,6 +843,11 @@ bcd::operator>(const bcd& p_value) const
     // If this one is negative "greater than" is false
     return (m_sign == Positive);
   }
+  // Shortcut: if value is zero
+  if(IsNull())
+  {
+    return (p_value.m_sign == Negative);
+  }
   // Shortcut: If the exponent differ, the mantissa's don't matter
   if(m_exponent != p_value.m_exponent)
   {
@@ -3322,13 +3327,13 @@ bcd::Add(const bcd& p_number) const
   // See if we must do addition or subtraction
   // Probably we need to swap the arguments....
   // (+x) + (+y) -> Addition,    result positive, Do not swap
-  // (+x) + (-y) -> Subtraction, result positive, Do not swap
-  // (-x) + (+y) -> Subtraction, result positive, Swap the arguments!!
+  // (+x) + (-y) -> Subtraction, result pos/neg,  Possibly swap
+  // (-x) + (+y) -> Subtraction, result pos/neg,  Possibly swap
   // (-x) + (-y) -> Addition,    result negative, Do not swap
-  Sign signResult;
-  Operator operatorKind;
-  bcd arg1(*this);
-  bcd arg2(p_number);
+  Sign     signResult   = Positive;
+  Operator operatorKind = Addition;
+  bcd      arg1(*this);
+  bcd      arg2(p_number);
   PositionArguments(arg1, arg2, signResult, operatorKind);
 
   if (operatorKind == Addition)
@@ -3344,7 +3349,6 @@ bcd::Add(const bcd& p_number) const
     else
     {
       arg1 = PositiveSubtraction(arg2, arg1);
-      signResult = Negative;
     }
   }
   arg1.m_sign = signResult;
@@ -3403,23 +3407,8 @@ bcd
 bcd::Mod(const bcd& p_number) const 
 {
   bcd count = ((*this) / p_number).Floor();
-
-//   bcd part  = (*this) / p_number;
-//   bcd floor = deel.Floor();
-//   bcd subst = floor * p_number;
-//   bcd answ  = *this - subst;
-// 
-//   part .DebugPrint("Divisor");
-//   floor.DebugPrint("Divisor-floor");
-//   subst.DebugPrint("Subtrahend");
-//   answ .DebugPrint("Answer");
-
-  // Divisor:     240963853305269,14298709106993387
-  // Floor:       240963853305269,0
-  // Subtrahend: 1234567890123455,3908686065289664
-  // Answer:                    0,7325881824833792
-  
   bcd mod((*this) - (count * p_number));
+
   if (m_sign == Negative)
   {
     mod = -mod;
@@ -3427,6 +3416,8 @@ bcd::Mod(const bcd& p_number) const
   return mod;
 }
 
+// Position the arguments for a positive addition or subtraction
+// Only called from within Add()
 void
 bcd::PositionArguments(bcd&       arg1,
                        bcd&       arg2,
@@ -3439,35 +3430,42 @@ bcd::PositionArguments(bcd&       arg1,
   {
     if(arg2.m_sign == Positive)
     {
+      // Both are positive
       signResult   = Positive;
       operatorKind = Addition;
     }
     else
     {
-      signResult   = Positive;
+      // Arg2 is negative
+      // Now the rest is positive
+      arg1.m_sign  = Positive;
+      arg2.m_sign  = Positive;
       operatorKind = Subtraction;
+      // Sign depends on the size
+      signResult   = (arg1 >= arg2) ? Positive : Negative;
     }
   }
-  else
+  else // arg1.m_sign == Negative
   {
-    if (arg2.m_sign == Positive)
+    if(arg2.m_sign == Negative)
     {
-      signResult   = Positive;
-      operatorKind = Subtraction;
-      // Swap arguments
-      bcd dummy(arg1);
-      arg1 = arg2;
-      arg2 = dummy;
-    }
-    else
-    {
+      // Both are negative
+      arg1.m_sign  = Positive;
+      arg2.m_sign  = Positive;
       signResult   = Negative;
       operatorKind = Addition;
     }
+    else
+    {
+      // arg2 is positive
+      // Now the rest is positive
+      arg1.m_sign = Positive;
+      arg2.m_sign = Positive;
+      operatorKind = Subtraction;
+      // Sign depends on the size
+      signResult  = (arg2 >= arg1) ? Positive : Negative;
+    }
   }
-  // Now the rest is positive
-  arg1.m_sign = Positive;
-  arg2.m_sign = Positive;
 }
 
 bcd::Sign
@@ -3560,8 +3558,15 @@ bcd::PositiveSubtraction(bcd& arg1,bcd& arg2) const
       // Adding arg2 will not result in a difference
       return arg1;
     }
-    // Shift arg2 to the right;
-    arg2.Div10(shift);
+    if (shift > 0)
+    {
+      // Shift arg2 to the right;
+      arg2.Div10(shift);
+    }
+    else
+    {
+      arg2.Mult10(-shift);
+    }
   }
   // Do the subtraction of the mantissa
   int64 reg   = 0L;
