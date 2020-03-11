@@ -1094,7 +1094,7 @@ namespace UnitTest
       bcd zero;
       bcd expZero = zero.Exp();
 
-      CString zeroResult("0");
+      CString zeroResult("1");
       CString zeroExponent = expZero.AsString();
 
       Assert::AreEqual(zeroExponent.GetString(), zeroResult.GetString());
@@ -1196,6 +1196,40 @@ namespace UnitTest
 
       Assert::AreEqual(expected.GetString(), result.GetString());
     }
+
+    TEST_METHOD(T088_Exponent_zero)
+    {
+      Logger::WriteMessage("Test exp(0.0)");
+
+      double expected = ::exp(0.0);
+      bcd    result = bcd(0).Exp();
+
+      Assert::AreEqual(expected, result.AsDouble());
+    }
+
+    TEST_METHOD(T089_Exponent_negative)
+    {
+      Logger::WriteMessage("Test exponent of negative number");
+
+      double dblres = ::exp(-2.5);
+      bcd    bcdres = bcd("-2.5").Exp();
+      bcdres.Round(16);
+
+      CString expected("0.0820849986238988");
+
+      CString bcdResult;
+      CString dblResult;
+      bcdResult = bcdres.AsString();
+      dblResult.Format("%0.15g", dblres);
+
+      // Be sure to eliminate the locale differences
+      bcdResult.Replace(",", ".");
+      dblResult.Replace(",", ".");
+
+      Assert::AreEqual(expected.GetString(), dblResult.GetString());
+      Assert::AreEqual(expected.GetString(), bcdResult.GetString());
+    }
+
 
   };
 }

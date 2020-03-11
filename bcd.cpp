@@ -1379,10 +1379,10 @@ bcd::Exp() const
 
   number = *this;
 
-  // Can not calculate: will always be zero
+  // Can not calculate: will always be one!
   if(number.IsNull())
   {
-    return number;
+    return bcd(1);
   }
 
   if(number.GetSign () < 0 )
@@ -1431,7 +1431,7 @@ bcd::Exp() const
   // Take care of the sign
   if(this->GetSign() < 0 )
   {
-    result = -result;
+    result = bcd(1) / result;
   }
   return result;
 }
