@@ -520,14 +520,14 @@ namespace UnitTest
     TEST_METHOD(T041_Power)
     {
       Logger::WriteMessage("Test power with: bcd.Power()");
-
+      
       // 9988776655,4433221112
       // 3,78123764321234
       bcd one("9988776655.4433221112");
       bcd two("3.78123764321234");
       bcd expect("6.46446118874655302175032245730334730318E+37");
       bcd result = one.Power(two);
-      Logger::WriteMessage(result.AsString());
+      Logger::WriteMessage(result.AsString()); 
 
       Assert::IsTrue(expect == result);
     }
