@@ -792,7 +792,7 @@ icd::Exp() const
   // Correcting the sign
   if(this->GetSign() < 0 )
   {
-    result = -result;
+    result = icd((long)1) / result;
   }
   return result;
 }
