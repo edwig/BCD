@@ -1,12 +1,19 @@
 BCD Releasenotes
 ----------------
 
-Next version  xx januari 2020 (not released yet)
+Next version 1.3 januari 2020 (not released yet)
 ------------------------------------------------
 1) Added internal class uint128
 2) Added new class "numeric" for NUMERIC/DECIMAL
    No conversion of SQL_NUMERIC_STRUCT needed!!
    It's a work in progress....
+3) Fixed issue #1: bcd::Sine, bcd::Cosine entering endless loop on value 0.0
+4) Fixed issue #2: bcd::operator< incorrectly on value 0.0 in ArcTangent
+5) Fixed issue #3: Corrections in the test.txt output file with speed values
+6) Fixed issue #4: Incorrect "Normalization" of the mantissa when setting double values between 0 and 1
+7) Fixed issue #5: Incorrect answer when bcd::Exp on number closing on to value 0.0
+8) Fixed issue #6: Fix in adding/subtracting border values crossing 0.0 origin.
+9) Fixed issue #7: Fix for conversion of AFP number to double
 
 Version 1.2 December 2019
 -------------------------

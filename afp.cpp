@@ -2156,7 +2156,10 @@ _afp_ftoa(afp& p_number,unsigned int p_digits /*=PRECISION*/,int p_threshold /*=
         ++point_pos;
         --expo10;
       }
-      s.erase(2,1);
+      if(s[2] == '.')
+      {
+        s.erase(2,1);
+      }
       if(point_pos < s.length())
       {
         s.insert(point_pos,".");
