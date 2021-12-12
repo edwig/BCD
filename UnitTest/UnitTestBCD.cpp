@@ -319,8 +319,8 @@ namespace UnitTest
       bcd two = one++;
       CString resstring1 = one.AsString();
       CString resstring2 = two.AsString();
-      char* expect1 = "1234567890123456790";
-      char* expect2 = "1234567890123456789";
+      char* expect1 = "1234567890123456790.00";
+      char* expect2 = "1234567890123456789.00";
 
       Assert::IsTrue(strcmp(expect1,resstring1.GetString()) == 0);
       Assert::IsTrue(strcmp(expect2,resstring2.GetString()) == 0);
@@ -334,8 +334,8 @@ namespace UnitTest
       bcd two = ++one;
       CString resstring1 = one.AsString();
       CString resstring2 = two.AsString();
-      char* expect1 = "1234567890123456790";
-      char* expect2 = "1234567890123456790";
+      char* expect1 = "1234567890123456790.00";
+      char* expect2 = "1234567890123456790.00";
 
       Assert::IsTrue(strcmp(expect1,resstring1.GetString()) == 0);
       Assert::IsTrue(strcmp(expect2,resstring2.GetString()) == 0);
@@ -349,8 +349,8 @@ namespace UnitTest
       bcd two = one--;
       CString resstring1 = one.AsString();
       CString resstring2 = two.AsString();
-      char* expect1 = "1234567890123456789";
-      char* expect2 = "1234567890123456790";
+      char* expect1 = "1234567890123456789.00";
+      char* expect2 = "1234567890123456790.00";
 
       Assert::IsTrue(strcmp(expect1,resstring1.GetString()) == 0);
       Assert::IsTrue(strcmp(expect2,resstring2.GetString()) == 0);
@@ -364,8 +364,8 @@ namespace UnitTest
       bcd two = --one;
       CString resstring1 = one.AsString();
       CString resstring2 = two.AsString();
-      char* expect1 = "1234567890123456789";
-      char* expect2 = "1234567890123456789";
+      char* expect1 = "1234567890123456789.00";
+      char* expect2 = "1234567890123456789.00";
 
       Assert::IsTrue(strcmp(expect1,resstring1.GetString()) == 0);
       Assert::IsTrue(strcmp(expect2,resstring2.GetString()) == 0);
@@ -377,7 +377,7 @@ namespace UnitTest
 
       bcd one("123456.789012345678");
       bcd two = one;
-      CString resstring = two.AsString();
+      CString resstring = two.AsString(bcd::Format::Bookkeeping,false,12);
       char* expect = "123456.789012345678";
 
       Assert::AreEqual(expect,resstring.GetString());
@@ -390,7 +390,7 @@ namespace UnitTest
       long one = 123456789;
       bcd two = one;
       CString resstring = two.AsString();
-      char* expect = "123456789";
+      char* expect = "123456789.00";
 
       Assert::AreEqual(expect,resstring.GetString());
     }
@@ -846,7 +846,7 @@ namespace UnitTest
       bcd result;
       result = one;
       CString resstring = result.AsString();
-      char* expect = "1234567890";
+      char* expect = "1234567890.00";
 
       Assert::IsTrue(strcmp(expect,resstring.GetString()) == 0);
     }
@@ -1031,7 +1031,7 @@ namespace UnitTest
       bcd one("123456.789012345678");
       bcd result = floor(one);
       CString resstring = result.AsString();
-      char* expect("123456");
+      char* expect("123456.00");
 
       Assert::AreEqual(expect,resstring.GetString());
     }
@@ -1044,7 +1044,7 @@ namespace UnitTest
       bcd one("123456.789012345678");
       bcd result = ceil(one);
       CString resstring = result.AsString();
-      char* expect("123457");
+      char* expect("123457.00");
 
       Assert::AreEqual(expect,resstring.GetString());
     }
@@ -1077,7 +1077,7 @@ namespace UnitTest
       bcd zero;
       bcd sineZero = zero.Sine();
 
-      CString zeroResult("0");
+      CString zeroResult("0.00");
       CString zeroSine = sineZero.AsString();
 
       Assert::AreEqual(zeroSine.GetString(),zeroResult.GetString());
@@ -1091,7 +1091,7 @@ namespace UnitTest
       bcd zero;
       bcd cosineZero = zero.Cosine();
 
-      CString zeroResult("1");
+      CString zeroResult("1.00");
       CString zeroCosine = cosineZero.AsString();
 
       Assert::AreEqual(zeroCosine.GetString(), zeroResult.GetString());
@@ -1105,7 +1105,7 @@ namespace UnitTest
       bcd zero;
       bcd expZero = zero.Exp();
 
-      CString zeroResult("1");
+      CString zeroResult("1.00");
       CString zeroExponent = expZero.AsString();
 
       Assert::AreEqual(zeroExponent.GetString(), zeroResult.GetString());
@@ -1202,8 +1202,10 @@ namespace UnitTest
       CString expected("0.02");
       CString result = numresult.AsString();
 
+#ifdef _DEBUG
       CString mantissa = numresult.DebugPrint("Correct 0.02");
       Logger::WriteMessage(mantissa);
+#endif
 
       Assert::AreEqual(expected.GetString(), result.GetString());
     }

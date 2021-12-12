@@ -309,14 +309,14 @@ DoFunctionTest(TestFunction p_function
     }
   }
   counter4.Stop();
-  printf("bcd    %10.6f %s\n",counter4.GetCounter(),c_result.AsString(bcd::Bookkeeping,true));
+  printf("bcd    %10.6f %s\n",counter4.GetCounter(),c_result.AsString(bcd::Format::Bookkeeping,true));
   if(extraInteger)
   {
     printf("                  +%d\n",exponent);
   }
   if(extraFloat)
   {
-    printf("                  %s\n",c_number2.AsString(bcd::Bookkeeping,true));
+    printf("                  %s\n",c_number2.AsString(bcd::Format::Bookkeeping,true));
   }
   
   printf("\n\n");
@@ -411,7 +411,7 @@ DoOperatorTest(TestOperator p_operator,char* p_een,char* p_two,char* p_expect,in
     }
   }
   counter5.Stop();
-  printf("bcd    %10.6f %s\n",counter5.GetCounter(),c_result.AsString(bcd::Bookkeeping,true));
+  printf("bcd    %10.6f %s\n",counter5.GetCounter(),c_result.AsString(bcd::Format::Bookkeeping,true));
 
 
 //   numeric n_number1(32,16,p_een);
@@ -508,7 +508,7 @@ PrintConstants(int p_count)
   printf("LN10     Calc   0.000000 +2.3025850929940456840179914546844\n");
   printf("         afp    %0.6f %s\n",count1.GetCounter(),_afp_ftoa(b_ln10,41).c_str());
   printf("         icd    %0.6f %s\n",count2.GetCounter(),i_ln10.AsString());
-  printf("         bcd    %0.6f %s\n",count3.GetCounter(),c_ln10.AsString(bcd::Bookkeeping,true));
+  printf("         bcd    %0.6f %s\n",count3.GetCounter(),c_ln10.AsString(bcd::Format::Bookkeeping,true));
 
   // BEREKEN LN(2)
   count1.Start();
@@ -533,7 +533,7 @@ PrintConstants(int p_count)
   printf("LN2      Calc   0.000000 +0.69314718055994530941723212145818\n");
   printf("         afp    %0.6f %s\n",count1.GetCounter(),_afp_ftoa(b_ln2,41).c_str());
   printf("         icd    %0.6f %s\n",count2.GetCounter(),i_ln2.AsString());
-  printf("         bcd    %0.6f %s\n",count3.GetCounter(),c_ln2.AsString(bcd::Bookkeeping,true));
+  printf("         bcd    %0.6f %s\n",count3.GetCounter(),c_ln2.AsString(bcd::Format::Bookkeeping,true));
 
   printf("\n\n");
 }

@@ -1,3 +1,28 @@
+/////////////////////////////////////////////////////////////////////////////////
+//
+// SourceFile: bcd.cpp
+//
+// Copyright (c) 2014-2021 ir. W.E. Huisman
+// All rights reserved
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files(the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions :
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
 //////////////////////////////////////////////////////////////////////////
 //
 //  BCD
@@ -8,8 +33,8 @@
 //  And is always stored in normalized mode after an operation or conversion
 //  with an implied decimal point between the first and second position
 //
-// Copyright (c) 1998-2019 ir. W.E. Huisman
-// Version 1.2 of 18-12-2019
+// Copyright (c) 2014-2021 ir. W.E. Huisman
+// Version 1.4 of 12-12-2021
 //
 //  Examples:
 //  E+03 15456712 45000000 00000000 -> 1545.671245
@@ -23,6 +48,7 @@
 #include "StdException.h"   // Throwing exceptions
 #include <math.h>           // Still needed for conversions of double
 #include <intsafe.h>        // Min/Max sizes of integer datatypes
+#include <locale.h>         
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -48,8 +74,6 @@ InitValutaString()
 {
   if(g_locale_valutaInit == false)
   {
-    setlocale(LC_NUMERIC, "");
-
     GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SDECIMAL,  g_locale_decimalSep, SEP_LEN);
     GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_STHOUSAND, g_locale_thousandSep,SEP_LEN);
     GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SCURRENCY, g_locale_strCurrency,SEP_LEN);
@@ -139,7 +163,7 @@ bcd::bcd(const long p_value, const long p_restValue /*= 0*/)
   SetValueLong(p_value,p_restValue);
 }
 
-// bcd::bcd(value, value)
+// bcd::bcd(value,value)
 // Description: Construct a BCD from an unsigned long and an unsigned optional long
 // Technical:   See description of SetValueLong
 bcd::bcd(const unsigned long p_value, const unsigned long p_restValue /*= 0*/)
@@ -196,14 +220,7 @@ bcd::bcd(const SQL_NUMERIC_STRUCT* p_numeric)
   SetValueNumeric(p_numeric);
 }
 
-// bcd::~bcd
-// Description: Destructor of class bcd.
 //
-bcd::~bcd()
-{
-  // Nothing interesting here :-)
-}
-
 //////////////////////////////////////////////////////////////////////////
 //
 // END OF CONSTRUCTORS OF BCD
@@ -585,13 +602,13 @@ bcd::operator-() const
   if(!result.IsNull())
   {
     // Swap signs
-    if(result.m_sign == Positive)
+    if(result.m_sign == Sign::Positive)
     {
-      result.m_sign = Negative;
+      result.m_sign = Sign::Negative;
     }
     else
     {
-      result.m_sign = Positive;
+      result.m_sign = Sign::Positive;
     }
   }
   return result;
@@ -680,8 +697,17 @@ bcd::operator=(const char* p_value)
   return *this;
 }
 
+// bcd::=
+// Description: Assignment operator from an __int64
+bcd&
+bcd::operator=(const __int64 p_value)
+{
+  SetValueInt64(p_value,0);
+  return *this;
+}
+
 // bcd::operator==
-// Description: Equality comparison of two bcd's
+// Description: Equality comparison of two bcds
 //
 bool 
 bcd::operator==(const bcd& p_value) const
@@ -774,14 +800,14 @@ bcd::operator<(const bcd& p_value) const
     // Signs are not equal 
     // If this one is negative "smaller than" is true
     // If this one is positive "smaller than" is false
-    return (m_sign == Negative);
+    return (m_sign == Sign::Negative);
   }
 
   // Issue #2 at github
   // Zero is always smaller than everything else
   if(IsNull() && !p_value.IsNull())
   {
-    return (m_sign == Positive);
+    return (m_sign == Sign::Positive);
   }
 
   // Shortcut: If the exponent differ, the mantissa's don't matter
@@ -789,11 +815,11 @@ bcd::operator<(const bcd& p_value) const
   {
     if(m_exponent < p_value.m_exponent)
     {
-      return (m_sign == Positive);
+      return (m_sign == Sign::Positive);
     }
     else
     {
-      return (m_sign == Negative);
+      return (m_sign == Sign::Negative);
     }
   }
   // Signs are the same and exponents are the same
@@ -841,23 +867,23 @@ bcd::operator>(const bcd& p_value) const
     // Signs are not equal. 
     // If this one is positive "greater than" is true
     // If this one is negative "greater than" is false
-    return (m_sign == Positive);
+    return (m_sign == Sign::Positive);
   }
   // Shortcut: if value is zero
   if(IsNull())
   {
-    return (p_value.m_sign == Negative);
+    return (p_value.m_sign == Sign::Negative);
   }
   // Shortcut: If the exponent differ, the mantissa's don't matter
   if(m_exponent != p_value.m_exponent)
   {
     if(m_exponent > p_value.m_exponent || p_value.IsNull())
     {
-      return (m_sign == Positive);
+      return (m_sign == Sign::Positive);
     }
     else
     {
-      return (m_sign == Negative);
+      return (m_sign == Sign::Negative);
     }
   }
   // Signs are the same and exponents are the same
@@ -1106,11 +1132,11 @@ bcd::Negate()
 {
   if(IsNull())
   {
-    m_sign = Positive;
+    m_sign = Sign::Positive;
   }
   else
   {
-    m_sign = (m_sign == Positive) ? Negative : Positive;
+    m_sign = (m_sign == Sign::Positive) ? Sign::Negative : Sign::Positive;
   }
 }
   
@@ -1142,7 +1168,7 @@ bcd::Floor() const
   // Shortcut: if number is a fraction: floor is always zero
   if(m_exponent < 0)
   {
-    return m_sign == Positive ? result : minusOne;
+    return m_sign == Sign::Positive ? result : minusOne;
   }
   // Shortcut: If number is too big, it's just this number
   if(m_exponent > bcdDigits * bcdLength)
@@ -1153,7 +1179,7 @@ bcd::Floor() const
   result = SplitMantissa();
 
   // Take care of sign
-  if(m_sign == Negative)
+  if(m_sign == Sign::Negative)
   {
     // Floor is 1 smaller
     result -= bcd(1L);
@@ -1185,7 +1211,7 @@ bcd::Ceiling() const
   // Shortcut: if number is a fraction: ceiling is one or zero
   if(m_exponent < 0)
   {
-    return m_sign == Positive ? one : result;
+    return m_sign == Sign::Positive ? one : result;
   }
   // Shortcut: If number is too big, it's just this number
   if(m_exponent > bcdDigits * bcdLength)
@@ -1196,7 +1222,7 @@ bcd::Ceiling() const
   result = SplitMantissa();
 
   // Take care of sign
-  if(m_sign == Positive)
+  if(m_sign == Sign::Positive)
   {
     // Floor is 1 smaller
     result += one;
@@ -1289,7 +1315,7 @@ bcd
 bcd::AbsoluteValue() const
 {
   bcd result(*this);
-  result.m_sign = Positive;
+  result.m_sign = Sign::Positive;
   return result;
 }
 
@@ -1938,7 +1964,7 @@ bcd::AsDouble() const
     result *= ::pow(10.0,m_exponent);
   }
   // Take care of the sign
-  if(m_sign == Negative)
+  if(m_sign == Sign::Negative)
   {
     result = -result;
   }
@@ -1967,7 +1993,7 @@ bcd::AsShort() const
   }
 
   // Take care of sign and over/under flows
-  if(m_sign == Positive)
+  if(m_sign == Sign::Positive)
   {
     if(result > SHORT_MAX)
     {
@@ -1990,7 +2016,7 @@ ushort
 bcd::AsUShort() const
 {
   // Check for unsigned
-  if(m_sign == Negative)
+  if(m_sign == Sign::Negative)
   {
     throw new StdException("BCD: Cannot convert a negative number to an unsigned short number.");
   }
@@ -2041,7 +2067,7 @@ bcd::AsLong() const
   }
 
   // Take care of sign and over/under flows
-  if(m_sign == Positive)
+  if(m_sign == Sign::Positive)
   {
     if(result > LONG_MAX)
     {
@@ -2065,7 +2091,7 @@ ulong
 bcd::AsULong() const
 {
   // Check for unsigned
-  if(m_sign == Negative)
+  if(m_sign == Sign::Negative)
   {
     throw new StdException("BCD: Cannot convert a negative number to an unsigned long.");
   }
@@ -2133,7 +2159,7 @@ bcd::AsInt64() const
   result2 += (result1 * base2);
 
   // Take care of sign 
-  if(m_sign == Negative)
+  if(m_sign == Sign::Negative)
   {
     result2 = -result2;
   }
@@ -2145,7 +2171,7 @@ uint64
 bcd::AsUInt64() const
 {
   // Check for negative
-  if(m_sign == Negative)
+  if(m_sign == Sign::Negative)
   {
     throw new StdException("BCD: Cannot convert a negative number to an unsigned 64 bits integer");
   }
@@ -2186,9 +2212,14 @@ bcd::AsUInt64() const
 
 // bcd::AsString
 // Description: Get as a mathematical string
-// Technical:   Convert back to "[sign][digit][.[digit]*][E[sign][digits]+]"
+//
+// Engineering format: Convert back to "[sign][digit][.[digit]*][E[sign][digits]+]"
+// Bookkeeping format: Convert back to "[sign]9[digit]*][.[digit]*]"
+// Optionally also print the positive '+' ('-' negative sign is always printed!)
+// Optionally get with fixed decimals, default = 2 decimals (most common default for bookkeeping purposes)
+// Optionally get as much as needed decimals with "p_decimals = 0"
 CString 
-bcd::AsString(bcd::Format p_format /*=Bookkeeping*/,bool p_printPositive /*=false*/) const
+bcd::AsString(Format p_format /*=Bookkeeping*/,bool p_printPositive /*=false*/,int p_decimals /*=2*/) const
 {
   CString result;
   int exp    = m_exponent;
@@ -2197,7 +2228,7 @@ bcd::AsString(bcd::Format p_format /*=Bookkeeping*/,bool p_printPositive /*=fals
   // Check format possibilities
   if(exp < -(prec/2) || exp > (prec/2))
   {
-    p_format = Engineering;
+    p_format = Format::Engineering;
   }
 
   // Construct the mantissa string
@@ -2218,7 +2249,7 @@ bcd::AsString(bcd::Format p_format /*=Bookkeeping*/,bool p_printPositive /*=fals
   // Stripping trailing zeros.
   result = result.TrimRight('0');
 
-  if(p_format == Engineering)
+  if(p_format == Format::Engineering)
   {
     CString left = result.Left(1);
     result = left + CString(".") + result.Mid(1) + CString("E");
@@ -2245,7 +2276,11 @@ bcd::AsString(bcd::Format p_format /*=Bookkeeping*/,bool p_printPositive /*=fals
         before += "0";
       }
       result = before;
-      if(behind.GetLength())
+      while(p_decimals > 0 && behind.GetLength() < p_decimals)
+      {
+        behind += '0';
+      }
+      if(!behind.IsEmpty())
       {
         result += "." + behind;
       }
@@ -2254,7 +2289,7 @@ bcd::AsString(bcd::Format p_format /*=Bookkeeping*/,bool p_printPositive /*=fals
 
   // Take care of the sign
   // result = ((m_sign == Positive ) ? "+" : "-") + result;
-  if(m_sign == Positive)
+  if(m_sign == Sign::Positive)
   {
     if(p_printPositive)
     {
@@ -2270,6 +2305,8 @@ bcd::AsString(bcd::Format p_format /*=Bookkeeping*/,bool p_printPositive /*=fals
   return result;
 }
 
+// Display strings are always in Format::Bookkeeping
+// as most users find mathematical exponential notation hard to read.
 CString 
 bcd::AsDisplayString(int p_decimals /*=2*/) const
 {
@@ -2284,7 +2321,7 @@ bcd::AsDisplayString(int p_decimals /*=2*/) const
   bcd number(*this);
   number.Round(p_decimals);
 
-  CString str = number.AsString();
+  CString str = number.AsString(Format::Bookkeeping,false,p_decimals);
   int pos = str.Find('.');
   if(pos >= 0)
   {
@@ -2294,7 +2331,7 @@ bcd::AsDisplayString(int p_decimals /*=2*/) const
   // Apply thousand separators in first part of the number
   if((pos > 0) || (pos == -1 && str.GetLength() > 3))
   {
-    CString result = pos > 0 ? str.Mid(pos) : "";
+    CString result = pos > 0 ? str.Mid(pos) : CString();
     str = pos > 0 ? str.Left(pos) : str;
     pos = result.GetLength();
 
@@ -2335,7 +2372,7 @@ bcd::AsNumeric(SQL_NUMERIC_STRUCT* p_numeric) const
   memset(p_numeric->val,0,SQL_MAX_NUMERIC_LEN);
 
   // Setting the sign, precision and scale
-  p_numeric->sign      = (m_sign == Positive) ? 1 : 0;
+  p_numeric->sign      = (m_sign == Sign::Positive) ? 1 : 0;
   p_numeric->precision = (SQLCHAR)  SQLNUM_MAX_PREC;
 
   // Special case for 0.0 or smaller than can be contained (1.0E-38)
@@ -2374,7 +2411,7 @@ bcd::AsNumeric(SQL_NUMERIC_STRUCT* p_numeric) const
   // Here is the big trick: use the exponent to scale up the number
   // Adjusting m_exponent to positive scaled integer result
   accu.m_exponent += (short)scale;
-  accu.m_sign      = Positive;
+  accu.m_sign      = Sign::Positive;
 
   while(true)
   {
@@ -2419,7 +2456,7 @@ bool
 bcd::IsNull() const
 {
   // Shortcut test
-  if(m_sign == Negative || m_exponent != 0)
+  if(m_sign == Sign::Negative || m_exponent != 0)
   {
     return false;
   }
@@ -2449,7 +2486,7 @@ int
 bcd::GetSign() const
 {
   // Negative number returns -1
-  if(m_sign == Negative)
+  if(m_sign == Sign::Negative)
   {
     return -1;
   }
@@ -2634,7 +2671,7 @@ bcd::GetMantissa() const
 {
   bcd number(*this);
 
-  number.m_sign     = Positive;
+  number.m_sign     = Sign::Positive;
   number.m_exponent = 0;
   return number;
 }
@@ -2658,7 +2695,7 @@ bcd::GetMantissa() const
 void
 bcd::Zero()
 {
-  m_sign      = Positive;
+  m_sign      = Sign::Positive;
   m_exponent  = 0;
   memset(m_mantissa,0,bcdLength * sizeof(long));
 }
@@ -2689,7 +2726,7 @@ bcd::SetValueInt(const int p_value)
     return;
   }
   // Take care of sign
-  m_sign = (p_value < 0) ? Negative : Positive;
+  m_sign = (p_value < 0) ? Sign::Negative : Sign::Positive;
   // Place in mantissa
   m_mantissa[0] = long_abs(p_value);
   // And normalize
@@ -2716,11 +2753,11 @@ bcd::SetValueLong(const long p_value, const long p_restValue)
   // Get the sign
   if (p_value == 0)
   {
-    m_sign = (p_restValue < 0) ? Negative : Positive;
+    m_sign = (p_restValue < 0) ? Sign::Negative : Sign::Positive;
   }
   else
   {
-    m_sign = (p_value < 0) ? Negative : Positive;
+    m_sign = (p_value < 0) ? Sign::Negative : Sign::Positive;
   }
   // Fill in mantissa. restValue first
   if(p_restValue)
@@ -2774,11 +2811,11 @@ bcd::SetValueInt64(const int64 p_value, const int64 p_restValue)
   // Get the sign
   if(p_value == 0L)
   {
-    m_sign = (p_restValue < 0L) ? Negative : Positive;
+    m_sign = (p_restValue < 0L) ? Sign::Negative : Sign::Positive;
   }
   else
   {
-    m_sign = (p_value < 0L) ? Negative : Positive;
+    m_sign = (p_value < 0L) ? Sign::Negative : Sign::Positive;
   }
   // Fill in mantissa
   if(p_restValue % bcdBase)
@@ -2841,7 +2878,7 @@ bcd::SetValueDouble(const double p_value)
   // Take care of sign
   if(p_value < 0.0)
   {
-    m_sign  = Negative;
+    m_sign  = Sign::Negative;
     between = -between;
   }
   // Take care of exponent
@@ -2884,7 +2921,7 @@ bcd::SetValueString(const char* p_string,bool /*p_fromDB*/)
   int  base      = bcdBase / 10;
   int  part      = 1;
   int  exp_extra = 0;
-  int  exp_sign  = Positive;
+  Sign exp_sign  = Sign::Positive;
   
   // For normalized numbers without a first part
   m_exponent = -1;
@@ -2909,13 +2946,13 @@ bcd::SetValueString(const char* p_string,bool /*p_fromDB*/)
     {
       if(c == '-')
       {
-        m_sign  = Negative;
+        m_sign  = Sign::Negative;
         signing = false;
         continue;
       }
       if(c == '+')
       {
-        m_sign  = Positive;
+        m_sign  = Sign::Positive;
         signing = false;
         continue;
       }
@@ -2928,9 +2965,9 @@ bcd::SetValueString(const char* p_string,bool /*p_fromDB*/)
       case 'e': // Fall through
       case 'E': part = 3; 
                 break;
-      case '-': exp_sign = Negative; 
+      case '-': exp_sign = Sign::Negative;
                 break;
-      case '+': exp_sign = Positive; 
+      case '+': exp_sign = Sign::Positive;
                 break;
       default:  // Now must be a digit. No other chars allowed
                 if(isdigit(c) == false)
@@ -2996,7 +3033,7 @@ bcd::SetValueString(const char* p_string,bool /*p_fromDB*/)
   // Adjust the exponent from saved variables
   if(exp_extra)
   {
-    if(exp_sign == Negative)
+    if(exp_sign == Sign::Negative)
     {
       exp_extra = -exp_extra;
     }
@@ -3045,7 +3082,7 @@ bcd::SetValueNumeric(const SQL_NUMERIC_STRUCT* p_numeric)
   m_exponent -= p_numeric->scale;
 
   // Adjust the sign
-  m_sign = (p_numeric->sign == 1) ? Positive : Negative;
+  m_sign = (p_numeric->sign == 1) ? Sign::Positive : Sign::Negative;
 }
 
 // bcd::Normalize
@@ -3071,7 +3108,7 @@ bcd::Normalize(int p_startExponent /*=0*/)
   // Zero mantissa found
   if(zero)
   {
-    m_sign     = Positive;
+    m_sign     = Sign::Positive;
     m_exponent = 0;
     return;
   }
@@ -3095,7 +3132,7 @@ void
 bcd::Mult10(int p_times /* = 1 */)
 {
   // If the number of times is bigger than bcdDigits
-  // Optimize by doing shifts instead of mults
+  // Optimize by doing shifts instead of MULT
   if(p_times / bcdDigits)
   {
     int shifts = p_times / bcdDigits;
@@ -3276,7 +3313,7 @@ bcd::DebugPrint(char* p_name)
   debug.Format("%-14s ",p_name);
 
   // Print the sign
-  debug.AppendFormat("%c ",m_sign == Positive ? '+' : '-');
+  debug.AppendFormat("%c ",m_sign == Sign::Positive ? '+' : '-');
 
   // Print the exponent
   debug.AppendFormat("E%+d ",m_exponent);
@@ -3296,8 +3333,8 @@ bcd::DebugPrint(char* p_name)
 // bcd::Epsilon
 // Description: Stopping criterion for iterations
 // Technical:   Translates fraction to lowest decimal position
-//               10 -> 0.00000000000000000010
-//                5 -> 0.00000000000000000005
+//               10 -> 0.0000000000000000000000000000000000000010
+//                5 -> 0.0000000000000000000000000000000000000005
 bcd&
 bcd::Epsilon(long p_fraction) const
 {
@@ -3330,13 +3367,13 @@ bcd::Add(const bcd& p_number) const
   // (+x) + (-y) -> Subtraction, result pos/neg,  Possibly swap
   // (-x) + (+y) -> Subtraction, result pos/neg,  Possibly swap
   // (-x) + (-y) -> Addition,    result negative, Do not swap
-  Sign     signResult   = Positive;
-  Operator operatorKind = Addition;
+  Sign     signResult   = Sign::Positive;
+  Operator operatorKind = Operator::Addition;
   bcd      arg1(*this);
   bcd      arg2(p_number);
   PositionArguments(arg1, arg2, signResult, operatorKind);
 
-  if (operatorKind == Addition)
+  if (operatorKind == Operator::Addition)
   {
     arg1 = PositiveAddition(arg1, arg2);
   }
@@ -3372,7 +3409,7 @@ bcd::Mul(const bcd& p_number) const
   bcd result = PositiveMultiplication(*this,p_number);
 
   // Take care of the sign
-  result.m_sign = result.IsNull() ? Positive : CalculateSign(*this, p_number);
+  result.m_sign = result.IsNull() ? Sign::Positive : CalculateSign(*this, p_number);
 
   return result;
 }
@@ -3397,7 +3434,7 @@ bcd::Div(const bcd& p_number) const
   bcd result = PositiveDivision(arg1,arg2);
 
   // Take care of the sign
-  result.m_sign = result.IsNull() ? Positive : CalculateSign(*this, p_number);
+  result.m_sign = result.IsNull() ? Sign::Positive : CalculateSign(*this, p_number);
 
   return result;
 }
@@ -3409,7 +3446,7 @@ bcd::Mod(const bcd& p_number) const
   bcd count = ((*this) / p_number).Floor();
   bcd mod((*this) - (count * p_number));
 
-  if (m_sign == Negative)
+  if (m_sign == Sign::Negative)
   {
     mod = -mod;
   }
@@ -3426,44 +3463,44 @@ bcd::PositionArguments(bcd&       arg1,
 {
   // Get the resulting kind of operator and sign
   // if (-x) + y then turnaround, so x + (-y), becomes x - y
-  if (arg1.m_sign == Positive)
+  if (arg1.m_sign == Sign::Positive)
   {
-    if(arg2.m_sign == Positive)
+    if(arg2.m_sign == Sign::Positive)
     {
       // Both are positive
-      signResult   = Positive;
-      operatorKind = Addition;
+      signResult   = Sign::Positive;
+      operatorKind = Operator::Addition;
     }
     else
     {
       // Arg2 is negative
       // Now the rest is positive
-      arg1.m_sign  = Positive;
-      arg2.m_sign  = Positive;
-      operatorKind = Subtraction;
+      arg1.m_sign  = Sign::Positive;
+      arg2.m_sign  = Sign::Positive;
+      operatorKind = Operator::Subtraction;
       // Sign depends on the size
-      signResult   = (arg1 >= arg2) ? Positive : Negative;
+      signResult   = (arg1 >= arg2) ? Sign::Positive : Sign::Negative;
     }
   }
   else // arg1.m_sign == Negative
   {
-    if(arg2.m_sign == Negative)
+    if(arg2.m_sign == Sign::Negative)
     {
       // Both are negative
-      arg1.m_sign  = Positive;
-      arg2.m_sign  = Positive;
-      signResult   = Negative;
-      operatorKind = Addition;
+      arg1.m_sign  = Sign::Positive;
+      arg2.m_sign  = Sign::Positive;
+      signResult   = Sign::Negative;
+      operatorKind = Operator::Addition;
     }
     else
     {
       // arg2 is positive
       // Now the rest is positive
-      arg1.m_sign = Positive;
-      arg2.m_sign = Positive;
-      operatorKind = Subtraction;
+      arg1.m_sign = Sign::Positive;
+      arg2.m_sign = Sign::Positive;
+      operatorKind = Operator::Subtraction;
       // Sign depends on the size
-      signResult  = (arg2 >= arg1) ? Positive : Negative;
+      signResult  = (arg2 >= arg1) ? Sign::Positive : Sign::Negative;
     }
   }
 }
@@ -3478,13 +3515,13 @@ bcd::CalculateSign(const bcd& p_arg1, const bcd& p_arg2) const
   // (+x) * (-y) -> negative
   if (p_arg1.IsNull() || p_arg2.IsNull())
   {
-    return Positive;
+    return Sign::Positive;
   }
   if(p_arg1.m_sign != p_arg2.m_sign)
   {
-    return Negative;
+    return Sign::Negative;
   }
-  return Positive;
+  return Sign::Positive;
 }
 
 // Addition of two mantissa (no signs/exponents)
@@ -3952,7 +3989,7 @@ bool
 bcd::WriteToFile (FILE* p_fp)
 {
   // Write out the sign
-  if(putc(m_sign,p_fp)            == EOF) return false;
+  if(putc((char)m_sign,p_fp)            == EOF) return false;
   // Write out the exponent
   if(putc(m_exponent >> 8,  p_fp) == EOF) return false;
   if(putc(m_exponent & 0xFF,p_fp) == EOF) return false;
@@ -3974,11 +4011,11 @@ bcd::ReadFromFile(FILE* p_fp)
   int ch = 0;
 
   // Read in the sign
-  m_sign = Positive;
+  m_sign = Sign::Positive;
   ch = getc(p_fp);
-  if(ch == Negative)
+  if(ch == (char) Sign::Negative)
   {
-    m_sign = Negative;
+    m_sign = Sign::Negative;
   }
   // Read in the exponent
   ch = getc(p_fp);

@@ -1,3 +1,28 @@
+/////////////////////////////////////////////////////////////////////////////////
+//
+// SourceFile: bcd.h
+//
+// Copyright (c) 2014-2021 ir. W.E. Huisman
+// All rights reserved
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files(the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions :
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
 //////////////////////////////////////////////////////////////////////////
 //
 // BCD
@@ -7,8 +32,8 @@
 // Numbers are stored in 1E8 based mantissa with a digital . implied at the second position
 // The mantissa array exists of a series of integers with 8 functional digits each
 //
-// Copyright (c) 1998-2019 ir W. E. Huisman
-// Version 1.2 of 18-12-2019
+// Copyright (c) 2014-2021 ir W. E. Huisman
+// Version 1.4 of 12-12-2021
 //
 #pragma once
 #include <sqltypes.h>   // Needed for conversions of SQL_NUMERIC_STRUCT
@@ -70,6 +95,18 @@ bcd acos (bcd p_number);
 bcd atan (bcd p_number);
 bcd atan2(bcd p_y,bcd p_x);
 
+// One-time initialization for printing numbers in the current locale
+void InitValutaString();
+
+// string format number and money format functions
+extern bool g_locale_valutaInit;
+extern char g_locale_decimalSep[];
+extern char g_locale_thousandSep[];
+extern char g_locale_strCurrency[];
+extern int  g_locale_decimalSepLen;
+extern int  g_locale_thousandSepLen;
+extern int  g_locale_strCurrencyLen;
+
 //////////////////////////////////////////////////////////////////////////
 //
 // The Binary Coded Decimal class
@@ -79,9 +116,9 @@ bcd atan2(bcd p_y,bcd p_x);
 class bcd
 {
 public:
-  typedef enum _sign    { Positive,    Negative    } Sign;
-  typedef enum _format  { Engineering, Bookkeeping } Format;
-  typedef enum _operator{ Addition,    Subtraction } Operator;
+  enum class Sign     { Positive,    Negative    };
+  enum class Format   { Engineering, Bookkeeping };
+  enum class Operator { Addition,    Subtraction };
 
   // CONSTRUCTORS/DESTRUCTORS
 
@@ -132,10 +169,7 @@ public:
 
   // BCD from a SQL_NUMERIC_STRUCT
   bcd(const SQL_NUMERIC_STRUCT* p_numeric);
-
   // Destructor of class bcd.
-  ~bcd();
-
   // CONSTANTS
 
   static bcd PI();     // Circumference/Radius ratio of a circle
@@ -204,10 +238,11 @@ public:
   bcd& operator--();     // Prefix  decrement
 
   // Assignment operators
-  bcd& operator=(const bcd&   p_value);
-  bcd& operator=(const int    p_value);
-  bcd& operator=(const double p_value);
-  bcd& operator=(const char*  p_value);
+  bcd& operator=(const bcd&    p_value);
+  bcd& operator=(const int     p_value);
+  bcd& operator=(const double  p_value);
+  bcd& operator=(const char*   p_value);
+  bcd& operator=(const __int64 p_value);
 
   // comparison operators
   bool operator==(const bcd&   p_value) const;
@@ -308,7 +343,7 @@ public:
   // Get as an unsigned 64 bits long
   uint64  AsUInt64() const;
   // Get as a mathematical string
-  CString AsString(bcd::Format p_format = Bookkeeping,bool p_printPositive = false) const;
+  CString AsString(bcd::Format p_format = Format::Bookkeeping,bool p_printPositive = false,int p_decimals = 2) const;
   // Get as a display string (by desktop locale)
   CString AsDisplayString(int p_decimals = 2) const;
   // Get as an ODBC SQL NUMERIC(p,s)
