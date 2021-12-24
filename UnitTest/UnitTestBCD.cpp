@@ -1271,5 +1271,33 @@ namespace UnitTest
 
       Assert::AreEqual(expected.GetString(), resstring.GetString());
     }
+
+    // REMARK
+    // Only run this test if you are suspicious about the inner workings of "AsInt64"
+    // As this test takes a long time to run
+    //
+    TEST_METHOD(T092_IntegerConversion)
+    {
+      Logger::WriteMessage("Converting to and from regular integers");
+
+      // BCD TEST
+      for(__int64 val = INT_MIN; val <= INT_MAX; ++val)
+      {
+        bcd b = val;
+        __int64 back = b.AsInt64();
+        if(back != val)
+        {
+          Assert::Fail(L"bcd <-> integer64 just broke!");
+        }
+
+        // Because it runs a long time...
+        if((val % bcdBase) == 0)
+        {
+          CString message;
+          message.Format("100 million mark at: %i",val);
+          Logger::WriteMessage(message);
+        }
+      }
+    }
   };
 }

@@ -2818,31 +2818,29 @@ bcd::SetValueInt64(const int64 p_value, const int64 p_restValue)
     m_sign = (p_value < 0L) ? Sign::Negative : Sign::Positive;
   }
   // Fill in mantissa
+  int norm = 0;
   if(p_restValue % bcdBase)
   {
-    m_mantissa[0] = long_abs(p_value % bcdBase);
-    Normalize();
-    m_exponent = -1; // reset
+    m_mantissa[0] = long_abs(p_restValue % bcdBase);
   }
   if(p_restValue / bcdBase)
   {
     ShiftRight();
     m_mantissa[0] = long_abs((long)(p_restValue / bcdBase));
-    Normalize();
-    m_exponent = -1; // reset
   }
   if(p_value % bcdBase)
   {
     ShiftRight();
     m_mantissa[0] = long_abs((long)(p_value % bcdBase));
-    Normalize(bcdDigits - 1);
+    norm = bcdDigits - 1;
   }
   if(p_value / bcdBase)
   {
     ShiftRight();
     m_mantissa[0] = long_abs((long)(p_value / bcdBase));
-    Normalize(2 * bcdDigits - 1);
+    norm = 2 * bcdDigits - 1;
   }
+  Normalize(norm);
 }
 
 void    
