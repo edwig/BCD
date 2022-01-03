@@ -67,7 +67,7 @@ namespace UnitTest
       Logger::WriteMessage("Construct a bcd from an __int64");
 
       __int64 expect(76543219876543210LL);
-      bcd  one(expect);
+      bcd  one( expect);
       __int64 result = one.AsInt64();
 
       Assert::IsTrue(result - expect == 0);
@@ -1276,28 +1276,54 @@ namespace UnitTest
     // Only run this test if you are suspicious about the inner workings of "AsInt64"
     // As this test takes a long time to run
     //
-    TEST_METHOD(T092_IntegerConversion)
+//     TEST_METHOD(T092_IntegerConversion)
+//     {
+//       Logger::WriteMessage("Converting to and from regular integers");
+// 
+//       // BCD TEST
+//       for(__int64 val = INT_MIN; val <= INT_MAX; ++val)
+//       {
+//         bcd b = val;
+//         __int64 back = b.AsInt64();
+//         if(back != val)
+//         {
+//           Assert::Fail(L"bcd <-> integer64 just broke!");
+//         }
+// 
+//         // Because it runs a long time...
+//         if((val % bcdBase) == 0)
+//         {
+//           CString message;
+//           message.Format("100 million mark at: %i",val);
+//           Logger::WriteMessage(message);
+//         }
+//       }
+//     }
+
+    TEST_METHOD(T093_Int64Conversion)
     {
-      Logger::WriteMessage("Converting to and from regular integers");
+      Logger::WriteMessage("Testing at higher ranges.");
 
-      // BCD TEST
-      for(__int64 val = INT_MIN; val <= INT_MAX; ++val)
-      {
-        bcd b = val;
-        __int64 back = b.AsInt64();
-        if(back != val)
-        {
-          Assert::Fail(L"bcd <-> integer64 just broke!");
-        }
+      bcd one("94505024884");
+      CString expected("94505024884");
+      UINT64 number = one.AsUInt64();
+      CString result;
+      result.Format("%I64d",number);
 
-        // Because it runs a long time...
-        if((val % bcdBase) == 0)
-        {
-          CString message;
-          message.Format("100 million mark at: %i",val);
-          Logger::WriteMessage(message);
-        }
-      }
+      Assert::AreEqual(expected.GetString(),result.GetString());
+    }
+
+
+    TEST_METHOD(T094_Int64PlusDecimals)
+    {
+      Logger::WriteMessage("Testing int64 plus decimals.");
+
+      UINT64 num = 94505024884;
+      bcd one (num,64);
+      CString expected("94505024884.64");
+      CString result = one.AsString();
+
+      Assert::AreEqual(expected.GetString(),result.GetString());
     }
   };
 }

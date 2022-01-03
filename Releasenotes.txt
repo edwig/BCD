@@ -1,6 +1,11 @@
 BCD Releasenotes
 ----------------
 
+Version 1.5 januari 2022
+------------------------
+1)  Fixed a bug in conversion from INT64 to a bcd in the "SetValueInt64" member
+    As a result the full 19 digit range for the value and rest-value are now supported.
+
 Version 1.4 december 2021
 -------------------------
 1)  Upgraded to Visual Studio 2022
