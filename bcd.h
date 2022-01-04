@@ -169,7 +169,7 @@ public:
 
   // BCD from a SQL_NUMERIC_STRUCT
   bcd(const SQL_NUMERIC_STRUCT* p_numeric);
-  // Destructor of class bcd.
+
   // CONSTANTS
 
   static bcd PI();     // Circumference/Radius ratio of a circle

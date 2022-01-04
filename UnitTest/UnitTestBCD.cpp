@@ -1313,7 +1313,6 @@ namespace UnitTest
       Assert::AreEqual(expected.GetString(),result.GetString());
     }
 
-
     TEST_METHOD(T094_Int64PlusDecimals)
     {
       Logger::WriteMessage("Testing int64 plus decimals.");
@@ -1324,6 +1323,35 @@ namespace UnitTest
       CString result = one.AsString();
 
       Assert::AreEqual(expected.GetString(),result.GetString());
+    }
+
+    TEST_METHOD(T095_CornerCases)
+    {
+      Logger::WriteMessage("Testing integer corner cases.");
+
+      bcd test1((char)MININT8);      Assert::AreEqual((int)MININT8,  (int)test1.AsShort());
+      bcd test2((char)MAXINT8);      Assert::AreEqual((int)MAXINT8,  (int)test2.AsShort()); 
+
+      bcd test3((uchar)0);           Assert::AreEqual(0,             (int)test3.AsShort()); 
+      bcd test4((uchar)MAXUINT8);    Assert::AreEqual((int)MAXUINT8, (int)test4.AsShort());
+
+      bcd test5((short)MININT16);    Assert::AreEqual((int)MININT16, (int)test5.AsShort()); 
+      bcd test6((short)MAXINT16);    Assert::AreEqual((int)MAXINT16, (int)test6.AsShort()); 
+
+      bcd test7((ushort)0);          Assert::AreEqual((int)0,        (int)test7.AsUShort()); 
+      bcd test8((ushort)MAXUINT16);  Assert::AreEqual((int)MAXUINT16,(int)test8.AsUShort()); 
+
+      bcd test9((long)MININT32);     Assert::AreEqual((int)MININT32, (int)test9.AsLong());
+      bcd test10((long)MAXINT32);    Assert::AreEqual((int)MAXINT32, (int)test10.AsLong()); 
+
+      bcd test11((ulong)0);          Assert::IsTrue(test11.AsULong() == 0); 
+      bcd test12((ulong)MAXUINT32);  Assert::IsTrue(test12.AsULong() == MAXUINT32); 
+
+      bcd test13((INT64)MININT64);   Assert::IsTrue(test13.AsInt64() == MININT64); 
+      bcd test14((INT64)MAXINT64);   Assert::IsTrue(test14.AsInt64() == MAXINT64); 
+
+      bcd test15((UINT64)0);         Assert::IsTrue(test15.AsUInt64() == 0L); 
+      bcd test16((UINT64)MAXUINT64); Assert::IsTrue(test16.AsUInt64() == MAXUINT64);
     }
   };
 }
