@@ -5,14 +5,16 @@
 // do a binary approximation 
 //
 #pragma once
-
+#include <sqltypes.h>
 #include <ostream>
+
 using std::ostream;
 
 static const long  icdBase          = 100000000L; // Base   per element of m_data
 static const short icdDigits        = 8;          // Digits per element of m_data
 static const short icdLength        = 10;         // Total storage length in m_data
 static const short icdPointPosition = 5;          // Implied position of the decimal '.'
+static const short icdPrecision     = 38;         // Maximum allowed precision in ODBC
 // icd now has the form of: 0 0 0 0 0. 0 0 0 0 0
 // Example: 2.5 is stored:  0 0 0 0 5. 2 0 0 0 0
 
@@ -39,6 +41,9 @@ public:
 
   // Assignment-constructor from a string.
   icd(const CString& p_string);
+
+  // Assignment constructor from ODBC
+  icd(SQL_NUMERIC_STRUCT* p_numeric);
 
   // Destructor of the icd
   ~icd();
@@ -83,9 +88,9 @@ public:
 
   // MATHEMATICAL FUNCTIONS
 
-  // Floor functie
+  // Floor function
   icd     Floor() const;
-  // Ceiling functie
+  // Ceiling function
   icd     Ceil() const;
   // Square root
   icd     SquareRoot() const;
@@ -97,7 +102,7 @@ public:
   icd     Reciproke() const;
   // Natural logarithm
   icd     Log() const;
-  // Exponent e til the power of this number
+  // Exponent e till the power of this number
   icd     Exp() const;
   // Log with base 10
   icd     Log10() const;
@@ -132,15 +137,21 @@ public:
   int64   AsInt64() const;
   // Get as mathematical string
   CString AsString() const;
+  // Get as a SQL string 
+  CString AsSQLString(bool p_strip = false) const;
   // Get as a display string (for UI purposes)
   CString AsDisplayString() const;
-  
+  // Get as an ODBC SQL NUMERIC
+  void    AsNumeric(SQL_NUMERIC_STRUCT* p_numeric) const;
+
   // CHANGE PRECISION
 
   // Change length and precision
   void  SetLengthAndPrecision(int length = 80, int precision = 40);
   // Rounding on decimals and precision
   long  RoundDecimals(long decimal,int precsion);
+  // Correct mathematical rounding
+  void  Rounding(int p_length /*= 80*/,int p_precision /*= 40*/);
 
   // GETTER FUNCTIES
 
@@ -159,7 +170,7 @@ public:
   bool  FitsInLong() const;
   // See if the icd fits into a int64
   bool  FitsInInt64() const;
-  // See if the icd has decimals after the '.' (geen scalar)
+  // See if the icd has decimals after the '.' (no scalar)
   bool  HasDecimals() const;
   // Getting the exponent of the icd
   int   Exponent() const;
@@ -167,7 +178,7 @@ public:
   icd   Mantissa() const;
 
   // BASIC OPERATIONS.
-  // Has te be public for the operators
+  // Has to be public for the operators
 
   // Add operation
   icd Add(const icd& icd) const;
@@ -199,7 +210,8 @@ private:
   void SetValueString(CString value);
   // Put an int64 in the icd
   void SetValueInt64 (const int64 value, const int64 remainder);
-
+  // Put a SQL_NUMERIC_STRUCT from the ODBC driver in the icd
+  void SetValueNumeric(SQL_NUMERIC_STRUCT* p_numeric);
   // To the 10th power
   void CalculateEFactor(int factor);
   // Internal reformatting of m_data so that members are < icdBase
@@ -223,13 +235,13 @@ private:
   static const icd  MultiplyPositive(const icd& arg1, const icd& arg2);
   // Divide an icd by another icd without taking the sign into account
   static const icd  DividePositive(const icd& arg1, const icd& arg2);
-  // Getting the sign of a mutiplication or a division
+  // Getting the sign of a multiplication or a division
   static const Sign CalculateSign(const icd& arg1, const icd& arg2);
   // Bringing sides to the same exponent
   static const icd  BringTogether(const icd& arg1, const long verschil);
-  // Divide the mantissa by 10 (shiftoperation)
+  // Divide the mantissa by 10 (shift operation)
   void Div10();
-  // Multiply the mantissa by 10 (shiftoperation)
+  // Multiply the mantissa by 10 (shift operation)
   void Mult10();
 
   // String <-> Long conversions
@@ -240,7 +252,7 @@ private:
   icd&    Epsilon(long p_fraction) const;
 
   //
-  // Datamembers: Storing the number
+  // Data members: Storing the number
   //
   Sign          m_sign;
   int           m_length;
@@ -296,7 +308,7 @@ inline icd operator % (const icd& lhs, const icd& rhs)
 }
 
 // Overloaded math precision floating point functions equivalent with the std C functions
-// Overloaded to work with the ICD number class, always yielding a Icd number.
+// Overloaded to work with the ICD number class, always yielding a icd number.
 
 inline icd modf(icd p_number, icd* p_intpart)
 {
@@ -368,7 +380,7 @@ inline icd ldexp(icd p_number,int p_power)
   return p_number * pow(icd(2L),icd((long)p_power));
 }
 
-// Overloaded trigonometric functions on a Icd number
+// Overloaded trigonometric functions on a icd number
 
 inline icd atan (icd p_number) 
 { 

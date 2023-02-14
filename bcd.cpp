@@ -43,12 +43,11 @@
 //
 //////////////////////////////////////////////////////////////////////////
 
-#include "Stdafx.h"         // MFC is a requirement
+#include "pch.h"            // Precompiled headers
 #include "bcd.h"            // OUR INTERFACE
-#include "StdException.h"   // Throwing exceptions
 #include <math.h>           // Still needed for conversions of double
-#include <intsafe.h>        // Min/Max sizes of integer datatypes
-#include <locale.h>         
+#include <locale.h>
+#include <winnls.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -106,6 +105,8 @@ bcd::bcd(const bcd& p_arg)
 {
   m_sign      = p_arg.m_sign;
   m_exponent  = p_arg.m_exponent;
+  m_precision = p_arg.m_precision;
+  m_scale     = p_arg.m_scale;
   // Create and copy mantissa
   memcpy(m_mantissa,p_arg.m_mantissa,bcdLength * sizeof(long));
 }
@@ -999,7 +1000,7 @@ bcd::Round(int p_precision /*=0*/)
   precision += m_exponent;
 
   // Quick optimization
-  if(precision < 0)
+  if(precision <= 0)
   {
     Zero();
     return;
@@ -1085,7 +1086,7 @@ bcd::Truncate(int p_precision /*=0*/)
   precision += m_exponent;
 
   // Quick optimization
-  if(precision < 0)
+  if(precision <= 0)
   {
     // Number totally truncated
     Zero();
@@ -1138,7 +1139,56 @@ bcd::Negate()
     m_sign = (m_sign == Sign::Positive) ? Sign::Negative : Sign::Positive;
   }
 }
-  
+
+// Change length and precision
+void
+bcd::SetLengthAndPrecision(int p_precision /*= bcdPrecision*/,int p_scale /*= (bcdPrecision / 2)*/)
+{
+  // Record the new precision and scale
+  m_precision = (uchar) p_precision;
+  m_scale     = (uchar) p_scale;
+
+  if(IsNull())
+  {
+    // Optimize for NULL situation
+    return;
+  }
+
+  if(m_exponent > p_precision)
+  {
+    XString error;
+    error.Format("Overflow in BCD at set precision and scale as NUMERIC(%d,%d)",p_precision,p_scale);
+    throw StdException(error);
+  }
+
+  // Calculate the mantissa position to truncate
+  int mantpos = m_exponent + p_scale + 1;
+
+  // Truncating to zero?
+  if(mantpos <= 0)
+  {
+    m_exponent = 0;
+    memset(m_mantissa,0,sizeof(long) * bcdLength);
+    return;
+  }
+  int mant = mantpos / bcdDigits;
+  int mpos = mantpos % bcdDigits;
+
+  // Strip this on mantissa part
+  if(mpos)
+  {
+    static int significations[] = {1,10000000,1000000,100000,10000,1000,100,10,1};
+    int  significant = significations[mpos];
+    int64       accu = m_mantissa[mant] / significant;
+    m_mantissa[mant] = (long) (accu * significant);
+  }
+  // Strip the rest of the mantissa
+  for(int index = mant + 1;index < bcdLength; ++index)
+  {
+    m_mantissa[index] = 0;
+  }
+}
+
 //////////////////////////////////////////////////////////////////////////
 //
 // END OF MAKING AN EXACT NUMERIC
@@ -1252,7 +1302,7 @@ bcd::SquareRoot() const
   number = *this; // Number to get the root from
   if(number.GetSign() == -1)
   {
-    throw new StdException("BCD: Cannot get a square root from a negative number.");
+    throw StdException("BCD: Cannot get a square root from a negative number.");
   }
   // Reduction by dividing through square of a whole number
   // for speed a power of two
@@ -1346,7 +1396,7 @@ bcd::Log() const
 
   if(*this <= bcd(0L)) 
   { 
-    throw new StdException("BCD: Cannot calculate a natural logarithm of a number <= 0");
+    throw StdException("BCD: Cannot calculate a natural logarithm of a number <= 0");
   }
   // Bring number under 10 and save exponent
   number = *this;
@@ -1380,7 +1430,7 @@ bcd::Log() const
     res += between;
   }
   // Re-add powers of two (comes from  " < 1.2")
-  res *= bcd(::pow(2.0,(double)(k + 1)));
+  res *= bcd(::pow(2.0,(double)++k));
 
   // Re-apply the exponent
   if(expo != 0)
@@ -1476,7 +1526,7 @@ bcd::Log10() const
 
   if(GetSign() <= 0) 
   { 
-    throw new StdException("BCD: Cannot get a 10-logarithm of a number <= 0");
+    throw StdException("BCD: Cannot get a 10-logarithm of a number <= 0");
   }
   res = *this;
   res = res.Log() / LN10();
@@ -1705,7 +1755,7 @@ bcd::Tangent() const
   bcd oneandhalf = three * halfpi;
   if( number == halfpi || number == oneandhalf)
   { 
-    throw new StdException("BCD: Cannot calculate a tangent from a angle of 1/2 pi or 3/2 pi");
+    throw StdException("BCD: Cannot calculate a tangent from a angle of 1/2 pi or 3/2 pi");
   }
   // Sin(x)/Sqrt(1-Sin(x)^2)
   result     = number.Sine(); 
@@ -1740,7 +1790,7 @@ bcd::ArcSine() const
   number = *this;
   if(number > c1 || number < -c1)
   {
-    throw new StdException("BCD: Cannot calculate an arcsine from a number > 1 or < -1");
+    throw StdException("BCD: Cannot calculate an arcsine from a number > 1 or < -1");
   }
 
   // Save the sign
@@ -1996,14 +2046,14 @@ bcd::AsShort() const
   {
     if(result > SHORT_MAX)
     {
-      throw new StdException("BCD: Overflow in conversion to short number.");
+      throw StdException("BCD: Overflow in conversion to short number.");
     }
   }
   else
   {
     if(result < SHORT_MIN)
     {
-      throw new StdException("BCD: Underflow in conversion to short number.");
+      throw StdException("BCD: Underflow in conversion to short number.");
     }
     result = -result;
   }
@@ -2018,7 +2068,7 @@ bcd::AsUShort() const
   // Check for unsigned
   if(m_sign == Sign::Negative)
   {
-    throw new StdException("BCD: Cannot convert a negative number to an unsigned short number.");
+    throw StdException("BCD: Cannot convert a negative number to an unsigned short number.");
   }
   // Quick check for zero
   if(m_exponent < 0)
@@ -2039,7 +2089,7 @@ bcd::AsUShort() const
   // Take care of overflow
   if(result > USHORT_MAX)
   {
-    throw new StdException("BCD: Overflow in conversion to unsigned short number.");
+    throw StdException("BCD: Overflow in conversion to unsigned short number.");
   }
 
   return (short)result;
@@ -2071,14 +2121,14 @@ bcd::AsLong() const
   {
     if(result > LONG_MAX)
     {
-      throw new StdException("BCD: Overflow in conversion to integer number.");
+      throw StdException("BCD: Overflow in conversion to integer number.");
     }
   }
   else
   {
     if(result < LONG_MIN)
     {
-      throw new StdException("BCD: Underflow in conversion to integer number.");
+      throw StdException("BCD: Underflow in conversion to integer number.");
     }
     result = -result;
   }
@@ -2093,7 +2143,7 @@ bcd::AsULong() const
   // Check for unsigned
   if(m_sign == Sign::Negative)
   {
-    throw new StdException("BCD: Cannot convert a negative number to an unsigned long.");
+    throw StdException("BCD: Cannot convert a negative number to an unsigned long.");
   }
 
   // Quick optimization for really small numbers
@@ -2115,7 +2165,7 @@ bcd::AsULong() const
   // Take care of overflow
   if(result > ULONG_MAX)
   {
-    throw new StdException("BCD: Overflow in conversion to unsigned long integer.");
+    throw StdException("BCD: Overflow in conversion to unsigned long integer.");
   }
   return (long)result;
 }
@@ -2154,7 +2204,7 @@ bcd::AsInt64() const
   // Take care of overflow
   if(result1 > (LLONG_MAX / base2))
   {
-    throw new StdException("BCD: Overflow in conversion to 64 bits integer number.");
+    throw StdException("BCD: Overflow in conversion to 64 bits integer number.");
   }
   result2 += (result1 * base2);
 
@@ -2173,7 +2223,7 @@ bcd::AsUInt64() const
   // Check for negative
   if(m_sign == Sign::Negative)
   {
-    throw new StdException("BCD: Cannot convert a negative number to an unsigned 64 bits integer");
+    throw StdException("BCD: Cannot convert a negative number to an unsigned 64 bits integer");
   }
   // Quick optimization for really small numbers
   if(m_exponent < 0)
@@ -2203,7 +2253,7 @@ bcd::AsUInt64() const
   // Take care of overflow
   if(result1 > (ULLONG_MAX / base2))
   {
-    throw new StdException("BCD: Overflow in conversion to 64 bits unsigned integer number.");
+    throw StdException("BCD: Overflow in conversion to 64 bits unsigned integer number.");
   }
   result2 += (result1 * base2);
 
@@ -2218,10 +2268,10 @@ bcd::AsUInt64() const
 // Optionally also print the positive '+' ('-' negative sign is always printed!)
 // Optionally get with fixed decimals, default = 2 decimals (most common default for bookkeeping purposes)
 // Optionally get as much as needed decimals with "p_decimals = 0"
-CString 
+XString 
 bcd::AsString(Format p_format /*=Bookkeeping*/,bool p_printPositive /*=false*/,int p_decimals /*=2*/) const
 {
-  CString result;
+  XString result;
   int exp    = m_exponent;
   int prec   = bcdDigits * bcdLength;
 
@@ -2251,15 +2301,15 @@ bcd::AsString(Format p_format /*=Bookkeeping*/,bool p_printPositive /*=false*/,i
 
   if(p_format == Format::Engineering)
   {
-    CString left = result.Left(1);
-    result = left + CString(".") + result.Mid(1) + CString("E");
+    XString left = result.Left(1);
+    result = left + XString(".") + result.Mid(1) + XString("E");
     result += LongToString(exp);
   }
   else // Bookkeeping
   {
     if(m_exponent < 0)
     {
-      CString left("0.");
+      XString left("0.");
       for(int ind = -1; ind > m_exponent; --ind)
       {
         left += "0";
@@ -2269,8 +2319,8 @@ bcd::AsString(Format p_format /*=Bookkeeping*/,bool p_printPositive /*=false*/,i
     if(m_exponent >= 0)
     {
       int pos = 1 + m_exponent;
-      CString before = result.Left(pos);
-      CString behind = result.Mid(pos);
+      XString before = result.Left(pos);
+      XString behind = result.Mid(pos);
       while(before.GetLength() < pos)
       {
         before += "0";
@@ -2282,7 +2332,7 @@ bcd::AsString(Format p_format /*=Bookkeeping*/,bool p_printPositive /*=false*/,i
       }
       if(!behind.IsEmpty())
       {
-        result += "." + behind;
+        result += XString(".") + behind;
       }
     }
   }
@@ -2307,7 +2357,7 @@ bcd::AsString(Format p_format /*=Bookkeeping*/,bool p_printPositive /*=false*/,i
 
 // Display strings are always in Format::Bookkeeping
 // as most users find mathematical exponential notation hard to read.
-CString 
+XString 
 bcd::AsDisplayString(int p_decimals /*=2*/) const
 {
   // Initialize locale strings
@@ -2316,12 +2366,12 @@ bcd::AsDisplayString(int p_decimals /*=2*/) const
   // Not in the bookkeeping range
   if(m_exponent > 12 || m_exponent < -2)
   {
-    return AsString();
+    return AsString(bcd::Format::Engineering,false,p_decimals);
   }
   bcd number(*this);
   number.Round(p_decimals);
 
-  CString str = number.AsString(Format::Bookkeeping,false,p_decimals);
+  XString str = number.AsString(Format::Bookkeeping,false,p_decimals);
   int pos = str.Find('.');
   if(pos >= 0)
   {
@@ -2331,13 +2381,13 @@ bcd::AsDisplayString(int p_decimals /*=2*/) const
   // Apply thousand separators in first part of the number
   if((pos > 0) || (pos == -1 && str.GetLength() > 3))
   {
-    CString result = pos > 0 ? str.Mid(pos) : CString();
+    XString result = pos > 0 ? str.Mid(pos) : XString();
     str = pos > 0 ? str.Left(pos) : str;
     pos = result.GetLength();
 
     while(str.GetLength() > 3)
     {
-      result = CString(g_locale_thousandSep) + str.Right(3) + result;
+      result = XString(g_locale_thousandSep) + str.Right(3) + result;
       str = str.Left(str.GetLength() - 3);
     }
     str += result;
@@ -2373,7 +2423,8 @@ bcd::AsNumeric(SQL_NUMERIC_STRUCT* p_numeric) const
 
   // Setting the sign, precision and scale
   p_numeric->sign      = (m_sign == Sign::Positive) ? 1 : 0;
-  p_numeric->precision = (SQLCHAR)  SQLNUM_MAX_PREC;
+  p_numeric->precision = m_precision;
+  p_numeric->scale     = m_scale;
 
   // Special case for 0.0 or smaller than can be contained (1.0E-38)
   if(IsNull() || m_exponent < -SQLNUM_MAX_PREC)
@@ -2384,23 +2435,8 @@ bcd::AsNumeric(SQL_NUMERIC_STRUCT* p_numeric) const
   // Check for overflow. Cannot be greater than 9.999999999E+37
   if(m_exponent >= SQLNUM_MAX_PREC)
   {
-    throw new StdException("BCD: Overflow in converting bcd to SQL NUMERIC/DECIMAL");
+    throw StdException("BCD: Overflow in converting bcd to SQL NUMERIC/DECIMAL");
   }
-
-  // Calculate the scale of the number
-  int scale     = GetPrecision();
-  int precision = 1 + scale + ((m_exponent >= 0) ? m_exponent : 0);
-
-  // If we become too large, we loose a bit of the scale digits
-  if(precision > SQLNUM_MAX_PREC)
-  {
-    scale    -= (precision - SQLNUM_MAX_PREC);
-    precision = SQLNUM_MAX_PREC;
-  }
-
-  // Register the resulting precision and scale
-  p_numeric->precision = (SQLCHAR)  precision;
-  p_numeric->scale     = (SQLSCHAR) scale;
 
   // Converting the value array
   bcd one(1);
@@ -2410,7 +2446,7 @@ bcd::AsNumeric(SQL_NUMERIC_STRUCT* p_numeric) const
 
   // Here is the big trick: use the exponent to scale up the number
   // Adjusting m_exponent to positive scaled integer result
-  accu.m_exponent += (short)scale;
+  accu.m_exponent += (short)m_scale;
   accu.m_sign      = Sign::Positive;
 
   while(true)
@@ -2697,6 +2733,8 @@ bcd::Zero()
 {
   m_sign      = Sign::Positive;
   m_exponent  = 0;
+  m_precision = 0;
+  m_scale     = 0;
   memset(m_mantissa,0,bcdLength * sizeof(long));
 }
 
@@ -2719,6 +2757,9 @@ void
 bcd::SetValueInt(const int p_value)
 {
   Zero();
+
+  // Length of LONG_MAX = 2147483647L
+  m_precision = 10; 
 
   // Shortcut if value is zero
   if(p_value == 0)
@@ -2745,6 +2786,9 @@ bcd::SetValueLong(const long p_value, const long p_restValue)
 {
   Zero();
 
+  // Length of LONG_MAX = 2147483647L
+  m_precision = 10;
+
   if(p_value == 0 && p_restValue == 0)
   {
     // Nothing more to do. We are zero
@@ -2764,22 +2808,29 @@ bcd::SetValueLong(const long p_value, const long p_restValue)
 
   if(p_restValue)
   {
+    // Initial size and scale
+    m_precision = 20; // 2 * length of a long
+    m_scale     = 10; // length of a long
+
     m_mantissa[0] = long_abs(p_restValue % bcdBase);
-    norm = bcdDigits - 1;
+    norm = -1;
 
     if(p_restValue / bcdBase)
     {
       ShiftRight();
       m_mantissa[0] = long_abs(p_restValue / bcdBase);
-      norm = 2 * bcdDigits -1;
+      norm -= bcdDigits;
     }
     Normalize(norm);
     norm = 0;
+    if(p_value)
+    {
+      ShiftRight();
+    }
   }
 
   if(p_value % bcdBase)
   {
-    ShiftRight();
     m_mantissa[0] = long_abs(p_value % bcdBase);
     norm = bcdDigits - 1;
   }
@@ -2806,6 +2857,10 @@ void
 bcd::SetValueInt64(const int64 p_value, const int64 p_restValue)
 {
   Zero();
+
+  // Length of LONGLONG_MAX = 9223372036854775807i64
+  m_precision = 19;
+
   int64 dblBcdDigits = (int64)bcdBase * (int64)bcdBase;
 
   if(p_value == 0L && p_restValue == 0L)
@@ -2843,6 +2898,8 @@ bcd::SetValueInt64(const int64 p_value, const int64 p_restValue)
     m_mantissa[0] = long_abs((long)(p_restValue / dblBcdDigits));
     norm = 3 * bcdDigits - 1;
   }
+  m_scale = (unsigned char)norm;
+
   if(p_restValue)
   {
     // Normalize the rest value to be left shifted
@@ -3003,7 +3060,7 @@ bcd::SetValueString(const char* p_string,bool /*p_fromDB*/)
       default:  // Now must be a digit. No other chars allowed
                 if(isdigit(c) == false)
                 {
-                  throw new StdException("BCD: Conversion from string. Bad format in decimal number");
+                  throw StdException("BCD: Conversion from string. Bad format in decimal number");
                 }
                 break;
     }
@@ -3113,7 +3170,16 @@ bcd::SetValueNumeric(const SQL_NUMERIC_STRUCT* p_numeric)
   m_exponent -= p_numeric->scale;
 
   // Adjust the sign
-  m_sign = (p_numeric->sign == 1) ? Sign::Positive : Sign::Negative;
+  m_sign      = (p_numeric->sign == 1) ? Sign::Positive : Sign::Negative;
+  m_precision = p_numeric->precision;
+  m_scale     = p_numeric->scale;
+
+  int precision = GetPrecision();
+  if(m_scale < precision)
+  {
+    m_scale = (unsigned char)precision;
+  }
+
 }
 
 // bcd::Normalize
@@ -3245,12 +3311,12 @@ bcd::ShiftLeft()
 }
 
 // bcd::LongNaarString
-CString
+XString
 bcd::LongToString(long p_value) const
 {
   char buffer[20];
   _itoa_s(p_value,buffer,20,10);
-  return CString(buffer);
+  return XString(buffer);
 }
 
 // bcd::StringNaarLong
@@ -3335,10 +3401,10 @@ bcd::CompareMantissa(const bcd& p_value) const
 
 #ifdef _DEBUG
 // Debug print of the mantissa
-CString
+XString
 bcd::DebugPrint(char* p_name)
 {
-  CString debug;
+  XString debug;
 
   // Print the debug name
   debug.Format("%-14s ",p_name);
@@ -3452,7 +3518,7 @@ bcd::Div(const bcd& p_number) const
   // If divisor is zero -> ERROR
   if (p_number.IsNull())
   {
-    throw new StdException("BCD: Division by zero.");
+    throw StdException("BCD: Division by zero.");
   }
   // Shortcut: result is zero if this is zero
   if(IsNull())

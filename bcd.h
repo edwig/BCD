@@ -2,7 +2,9 @@
 //
 // SourceFile: bcd.h
 //
-// Copyright (c) 2014-2021 ir. W.E. Huisman
+// BaseLibrary: Indispensable general objects and functions
+//
+// Copyright (c) 2014-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -36,6 +38,7 @@
 // Version 1.5 of 03-01-2022
 //
 #pragma once
+#include <intsafe.h>    // Min/Max sizes of integer datatypes
 #include <sqltypes.h>   // Needed for conversions of SQL_NUMERIC_STRUCT
 
 // The ODBC standard has a maximum of 38 decimal places
@@ -281,6 +284,8 @@ public:
   void    Round(int p_precision = 0);
   // Truncate to a specified fraction (decimals behind the .)
   void    Truncate(int p_precision = 0);  
+  // Change length and precision
+  void    SetLengthAndPrecision(int p_length = bcdPrecision,int p_precision = (bcdPrecision / 2));
   // Change the sign
   void    Negate();
   
@@ -343,12 +348,12 @@ public:
   // Get as an unsigned 64 bits long
   uint64  AsUInt64() const;
   // Get as a mathematical string
-  CString AsString(bcd::Format p_format = Format::Bookkeeping,bool p_printPositive = false,int p_decimals = 2) const;
+  XString AsString(bcd::Format p_format = Format::Bookkeeping,bool p_printPositive = false,int p_decimals = 2) const;
   // Get as a display string (by desktop locale)
-  CString AsDisplayString(int p_decimals = 2) const;
+  XString AsDisplayString(int p_decimals = 2) const;
   // Get as an ODBC SQL NUMERIC(p,s)
   void    AsNumeric(SQL_NUMERIC_STRUCT* p_numeric) const;
-  
+
   // GETTER FUNCTIES
 
   // Is bcd exactly 0.0?
@@ -380,7 +385,7 @@ public:
 
 #ifdef _DEBUG
   // Debug print of the mantissa
-  CString DebugPrint(char* p_name);
+  XString DebugPrint(char* p_name);
 #endif
 
 private:
@@ -415,7 +420,7 @@ private:
   // Convert a string to a single long value
   long    StringToLong(const char* p_string) const;
   // Convert a long to a string
-  CString LongToString(long p_value) const;
+  XString LongToString(long p_value) const;
   // Split the mantissa for floor/ceiling operations
   bcd     SplitMantissa() const;
   // Compare two mantissa
@@ -452,7 +457,9 @@ private:
   bcd  PositiveDivision(bcd& p_arg1,bcd& p_arg2) const;
 
   // STORAGE OF THE NUMBER
-  Sign   m_sign;                // 0 = Positive, 1 = Negative
-  short  m_exponent;            // +/- 10E32767
-  long   m_mantissa[bcdLength]; // Up to (bcdDigits * bcdLength) digits
+  Sign          m_sign;                // 0 = Positive, 1 = Negative
+  short         m_exponent;            // +/- 10E32767
+  long          m_mantissa[bcdLength]; // Up to (bcdDigits * bcdLength) digits
+  unsigned char m_precision;
+  unsigned char m_scale; 
 };

@@ -10,6 +10,12 @@
 #include <limits.h> // For max sizes of int, long and int64
 #include "Icd.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
 //////////////////////////////////////////////////////////////////////////
 //
 //  ICD CONSTRUCTORS / DESTRUCTORS
@@ -35,10 +41,7 @@ icd::icd(const icd& p_icd)
   m_sign      = p_icd.m_sign;
   m_length    = p_icd.m_length;
   m_precision = p_icd.m_precision;
-  for(int i = 0; i < icdLength; i++)
-  {
-    m_data[i] = p_icd.m_data[i];
-  }
+  memcpy_s(m_data,sizeof(long) * icdLength,p_icd.m_data,sizeof(long) * icdLength);
 }
 
 // Icd::Icd
@@ -50,7 +53,7 @@ icd::icd(const icd& p_icd)
 //
 icd::icd(const long value, const long remainder)
 {
-  SetValueLong(value, remainder);
+  SetValueLong(value,remainder);
 }
 
 // Icd::Icd
@@ -79,6 +82,15 @@ icd::icd(const double value)
 icd::icd(const CString& str)
 {
   SetValueString(str);
+}
+
+// Icd::Icd
+// Description:  copy constructor from a database NUMERIC
+// Parameters    p_numeric   // Pointer to ODBC structure
+// 
+icd::icd(SQL_NUMERIC_STRUCT* p_numeric)
+{
+  SetValueNumeric(p_numeric);
 }
 
 // Icd::~Icd
@@ -1408,6 +1420,57 @@ icd::AsString() const
   return str;
 }
 
+// Get as a SQL string 
+CString 
+icd::AsSQLString(bool p_strip /*=false*/) const
+{
+  CString str = AsString();
+  if(p_strip)
+  {
+    // Strip mechanism is used to reduce the extra trailing
+    // zero's in the representation to save spacae if large
+    // amounts of numbers need to be used
+    char ch = '.';
+    int ind = str.Find(ch);
+    if(ind < 0)
+    {
+      ch = ','; // sessie->GeefLocale().DecimaalChar();
+      ind = str.Find(ch);
+    }
+    if(ind >= 0)
+    {
+      int pos = str.GetLength() - 1;
+      while(pos && str.GetAt(pos) == '0')
+      {
+        --pos;
+      }
+      if(pos && str.GetAt(pos) == ch)
+      {
+        --pos;
+      }
+      str = str.Left(pos + 1);
+      if(str.IsEmpty())
+      {
+        str = "0";
+      }
+    }
+  }
+  char decimaal = ','; // sessie->GeefLocale().DecimaalChar();
+  if(decimaal != '.')
+  {
+    str.Replace(decimaal,'.');
+  }
+  // SQL-Server cannot use decimals (before and after) the decimal point
+  // longer than the maximum allowed precision.
+  // The maximum length is therefore the precision + (1 for the decimal point) + optional minus sign
+  int maxprec = icdPrecision + 1 + ((m_sign == Sign::Negative) ? 1 : 0);
+  if(str.GetLength() > maxprec)
+  {
+    str = str.Left(maxprec);
+  }
+  return str;
+}
+
 // Icd::AsDisplayString
 // Description:    Gets the value of a icd as a formatted string
 // What it does:   Gets the string first and then adds the thousands separators
@@ -1449,6 +1512,69 @@ icd::AsDisplayString() const
     display += "." + decpart; 
   }
   return display;
+}
+
+// Get as an ODBC SQL NUMERIC
+void
+icd::AsNumeric(SQL_NUMERIC_STRUCT* p_numeric) const
+{
+  // Init the value array
+  memset(p_numeric->val,0,SQL_MAX_NUMERIC_LEN);
+
+  // Register the resulting sign, precision and scale
+  p_numeric->sign      = (m_sign == Sign::Positive) ? 1 : 0;
+  p_numeric->precision = (SQLCHAR) m_length;
+  p_numeric->scale     = (SQLSCHAR) m_precision;
+
+  // Special case for 0.0 
+  if(IsNull())
+  {
+    return;
+  }
+
+  // Converting the value array
+  icd one(1L);
+  icd radix(256L);
+  icd accu(*this);
+  int index = 0;
+
+  // Here is the big trick: positive calculations
+  accu.m_sign = Sign::Positive;
+
+  // Adjust decimals after the comma
+  for(int mul = 0;mul < m_precision;++mul)
+  {
+    accu.Mult10();
+  }
+
+  while(true)
+  {
+    // Getting the next val array value, relying on the modulo
+    // Mag hier met een long, omdat (icdBasis % 256 == 0)
+    long val = accu.m_data[icdPointPosition] % 256;
+    p_numeric->val[index++] = (SQLCHAR) val;
+
+    // Adjust the intermediate accu
+    accu -= val;
+    accu = accu.Div(radix);
+
+    // Breaking criterion: nothing left
+    if(accu < one)
+    {
+      break;
+    }
+
+    // Breaking criterion on overflow
+    // Check as last, number could fit exactly!
+    if(index >= SQL_MAX_NUMERIC_LEN)
+    {
+      break;
+    }
+  }
+  if(accu >= one)
+  {
+    throw CString("ICD to SQL_NUMERIC overflow!");
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1613,6 +1739,15 @@ icd::RoundDecimals(long decimal, int precsion)
   return StringToLong(strNum);
 }
 
+// Correct mathematical rounding
+void
+icd::Rounding(int p_length /*= 80*/,int p_precision /*= 40*/)
+{
+  icd factor(pow(0.1,p_precision));
+  factor = (GetSign() == 1) ? (factor * 0.5) : (factor * -0.5);
+  *this = Add(factor);
+  SetLengthAndPrecision(p_length,p_precision);
+}
 //////////////////////////////////////////////////////////////////////////
 //
 // END ICD PRECISION FUNCTIONS
@@ -2019,6 +2154,10 @@ icd::SetValueLong(const long p_value, const long p_remainder)
   m_data[icdPointPosition-1] = long_abs(p_remainder % icdBase);
   m_data[icdPointPosition  ] = long_abs(p_value);
   Reformat();
+
+  // Initial size and scale
+  m_length    = 20; // 2 * length of a long
+  m_precision = 10; // laength of a long
 }
 
 // Icd::SetValueDouble
@@ -2249,6 +2388,50 @@ icd::SetValueInt64(const int64 p_value, const int64 p_remainder)
   Reformat();
 }
 
+// Put a SQL_NUMERIC_STRUCT from the ODBC driver in the icd
+void
+icd::SetValueNumeric(SQL_NUMERIC_STRUCT* p_numeric)
+{
+  MakeEmpty();
+
+  int maxval = SQL_MAX_NUMERIC_LEN - 1;
+
+
+  // Find the last value in the numeric
+  int ind = maxval;
+  for(;ind >= 0; --ind)
+  {
+    if(p_numeric->val[ind])
+    {
+      maxval = ind;
+      break;
+    }
+  }
+
+  // Special case: NUMERIC = zero
+  if(ind >= 0)
+  {
+    // Compute the value array to the bcd-mantissa
+    icd radix(1L);
+    for(ind = 0;ind <= maxval; ++ind)
+    {
+      icd val = radix * icd((long) (p_numeric->val[ind]));
+      *this = Add(val);
+      radix = radix.Multi(256);  // Value array is in 256 radix
+    }
+  }
+  // Use internal registrations
+  m_sign      = p_numeric->sign ? Sign::Positive : Sign::Negative;
+  m_precision = p_numeric->scale;
+  m_length    = p_numeric->precision;
+
+  // Adjust for precision
+  for(int divide = 0;divide < m_precision; ++divide)
+  {
+    Div10();
+  }
+}
+
 // Icd::CalculateEFactor
 // Description: icd to the 10th power of a factor
 void
@@ -2314,12 +2497,9 @@ icd::MakeEmpty()
 {
   // initialize data members to +0000...0000,0000...0000
   m_sign      = Positive;
-  m_length    = icdLength * icdDigits;
-  m_precision = m_length / 2;
-  for (long i = 0; i < icdLength; ++i)
-  {
-    m_data[i] = 0;
-  }
+  m_length    = 0; // icdLength * icdDigits;
+  m_precision = 0;
+  memset(m_data,0,sizeof(unsigned long) * icdLength);
 }
 
 // Icd::Multi
