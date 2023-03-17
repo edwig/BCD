@@ -14,7 +14,7 @@ namespace UnitTest
     {
       Logger::WriteMessage("Construct bcd");
       bcd one;
-      Assert::IsTrue(one.IsNull());
+      Assert::IsTrue(one.IsZero());
     }
 
 		TEST_METHOD(T002_Constructor02)
@@ -479,8 +479,8 @@ namespace UnitTest
       one.Zero();
 
       Assert::IsTrue(zero == one);
-      Assert::IsTrue(zero.IsNull());
-      Assert::IsTrue(one.IsNull());
+      Assert::IsTrue(zero.IsZero());
+      Assert::IsTrue(one.IsZero());
     }
 
     TEST_METHOD(T038_Fraction)
@@ -551,7 +551,7 @@ namespace UnitTest
       // 9988776655,4433221112
       bcd one("-9988776655.4433221112");
       bcd expect("-1.001123595505617977406695215250599671773E-10");
-      bcd result = one.Reciproke();
+      bcd result = one.Reciprocal();
 
       Assert::IsTrue(expect == result);
     }
@@ -902,8 +902,8 @@ namespace UnitTest
       bcd one;
       bcd two(12);
 
-      Assert::IsTrue(one.IsNull());
-      Assert::IsFalse(two.IsNull());
+      Assert::IsTrue(one.IsZero());
+      Assert::IsFalse(two.IsZero());
     }
 
     TEST_METHOD(T068_GetSign)

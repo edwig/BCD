@@ -7,9 +7,7 @@
 //
 //////////////////////////////////////////////////////////////////////////
 
-#ifndef __STDEXCEPTION_H__
-#define __STDEXCEPTION_H__
-
+#pragma once
 #include <eh.h>
 
 // Macro to re-throw a safe exception
@@ -67,4 +65,3 @@ private:
   _se_translator_function m_original;
 };
 
-#endif //__STDEXCEPTION_H__
