@@ -1068,7 +1068,7 @@ bcd::Round(int p_precision /*=0*/)
   int precision = p_precision + m_exponent;
 
   // Quick optimization
-  if(precision <= 0)
+  if(precision < 0)
   {
     Zero();
     return;
