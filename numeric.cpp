@@ -74,11 +74,11 @@ numeric::PI(int p_precision,int p_scale)
   if(p_precision < 3 || p_precision > 2 * SQL_MAX_NUMERIC_LEN ||
      p_scale     < 2 || p_scale >= p_precision)
   {
-    throw new StdException("Numeric: precision and scale out of range");
+    throw new StdException(_T("Numeric: precision and scale out of range"));
   }
   numeric pi;
   pi.SetPrecisionAndScale(p_precision,p_scale);
-  uint128 pival("31415926535897932384626433832795");
+  uint128 pival(_T("31415926535897932384626433832795"));
   uint128 power = pi.TenPowerScale((2 * SQL_MAX_NUMERIC_LEN) - 1 - p_scale);
   pival /= power;
   pival.AsNumeric(&pi.m_numeric);
@@ -93,12 +93,12 @@ numeric::LN2(int p_precision, int p_scale)
   if(p_precision < 3 || p_precision > 2 * SQL_MAX_NUMERIC_LEN ||
      p_scale     < 2 || p_scale >= p_precision)
   {
-    throw new StdException("Numeric: precision and scale out of range");
+    throw new StdException(_T("Numeric: precision and scale out of range"));
   }
   numeric ln2;
 
   ln2.SetPrecisionAndScale(p_precision, p_scale);
-  uint128 ln2val("69314718055994530941723212145817");
+  uint128 ln2val(_T("69314718055994530941723212145817"));
   uint128 power = ln2.TenPowerScale((2 * SQL_MAX_NUMERIC_LEN) - p_scale);
   ln2val /= power;
   ln2val.AsNumeric(&ln2.m_numeric);
@@ -113,11 +113,11 @@ numeric::LN10(int p_precision, int p_scale)
   if(p_precision < 3 || p_precision > 2 * SQL_MAX_NUMERIC_LEN ||
      p_scale     < 2 || p_scale >= p_precision)
   {
-    throw new StdException("Numeric: precision and scale out of range");
+    throw new StdException(_T("Numeric: precision and scale out of range"));
   }
   numeric ln10;
   ln10.SetPrecisionAndScale(p_precision, p_scale);
-  uint128 lnval("23025850929940456840179914546843");
+  uint128 lnval(_T("23025850929940456840179914546843"));
   uint128 power = ln10.TenPowerScale((2 * SQL_MAX_NUMERIC_LEN) - 1 - p_scale);
   lnval /= power;
   lnval.AsNumeric(&ln10.m_numeric);
@@ -446,7 +446,7 @@ numeric::Div(const numeric& p_number) const
   // If divisor is zero -> ERROR
   if (p_number.IsNull())
   {
-    throw new StdException("Numeric: Division by zero.");
+    throw new StdException(_T("Numeric: Division by zero."));
   }
   // Shortcut: result is zero if this is zero
   if (IsNull())
@@ -538,7 +538,7 @@ numeric::AsString(numeric::Format p_format /*= Bookkeeping*/,bool p_printPositiv
 
   if(IsNull())
   {
-    thestring = "0";
+    thestring = _T("0");
   }
   else
   {
@@ -697,7 +697,7 @@ numeric::SetValueString(const char* p_string, bool p_fromDB /*= false*/)
 {
   CString string(p_string);
 
-  string = string.TrimLeft(" \t\n\r");
+  string = string.TrimLeft(_T(" \t\n\r"));
 
   // Finding the sign
   m_numeric.sign = 1; // positive
@@ -721,7 +721,7 @@ numeric::SetValueString(const char* p_string, bool p_fromDB /*= false*/)
     if (toadd > 0)
     {
       // Add extra zeros
-      string.Append("0", toadd);
+      string.Append(_T("0"),toadd);
     }
     else if (toadd < 0)
     {
@@ -735,7 +735,7 @@ numeric::SetValueString(const char* p_string, bool p_fromDB /*= false*/)
     // No decimal point found
     for(int ind = 0; ind < m_numeric.scale; ++ind)
     {
-      string.Append("0");
+      string.Append(_T("0"));
     }
   }
 
@@ -775,11 +775,11 @@ numeric::CheckCompatiblePrecisionAndScale(const numeric& p_lhs,const numeric& p_
 {
   if(p_lhs.m_numeric.scale != p_rhs.m_numeric.scale)
   {
-    throw new StdException("Cannot operate on numerics of different scale");
+    throw new StdException(_T("Cannot operate on numerics of different scale"));
   }
   if(p_lhs.m_numeric.precision < p_rhs.m_numeric.precision)
   {
-    throw new StdException("Cannot operate on numerics with a greater precision on the right-hand-side");
+    throw new StdException(_T("Cannot operate on numerics with a greater precision on the right-hand-side"));
   }
 }
 

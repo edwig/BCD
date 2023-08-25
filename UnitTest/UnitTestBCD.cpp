@@ -78,7 +78,7 @@ namespace UnitTest
       Logger::WriteMessage("Construct a bcd from an unsigned __int64");
 
       unsigned __int64 expect(76543219876543210LL);
-      bcd  one("76543219876543210");
+      bcd  one(_T("76543219876543210"));
       unsigned __int64 result = one.AsUInt64();
 
       Assert::IsTrue(result - expect == 0);
@@ -111,7 +111,7 @@ namespace UnitTest
     {
       Logger::WriteMessage("Construct a bcd from a CString");
 
-      CString large("76543219876543210");
+      CString large(_T("76543219876543210"));
       unsigned __int64 expect(76543219876543210LL);
       bcd  one(large);
       unsigned __int64 result = one.AsUInt64();
@@ -124,7 +124,7 @@ namespace UnitTest
       Logger::WriteMessage("Test the constant of PI");
       bcd pi = bcd::PI();
       CString pi_string = pi.AsString();
-      CString expect("3.141592653589793238462643383279502884197");
+      CString expect(_T("3.141592653589793238462643383279502884197"));
 
       Assert::AreEqual(expect.GetString(),pi_string.GetString());
     }
@@ -135,7 +135,7 @@ namespace UnitTest
 
       bcd ln2 = bcd::LN2();
       CString ln2_string = ln2.AsString();
-      CString expect("0.6931471805599453094172321214581765680755");
+      CString expect(_T("0.6931471805599453094172321214581765680755"));
 
       Assert::AreEqual(expect.GetString(),ln2_string.GetString());
     }
@@ -146,7 +146,7 @@ namespace UnitTest
 
       bcd ln10 = bcd::LN10();
       CString ln10_string = ln10.AsString();
-      CString expect("2.302585092994045684017991454684364207601");
+      CString expect(_T("2.302585092994045684017991454684364207601"));
 
       Assert::AreEqual(expect.GetString(),ln10_string.GetString());
     }
@@ -155,11 +155,11 @@ namespace UnitTest
     {
       Logger::WriteMessage("Test operator +");
 
-      bcd one("123456.789012345678");
-      bcd two("9988776655.4433221100");
+      bcd one(_T("123456.789012345678"));
+      bcd two(_T("9988776655.4433221100"));
       bcd result = one + two;
       CString resstring = result.AsString();
-      char* expect = "9988900112.232334455678";
+      TCHAR* expect = _T("9988900112.232334455678");
 
       Assert::IsTrue(strcmp(expect,resstring.GetString()) == 0);
     }
@@ -170,11 +170,11 @@ namespace UnitTest
 
       // 123456,789012345678
       // 9988776655,4433221100
-      bcd one("123456.789012345678");
-      bcd two("9988776655.4433221100");
+      bcd one(_T("123456.789012345678"));
+      bcd two(_T("9988776655.4433221100"));
       bcd result = one - two;
       CString resstring = result.AsString();
-      char* expect = "-9988653198.654309764322";
+      TCHAR* expect = _T("-9988653198.654309764322");
 
       Assert::IsTrue(strcmp(expect,resstring.GetString()) == 0);
     }
@@ -185,11 +185,11 @@ namespace UnitTest
 
       // 123456,789012345678
       // 9988776655,4433221100
-      bcd one("123456.789012345678");
-      bcd two("9988776655.4433221100");
+      bcd one(_T("123456.789012345678"));
+      bcd two(_T("9988776655.4433221100"));
       bcd result = one * two;
       CString resstring = result.AsString();
-      char* expect = "1233182292042510.13939532499202034058";
+      TCHAR* expect = _T("1233182292042510.13939532499202034058");
 
       Assert::IsTrue(strcmp(expect,resstring.GetString()) == 0);
     }
@@ -200,11 +200,11 @@ namespace UnitTest
 
       // 123456,789012345678
       // 9988776655,4433221100
-      bcd one("123456.789012345678");
-      bcd two("9988776655.4433221100");
+      bcd one(_T("123456.789012345678"));
+      bcd two(_T("9988776655.4433221100"));
       bcd result = one / two;
       CString resstring = result.AsString(bcd::Format::Engineering);
-      char* expect = "1.235955045056179765144678702196566090151E-5";
+      TCHAR* expect = _T("1.235955045056179765144678702196566090151E-5");
 
       Assert::IsTrue(strcmp(expect,resstring.GetString()) == 0);
     }
@@ -215,11 +215,11 @@ namespace UnitTest
 
       // 123456,789012345678
       // 9988776655,4433221100
-      bcd one("123456.789012345678");
-      bcd two("9988776655.4433221100");
+      bcd one(_T("123456.789012345678"));
+      bcd two(_T("9988776655.4433221100"));
       bcd result = two % one;
       CString resstring = result.AsString();
-      char* expect = "11313.243445648698";
+      TCHAR* expect = _T("11313.243445648698");
 
       Assert::IsTrue(strcmp(expect,resstring.GetString()) == 0);
     }
@@ -228,11 +228,11 @@ namespace UnitTest
     {
       Logger::WriteMessage("Test operator +=");
 
-      bcd one("123456.789012345678");
-      bcd two("9988776655.4433221100");
+      bcd one(_T("123456.789012345678"));
+      bcd two(_T("9988776655.4433221100"));
       one += two;
       CString resstring = one.AsString();
-      char* expect = "9988900112.232334455678";
+      TCHAR* expect = _T("9988900112.232334455678");
 
       Assert::IsTrue(strcmp(expect,resstring.GetString()) == 0);
     }
@@ -243,11 +243,11 @@ namespace UnitTest
 
       // 123456,789012345678
       // 9988776655,4433221100
-      bcd one("123456.789012345678");
-      bcd two("9988776655.4433221100");
+      bcd one(_T("123456.789012345678"));
+      bcd two(_T("9988776655.4433221100"));
       one -= two;
       CString resstring = one.AsString();
-      char* expect = "-9988653198.654309764322";
+      TCHAR* expect = _T("-9988653198.654309764322");
 
       Assert::IsTrue(strcmp(expect,resstring.GetString()) == 0);
     }
@@ -258,11 +258,11 @@ namespace UnitTest
 
       // 123456,789012345678
       // 9988776655,4433221100
-      bcd one("123456.789012345678");
-      bcd two("9988776655.4433221100");
+      bcd one(_T("123456.789012345678"));
+      bcd two(_T("9988776655.4433221100"));
       one *= two;
       CString resstring = one.AsString();
-      char* expect = "1233182292042510.13939532499202034058";
+      TCHAR* expect = _T("1233182292042510.13939532499202034058");
 
       Assert::IsTrue(strcmp(expect,resstring.GetString()) == 0);
     }
@@ -273,11 +273,11 @@ namespace UnitTest
 
       // 123456,789012345678
       // 9988776655,4433221100
-      bcd one("123456.789012345678");
-      bcd two("9988776655.4433221100");
+      bcd one(_T("123456.789012345678"));
+      bcd two(_T("9988776655.4433221100"));
       one /= two;
       CString resstring = one.AsString(bcd::Format::Engineering);
-      char* expect = "1.235955045056179765144678702196566090151E-5";
+      TCHAR* expect = _T("1.235955045056179765144678702196566090151E-5");
 
       Assert::IsTrue(strcmp(expect,resstring.GetString()) == 0);
     }
@@ -288,11 +288,11 @@ namespace UnitTest
 
       // 123456,789012345678
       // 9988776655,4433221100
-      bcd one("123456.789012345678");
-      bcd two("9988776655.4433221100");
+      bcd one(_T("123456.789012345678"));
+      bcd two(_T("9988776655.4433221100"));
       two %= one;
       CString resstring = two.AsString();
-      char* expect = "11313.243445648698";
+      TCHAR* expect = _T("11313.243445648698");
 
       Assert::IsTrue(strcmp(expect,resstring.GetString()) == 0);
     }
@@ -303,10 +303,10 @@ namespace UnitTest
 
       // 123456,789012345678
       // 9988776655,4433221100
-      bcd one("123456.789012345678");
+      bcd one(_T("123456.789012345678"));
       bcd two = -one;
       CString resstring = two.AsString();
-      char* expect = "-123456.789012345678";
+      TCHAR* expect = _T("-123456.789012345678");
 
       Assert::IsTrue(strcmp(expect,resstring.GetString()) == 0);
     }
@@ -315,12 +315,12 @@ namespace UnitTest
     {
       Logger::WriteMessage("Test operator bcd++ (postfix increment)");
 
-      bcd one("1234567890123456789");
+      bcd one(_T("1234567890123456789"));
       bcd two = one++;
       CString resstring1 = one.AsString();
       CString resstring2 = two.AsString();
-      char* expect1 = "1234567890123456790.00";
-      char* expect2 = "1234567890123456789.00";
+      TCHAR* expect1 = _T("1234567890123456790.00");
+      TCHAR* expect2 = _T("1234567890123456789.00");
 
       Assert::IsTrue(strcmp(expect1,resstring1.GetString()) == 0);
       Assert::IsTrue(strcmp(expect2,resstring2.GetString()) == 0);
@@ -330,12 +330,12 @@ namespace UnitTest
     {
       Logger::WriteMessage("Test operator ++bcd (prefix increment)");
 
-      bcd one("1234567890123456789");
+      bcd one(_T("1234567890123456789"));
       bcd two = ++one;
       CString resstring1 = one.AsString();
       CString resstring2 = two.AsString();
-      char* expect1 = "1234567890123456790.00";
-      char* expect2 = "1234567890123456790.00";
+      TCHAR* expect1 = _T("1234567890123456790.00");
+      TCHAR* expect2 = _T("1234567890123456790.00");
 
       Assert::IsTrue(strcmp(expect1,resstring1.GetString()) == 0);
       Assert::IsTrue(strcmp(expect2,resstring2.GetString()) == 0);
@@ -345,12 +345,12 @@ namespace UnitTest
     {
       Logger::WriteMessage("Test operator bcd-- (postfix decrement)");
 
-      bcd one("1234567890123456790");
+      bcd one(_T("1234567890123456790"));
       bcd two = one--;
       CString resstring1 = one.AsString();
       CString resstring2 = two.AsString();
-      char* expect1 = "1234567890123456789.00";
-      char* expect2 = "1234567890123456790.00";
+      TCHAR* expect1 = _T("1234567890123456789.00");
+      TCHAR* expect2 = _T("1234567890123456790.00");
 
       Assert::IsTrue(strcmp(expect1,resstring1.GetString()) == 0);
       Assert::IsTrue(strcmp(expect2,resstring2.GetString()) == 0);
@@ -360,12 +360,12 @@ namespace UnitTest
     {
       Logger::WriteMessage("Test operator bcd-- (postfix decrement)");
 
-      bcd one("1234567890123456790");
+      bcd one(_T("1234567890123456790"));
       bcd two = --one;
       CString resstring1 = one.AsString();
       CString resstring2 = two.AsString();
-      char* expect1 = "1234567890123456789.00";
-      char* expect2 = "1234567890123456789.00";
+      TCHAR* expect1 = _T("1234567890123456789.00");
+      TCHAR* expect2 = _T("1234567890123456789.00");
 
       Assert::IsTrue(strcmp(expect1,resstring1.GetString()) == 0);
       Assert::IsTrue(strcmp(expect2,resstring2.GetString()) == 0);
@@ -375,10 +375,10 @@ namespace UnitTest
     {
       Logger::WriteMessage("Test operator bcd = bcd (assignment operator)");
 
-      bcd one("123456.789012345678");
+      bcd one(_T("123456.789012345678"));
       bcd two = one;
       CString resstring = two.AsString(bcd::Format::Bookkeeping,false,12);
-      char* expect = "123456.789012345678";
+      TCHAR* expect = _T("123456.789012345678");
 
       Assert::AreEqual(expect,resstring.GetString());
     }
@@ -388,9 +388,9 @@ namespace UnitTest
       Logger::WriteMessage("Test operator bcd = long (assignment operator)");
 
       long one = 123456789;
-      bcd two = one;
+      bcd two(one);
       CString resstring = two.AsString();
-      char* expect = "123456789.00";
+      TCHAR* expect = _T("123456789.00");
 
       Assert::AreEqual(expect,resstring.GetString());
     }
@@ -400,9 +400,9 @@ namespace UnitTest
       Logger::WriteMessage("Test operator bcd = double (assignment operator)");
 
       double one = 123456.123456789;
-      bcd two = one;
+      bcd two(one);
       CString resstring = two.AsString();
-      char* expect = "123456.123456789";
+      TCHAR* expect = _T("123456.123456789");
 
       Assert::AreEqual(expect,resstring.GetString());
     }
@@ -411,10 +411,10 @@ namespace UnitTest
     {
       Logger::WriteMessage("Test operator bcd = CString (assignment operator)");
 
-      CString one("123456.123456789");
-      bcd two = one;
+      CString one(_T("123456.123456789"));
+      bcd two(one);
       CString resstring = two.AsString();
-      char* expect = "123456.123456789";
+      TCHAR* expect = _T("123456.123456789");
 
       Assert::AreEqual(expect,resstring.GetString());
     }
@@ -425,7 +425,7 @@ namespace UnitTest
       Logger::WriteMessage("Test comparison bcd >= bcd");
       Logger::WriteMessage("Test comparison bcd <= bcd");
 
-      CString number("8765432123456.123456789");
+      CString number(_T("8765432123456.123456789"));
       bcd one(number);
       bcd two(number);
 
@@ -438,8 +438,8 @@ namespace UnitTest
     {
       Logger::WriteMessage("Test comparison bcd != bcd");
 
-      CString number1("8765432123456.123456789");
-      CString number2("8765432123456.123476789");
+      CString number1(_T("8765432123456.123456789"));
+      CString number2(_T("8765432123456.123476789"));
       bcd one(number1);
       bcd two(number2);
 
@@ -450,8 +450,8 @@ namespace UnitTest
     {
       Logger::WriteMessage("Test comparison bcd < bcd");
 
-      CString number1("8765432123456.123456789");
-      CString number2("8765432123456.123476789");
+      CString number1(_T("8765432123456.123456789"));
+      CString number2(_T("8765432123456.123476789"));
       bcd one(number1);
       bcd two(number2);
 
@@ -462,8 +462,8 @@ namespace UnitTest
     {
       Logger::WriteMessage("Test comparison bcd > bcd");
 
-      CString number1("8765432123456.123456789");
-      CString number2("8765432123456.123476789");
+      CString number1(_T("8765432123456.123456789"));
+      CString number2(_T("8765432123456.123476789"));
       bcd one(number1);
       bcd two(number2);
 
@@ -474,7 +474,7 @@ namespace UnitTest
     {
       Logger::WriteMessage("Test set to 0 (zero) with: bcd.Zero()");
 
-      bcd one("12345.898989898342212");
+      bcd one(_T("12345.898989898342212"));
       bcd zero;
       one.Zero();
 
@@ -487,8 +487,8 @@ namespace UnitTest
     {
       Logger::WriteMessage("Test fraction part with: bcd.Fraction()");
 
-      bcd one("12345.898989898342212");
-      bcd expect ("0.898989898342212");
+      bcd one(_T("12345.898989898342212"));
+      bcd expect (_T("0.898989898342212"));
       bcd result = one.Fraction();
 
       Assert::IsTrue(expect == result);
@@ -498,8 +498,8 @@ namespace UnitTest
     {
       Logger::WriteMessage("Test ceiling with: bcd.Ceiling()");
 
-      bcd one("12345.898989898342212");
-      bcd expect = 12346;
+      bcd one(_T("12345.898989898342212"));
+      bcd expect(12346);
       bcd result = one.Ceiling();
 
       Assert::IsTrue(expect == result);
@@ -510,8 +510,8 @@ namespace UnitTest
       Logger::WriteMessage("Test root with: bcd.SquareRoot()");
 
       // 9988776655,4433221100
-      bcd one("9988776655.4433221100");
-      bcd expect("99943.86752294170705107883721621278845710");
+      bcd one(_T("9988776655.4433221100"));
+      bcd expect(_T("99943.86752294170705107883721621278845710"));
       bcd result = one.SquareRoot();
 
       Assert::IsTrue(expect == result);
@@ -523,9 +523,9 @@ namespace UnitTest
       
       // 9988776655,4433221112
       // 3,78123764321234
-      bcd one("9988776655.4433221112");
-      bcd two("3.78123764321234");
-      bcd expect("6.46446118874655302175032245730334730318E+37");
+      bcd one(_T("9988776655.4433221112"));
+      bcd two(_T("3.78123764321234"));
+      bcd expect(_T("6.46446118874655302175032245730334730318E+37"));
       bcd result = one.Power(two);
       Logger::WriteMessage(result.AsString()); 
 
@@ -537,8 +537,8 @@ namespace UnitTest
       Logger::WriteMessage("Test absolute value with: bcd.Absolute()");
 
       // 9988776655,4433221112
-      bcd one  ("-9988776655.4433221112");
-      bcd expect("9988776655.4433221112");
+      bcd one  (_T("-9988776655.4433221112"));
+      bcd expect(_T("9988776655.4433221112"));
       bcd result = one.AbsoluteValue();
 
       Assert::IsTrue(expect == result);
@@ -549,8 +549,8 @@ namespace UnitTest
       Logger::WriteMessage("Test reciproke value with: bcd.Reciproke()");
 
       // 9988776655,4433221112
-      bcd one("-9988776655.4433221112");
-      bcd expect("-1.001123595505617977406695215250599671773E-10");
+      bcd one(_T("-9988776655.4433221112"));
+      bcd expect(_T("-1.001123595505617977406695215250599671773E-10"));
       bcd result = one.Reciprocal();
 
       Assert::IsTrue(expect == result);
@@ -561,8 +561,8 @@ namespace UnitTest
       Logger::WriteMessage("Test logarithm value with: bcd.Log()");
 
       // 9988776655,4433221112
-      bcd one("9988776655.4433221112");
-      bcd expect("23.02472796519583305299405544350891551931");
+      bcd one(_T("9988776655.4433221112"));
+      bcd expect(_T("23.02472796519583305299405544350891551931"));
 
       bcd result = one.Log();
 
@@ -576,8 +576,8 @@ namespace UnitTest
       Logger::WriteMessage("Test 10 logarithm value with: bcd.Log10()");
 
       // 9988776655,4433221112
-      bcd one("9988776655.4433221112");
-      bcd expect("9.99951230260803799484589365115468478907");
+      bcd one(_T("9988776655.4433221112"));
+      bcd expect(_T("9.99951230260803799484589365115468478907"));
 
       bcd result = one.Log10();
 
@@ -591,8 +591,8 @@ namespace UnitTest
       Logger::WriteMessage("Test e-power value with: bcd.Exp()");
 
       // 99,887766554433221112
-      bcd one("99.887766554433221112");
-      bcd expect("2.402734720884442281355919192444100235161E+43");
+      bcd one(_T("99.887766554433221112"));
+      bcd expect(_T("2.402734720884442281355919192444100235161E+43"));
       bcd result = one.Exp();
 
       Assert::IsTrue(expect == result);
@@ -603,8 +603,8 @@ namespace UnitTest
       Logger::WriteMessage("Test 10th-power value with: bcd.TenPower()");
 
       // 99,887766554433221112
-      bcd one("99.887766554433221112");
-      bcd expect("998877665.54433221112");
+      bcd one(_T("99.887766554433221112"));
+      bcd expect(_T("998877665.54433221112"));
       bcd result = one.TenPower(7);
 
       Assert::IsTrue(expect == result);
@@ -615,20 +615,20 @@ namespace UnitTest
       Logger::WriteMessage("Test rounding of a number with : bcd.Round(5)");
       
       // 9988776655,4433277112
-      bcd one("9988776655.4433277112");
+      bcd one(_T("9988776655.4433277112"));
       one.Round(5);
-      bcd expect("9988776655.44333");
+      bcd expect(_T("9988776655.44333"));
       CString test = one.AsString();
 
       Assert::IsTrue(expect == one);
 
-      one = "9988776655.64433277112";
-      expect = "9988776655.644333";
+      one = _T("9988776655.64433277112");
+      expect = _T("9988776655.644333");
       one.Round(6);
       Assert::IsTrue(expect == one);
 
-      one = "9988776655.64433277112";
-      expect = "9988776656";
+      one = _T("9988776655.64433277112");
+      expect = _T("9988776656");
       one.Round(0);
       Assert::IsTrue(expect == one);
     }
@@ -638,14 +638,14 @@ namespace UnitTest
       Logger::WriteMessage("Test truncation of a number with : bcd.Truncate(5)");
       
       // 9988776655,4433277112
-      bcd one("9988776655.4433277112");
+      bcd one(_T("9988776655.4433277112"));
       one.Truncate(5);
-      bcd expect("9988776655.44332");
+      bcd expect(_T("9988776655.44332"));
 
       Assert::IsTrue(expect == one);
 
-      one = "9988776655.64433277112";
-      expect = "9988776655";
+      one = _T("9988776655.64433277112");
+      expect = _T("9988776655");
       one.Truncate(0);
       Assert::IsTrue(expect == one);
     }
@@ -655,8 +655,8 @@ namespace UnitTest
       Logger::WriteMessage("Test Sine function of a radian with : bcd.Sine()");
 
       // 0,9876543210123456
-      char* a_angle = "0.9876543210123456";
-      char* r_sine  = "8.347366295099261173476093153791068840984E-1";
+      TCHAR* a_angle = _T("0.9876543210123456");
+      TCHAR* r_sine  = _T("8.347366295099261173476093153791068840984E-1");
 
       bcd one(a_angle);
       bcd expect(r_sine);
@@ -670,8 +670,8 @@ namespace UnitTest
       Logger::WriteMessage("Test Cosine function of a radian with : bcd.Cosine()");
 
       // 0,9876543210123456
-      char* a_angle  = "0.9876543210123456";
-      char* r_cosine = "5.506493978516714425340844117564672940338E-1";
+      TCHAR* a_angle  = _T("0.9876543210123456");
+      TCHAR* r_cosine = _T("5.506493978516714425340844117564672940338E-1");
 
       bcd one(a_angle);
       bcd expect(r_cosine);
@@ -685,8 +685,8 @@ namespace UnitTest
       Logger::WriteMessage("Test Tangent function of a radian with : bcd.Tangent()");
 
       // 0,9876543210123456
-      char* a_angle   = "0.9876543210123456";
-      char* r_tangent = "1.515913088739596368439240774287234302490";
+      TCHAR* a_angle   = _T("0.9876543210123456");
+      TCHAR* r_tangent = _T("1.515913088739596368439240774287234302490");
 
       bcd one(a_angle);
       bcd expect(r_tangent);
@@ -699,8 +699,8 @@ namespace UnitTest
     {
       Logger::WriteMessage("Test ArcSine function of a ratio with : bcd.ArcSine()");
 
-      char* a_ratio = "0.765498765404321098765";
-      char* r_asine = "8.71816131070559101024946021343034377293E-1";
+      TCHAR* a_ratio = _T("0.765498765404321098765");
+      TCHAR* r_asine = _T("8.71816131070559101024946021343034377293E-1");
 
       bcd one(a_ratio);
       bcd expect(r_asine);
@@ -715,8 +715,8 @@ namespace UnitTest
     {
       Logger::WriteMessage("Test ArcCosine function of a ratio with : bcd.ArcCosine()");
 
-      char* a_ratio   = "0.765498765404321098765";
-      char* r_acosine = "6.98980195724337518206375670296717064805E-1";
+      TCHAR* a_ratio   = _T("0.765498765404321098765");
+      TCHAR* r_acosine = _T("6.98980195724337518206375670296717064805E-1");
 
       bcd one(a_ratio);
       bcd expect(r_acosine);
@@ -731,8 +731,8 @@ namespace UnitTest
     {
       Logger::WriteMessage("Test ArcTangent function of a ratio with : bcd.ArcTangent()");
 
-      char* a_ratio    = "0.765498765404321098765";
-      char* r_atangent = "6.53346752384431270749403109172000942006E-1";
+      TCHAR* a_ratio    = _T("0.765498765404321098765");
+      TCHAR* r_atangent = _T("6.53346752384431270749403109172000942006E-1");
 
       bcd one(a_ratio);
       bcd expect(r_atangent);
@@ -765,14 +765,14 @@ namespace UnitTest
       bcd result(&res);
 
       Assert::IsTrue(one == result);
-      Assert::IsTrue(one == bcd("10.001"));
+      Assert::IsTrue(one == bcd(_T("10.001")));
     }
 
     TEST_METHOD(T057_AsDouble)
     {
       Logger::WriteMessage("Test as-other-datatype: bcd.AsDouble()");
 
-      bcd one("99887766.554433");
+      bcd one(_T("99887766.554433"));
       double result = one.AsDouble();
       double expect = 99887766.554433;
 
@@ -783,7 +783,7 @@ namespace UnitTest
     {
       Logger::WriteMessage("Test as-other-datatype: bcd.AsShort()");
 
-      bcd one("4433");
+      bcd one(_T("4433"));
       short result = one.AsShort();
       short expect = 4433;
 
@@ -794,7 +794,7 @@ namespace UnitTest
     {
       Logger::WriteMessage("Test as-other-datatype: bcd.AsUShort()");
 
-      bcd one("54873");
+      bcd one(_T("54873"));
       unsigned short result = one.AsUShort();
       unsigned short expect = 54873;
 
@@ -805,7 +805,7 @@ namespace UnitTest
     {
       Logger::WriteMessage("Test as-other-datatype: bcd.AsLong()");
 
-      bcd one("98854873");
+      bcd one(_T("98854873"));
       long result = one.AsLong();
       long expect = 98854873;
 
@@ -817,7 +817,7 @@ namespace UnitTest
     {
       Logger::WriteMessage("Test as-other-datatype: bcd.AsULong()");
 
-      bcd one("2974276950");
+      bcd one(_T("2974276950"));
       unsigned long result = one.AsULong();
       unsigned long expect = 2974276950;
 
@@ -828,7 +828,7 @@ namespace UnitTest
     {
       Logger::WriteMessage("Test as-other-datatype: bcd.AsInt64()");
 
-      bcd one("23154765019");
+      bcd one(_T("23154765019"));
       __int64 result = one.AsInt64();
       __int64 expect = 23154765019L;
 
@@ -846,7 +846,7 @@ namespace UnitTest
       bcd result;
       result = one;
       CString resstring = result.AsString();
-      char* expect = "1234567890.00";
+      TCHAR* expect = _T("1234567890.00");
 
       Assert::IsTrue(strcmp(expect,resstring.GetString()) == 0);
     }
@@ -861,7 +861,7 @@ namespace UnitTest
       bcd result;
       result = one;
       CString resstring = result.AsString();
-      char* expect = "1234567890.5432";
+      TCHAR* expect = _T("1234567890.5432");
 
       Assert::IsTrue(strcmp(expect,resstring.GetString()) == 0);
     }
@@ -873,12 +873,12 @@ namespace UnitTest
       // 1.0456788
       // 7.89991232E-1
 
-      bcd one("1.0456788");
-      bcd two("7.89991232E-1");
+      bcd one(_T("1.0456788"));
+      bcd two(_T("7.89991232E-1"));
 
       bcd result = one.ArcTangent2Points(two);
       CString resstring = result.AsString();
-      char* expect = "4.065388783692102294632898803723974485214";
+      TCHAR* expect = _T("4.065388783692102294632898803723974485214");
 
       Assert::IsTrue(strcmp(expect,resstring.GetString()) == 0);
     }
@@ -887,10 +887,10 @@ namespace UnitTest
     {
       Logger::WriteMessage("Test the Negate method for unary -");
 
-      bcd one("45523.89901");
+      bcd one(_T("45523.89901"));
       one.Negate();
       CString resstring = one.AsString();
-      char* expect = "-45523.89901";
+      TCHAR* expect = _T("-45523.89901");
 
       Assert::IsTrue(strcmp(expect,resstring.GetString()) == 0);
     }
@@ -924,7 +924,7 @@ namespace UnitTest
       Logger::WriteMessage("Test the status function GetLength");
 
       // 123456,789012345678
-      bcd one("123456.789012345678");
+      bcd one(_T("123456.789012345678"));
       Assert::IsTrue(one.GetLength() == 18);
     }
 
@@ -933,7 +933,7 @@ namespace UnitTest
       Logger::WriteMessage("Test the status function GetPrecision");
 
       // 123456,789012345678
-      bcd one("123456.789012345678");
+      bcd one(_T("123456.789012345678"));
       Assert::IsTrue(one.GetPrecision() == 12);
     }
 
@@ -942,7 +942,7 @@ namespace UnitTest
       Logger::WriteMessage("Test the status function GetMaxSize");
 
       // 123456,789012345678
-      bcd one("123456.789012345678");
+      bcd one(_T("123456.789012345678"));
       Assert::IsTrue(one.GetMaxSize() == 40);
     }
 
@@ -951,9 +951,9 @@ namespace UnitTest
       Logger::WriteMessage("Test the status function GetHasDecimals");
 
       // 123456,789012345678
-      bcd one("123456.789012345678");
-      bcd two("877234");
-      bcd three("123.9");
+      bcd one(_T("123456.789012345678"));
+      bcd two(_T("877234"));
+      bcd three(_T("123.9"));
       Assert::IsTrue  (one.GetHasDecimals());
       Assert::IsFalse (two.GetHasDecimals());
       Assert::IsTrue(three.GetHasDecimals());
@@ -964,15 +964,15 @@ namespace UnitTest
       Logger::WriteMessage("Test the function GetExponent");
 
       // 123456,789012345678
-      bcd one("123456.789012345678");
-      bcd two("877234");
-      bcd three("123.9");
-      bcd four("0.0066");
+      bcd one(_T("123456.789012345678"));
+      bcd two(_T("877234"));
+      bcd three(_T("123.9"));
+      bcd four(_T("0.0066"));
 
-      Assert::IsTrue(one.GetExponent() == 5);
-      Assert::IsTrue(two.GetExponent() == 5);
+      Assert::IsTrue(one  .GetExponent() == 5);
+      Assert::IsTrue(two  .GetExponent() == 5);
       Assert::IsTrue(three.GetExponent() == 2);
-      Assert::IsTrue(four.GetExponent() == -3);
+      Assert::IsTrue(four .GetExponent() == -3);
     }
 
     TEST_METHOD(T074_GetMantissa)
@@ -980,8 +980,8 @@ namespace UnitTest
       Logger::WriteMessage("Test the function GetMantissa");
 
       // 123456,789012345678
-      bcd one("123456.789012345678");
-      bcd two("123.9");
+      bcd one(_T("123456.789012345678"));
+      bcd two(_T("123.9"));
 
       bcd mant1 = one.GetMantissa();
       bcd mant2 = two.GetMantissa();
@@ -989,8 +989,8 @@ namespace UnitTest
       CString m1res = mant1.AsString();
       CString m2res = mant2.AsString();
 
-      CString expect1("1.23456789012345678");
-      CString expect2("1.239");
+      CString expect1(_T("1.23456789012345678"));
+      CString expect2(_T("1.239"));
 
       Assert::AreEqual(expect1.GetString(),m1res.GetString());
       Assert::AreEqual(expect2.GetString(),m2res.GetString());
@@ -1001,9 +1001,9 @@ namespace UnitTest
       Logger::WriteMessage("Test writing to file");
 
       // 123456,789012345678
-      bcd one("123456.789012345678");
+      bcd one(_T("123456.789012345678"));
       FILE* file = nullptr;
-      fopen_s(&file,"C:\\TMP\\bcd.test","wb");
+      _tfopen_s(&file,_T("C:\\TMP\\bcd.test"),_T("wb"));
       if(file)
       {
         one.WriteToFile(file);
@@ -1013,7 +1013,7 @@ namespace UnitTest
       bcd result;
       Logger::WriteMessage("Test reading from file");
       file = nullptr;
-      fopen_s(&file,"C:\\TMP\\bcd.test","rb");
+      _tfopen_s(&file,_T("C:\\TMP\\bcd.test"),_T("rb"));
       if(file)
       {
         result.ReadFromFile(file);
@@ -1028,10 +1028,10 @@ namespace UnitTest
       Logger::WriteMessage("Test math style floor");
 
       // 123456,789012345678
-      bcd one("123456.789012345678");
+      bcd one(_T("123456.789012345678"));
       bcd result = floor(one);
       CString resstring = result.AsString();
-      char* expect("123456.00");
+      TCHAR* expect(_T("123456.00"));
 
       Assert::AreEqual(expect,resstring.GetString());
     }
@@ -1041,10 +1041,10 @@ namespace UnitTest
       Logger::WriteMessage("Test math style ceil");
 
       // 123456,789012345678
-      bcd one("123456.789012345678");
+      bcd one(_T("123456.789012345678"));
       bcd result = ceil(one);
       CString resstring = result.AsString();
-      char* expect("123457.00");
+      TCHAR* expect(_T("123457.00"));
 
       Assert::AreEqual(expect,resstring.GetString());
     }
@@ -1058,14 +1058,14 @@ namespace UnitTest
       // Decimals  separator is a comma
 
       // 123456,789012345678
-      bcd one("123456.789012345678");
+      bcd one(_T("123456.789012345678"));
       CString result = one.AsDisplayString();
-      char* expect = "123.456,79";
+      TCHAR* expect = _T("123.456,79");
       Assert::AreEqual(expect,result.GetString());
 
-      bcd two("9123456.789012345678");
+      bcd two(_T("9123456.789012345678"));
       CString result2 = two.AsDisplayString();
-      char* expect2 = "9.123.456,79";
+      TCHAR* expect2 = _T("9.123.456,79");
       Assert::AreEqual(expect2,result2.GetString());
     }
 
@@ -1077,7 +1077,7 @@ namespace UnitTest
       bcd zero;
       bcd sineZero = zero.Sine();
 
-      CString zeroResult("0.00");
+      CString zeroResult(_T("0.00"));
       CString zeroSine = sineZero.AsString();
 
       Assert::AreEqual(zeroSine.GetString(),zeroResult.GetString());
@@ -1091,7 +1091,7 @@ namespace UnitTest
       bcd zero;
       bcd cosineZero = zero.Cosine();
 
-      CString zeroResult("1.00");
+      CString zeroResult(_T("1.00"));
       CString zeroCosine = cosineZero.AsString();
 
       Assert::AreEqual(zeroCosine.GetString(), zeroResult.GetString());
@@ -1105,7 +1105,7 @@ namespace UnitTest
       bcd zero;
       bcd expZero = zero.Exp();
 
-      CString zeroResult("1.00");
+      CString zeroResult(_T("1.00"));
       CString zeroExponent = expZero.AsString();
 
       Assert::AreEqual(zeroExponent.GetString(), zeroResult.GetString());
@@ -1138,20 +1138,20 @@ namespace UnitTest
     {
       Logger::WriteMessage("Test various exponents");
 
-      bcd number("0.01");
+      bcd number(_T("0.01"));
       bcd expnumber = number.Exp();
       expnumber.Round(15);
       double expdouble = ::exp(0.01);
-      CString expected("1.010050167084168");
+      CString expected(_T("1.010050167084168"));
 
       CString bcdResult;
       CString dblResult;
       bcdResult = expnumber.AsString();
-      dblResult.Format("%0.16g", expdouble);
+      dblResult.Format(_T("%0.16g"), expdouble);
 
       // Be sure to eliminate the locale differences
-      bcdResult.Replace(",", ".");
-      dblResult.Replace(",", ".");
+      bcdResult.Replace(_T(","), _T("."));
+      dblResult.Replace(_T(","), _T("."));
 
       Assert::AreEqual(expected.GetString(),dblResult.GetString());
       Assert::AreEqual(expected.GetString(),bcdResult.GetString());
@@ -1161,20 +1161,20 @@ namespace UnitTest
     {
       Logger::WriteMessage("Test various exponents");
 
-      bcd number("0.03");
+      bcd number(_T("0.03"));
       bcd expnumber = number.Exp();
       expnumber.Round(15);
       double expdouble = ::exp(0.03);
-      CString expected("1.030454533953517");
+      CString expected(_T("1.030454533953517"));
 
       CString bcdResult;
       CString dblResult;
       bcdResult = expnumber.AsString();
-      dblResult.Format("%0.16g", expdouble);
+      dblResult.Format(_T("%0.16g"), expdouble);
 
       // Be sure to eliminate the locale differences
-      bcdResult.Replace(",", ".");
-      dblResult.Replace(",", ".");
+      bcdResult.Replace(_T(","), _T("."));
+      dblResult.Replace(_T(","), _T("."));
 
       Assert::AreEqual(expected.GetString(), dblResult.GetString());
       Assert::AreEqual(expected.GetString(), bcdResult.GetString());
@@ -1184,10 +1184,10 @@ namespace UnitTest
     {
       Logger::WriteMessage("Test division by 10");
 
-      bcd number("0.1");
+      bcd number(_T("0.1"));
       bcd numresult = number / 10.0;
 
-      CString expected("0.01");
+      CString expected(_T("0.01"));
       CString result = numresult.AsString();
       
       Assert::AreEqual(expected.GetString(),result.GetString());
@@ -1197,9 +1197,9 @@ namespace UnitTest
     {
       Logger::WriteMessage("Test division by 10 wrong?");
 
-      bcd numresult = .2 / 10.0;
+      bcd numresult(0.2 / 10.0);
 
-      CString expected("0.02");
+      CString expected(_T("0.02"));
       CString result = numresult.AsString();
 
 #ifdef _DEBUG
@@ -1225,19 +1225,19 @@ namespace UnitTest
       Logger::WriteMessage("Test exponent of negative number");
 
       double dblres = ::exp(-2.5);
-      bcd    bcdres = bcd("-2.5").Exp();
+      bcd    bcdres = bcd(_T("-2.5")).Exp();
       bcdres.Round(16);
 
-      CString expected("0.0820849986238988");
+      CString expected(_T("0.0820849986238988"));
 
       CString bcdResult;
       CString dblResult;
       bcdResult = bcdres.AsString();
-      dblResult.Format("%0.15g", dblres);
+      dblResult.Format(_T("%0.15g"), dblres);
 
       // Be sure to eliminate the locale differences
-      bcdResult.Replace(",", ".");
-      dblResult.Replace(",", ".");
+      bcdResult.Replace(_T(","),_T("."));
+      dblResult.Replace(_T(","),_T("."));
 
       Assert::AreEqual(expected.GetString(), dblResult.GetString());
       Assert::AreEqual(expected.GetString(), bcdResult.GetString());
@@ -1247,11 +1247,11 @@ namespace UnitTest
     {
       Logger::WriteMessage("Adding small negative number to 0.01");
 
-      bcd tinynum("0.01");
-      bcd number("-0.05");
+      bcd tinynum(_T("0.01"));
+      bcd number(_T("-0.05"));
 
       bcd result = tinynum + number;
-      CString expected("-0.04");
+      CString expected(_T("-0.04"));
       CString resstring = result.AsString();
 
       Assert::AreEqual(expected.GetString(),resstring.GetString());
@@ -1262,11 +1262,11 @@ namespace UnitTest
       Logger::WriteMessage("Adding small negative number to 0.0");
 
       // Original values provided by sisirajaya
-      bcd tinynum("0.0");
-      bcd number("-0.05");
+      bcd tinynum(_T("0.0"));
+      bcd number(_T("-0.05"));
 
       bcd result = tinynum + number;
-      CString expected("-0.05");
+      CString expected(_T("-0.05"));
       CString resstring = result.AsString();
 
       Assert::AreEqual(expected.GetString(), resstring.GetString());
@@ -1304,11 +1304,11 @@ namespace UnitTest
     {
       Logger::WriteMessage("Testing at higher ranges.");
 
-      bcd one("94505024884");
-      CString expected("94505024884");
+      bcd one(_T("94505024884"));
+      CString expected(_T("94505024884"));
       UINT64 number = one.AsUInt64();
       CString result;
-      result.Format("%I64d",number);
+      result.Format(_T("%I64d"),number);
 
       Assert::AreEqual(expected.GetString(),result.GetString());
     }
@@ -1319,7 +1319,7 @@ namespace UnitTest
 
       UINT64 num = 94505024884;
       bcd one (num,64);
-      CString expected("94505024884.64");
+      CString expected(_T("94505024884.64"));
       CString result = one.AsString();
 
       Assert::AreEqual(expected.GetString(),result.GetString());
@@ -1329,8 +1329,8 @@ namespace UnitTest
     {
       Logger::WriteMessage("Testing integer corner cases.");
 
-      bcd test1((char)MININT8);      Assert::AreEqual((int)MININT8,  (int)test1.AsShort());
-      bcd test2((char)MAXINT8);      Assert::AreEqual((int)MAXINT8,  (int)test2.AsShort()); 
+      bcd test1((TCHAR)MININT8);      Assert::AreEqual((int)MININT8,  (int)test1.AsShort());
+      bcd test2((TCHAR)MAXINT8);      Assert::AreEqual((int)MAXINT8,  (int)test2.AsShort()); 
 
       bcd test3((uchar)0);           Assert::AreEqual(0,             (int)test3.AsShort()); 
       bcd test4((uchar)MAXUINT8);    Assert::AreEqual((int)MAXUINT8, (int)test4.AsShort());

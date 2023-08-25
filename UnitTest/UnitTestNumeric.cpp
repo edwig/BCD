@@ -20,7 +20,7 @@ namespace UnitTest
     TEST_METHOD(T002_Constructor02_string)
     {
       Logger::WriteMessage("Construct numeric from string");
-      numeric one(6,4,"10.001");
+      numeric one(6,4,_T("10.001"));
 
       SQL_NUMERIC_STRUCT num;
       one.AsNumeric(&num);
@@ -37,7 +37,7 @@ namespace UnitTest
     TEST_METHOD(T003_Constructor03_string)
     {
       Logger::WriteMessage("Construct numeric from string");
-      numeric one(6,4,"10.0000");
+      numeric one(6,4,_T("10.0000"));
 
       SQL_NUMERIC_STRUCT num;
       one.AsNumeric(&num);
@@ -54,7 +54,7 @@ namespace UnitTest
     TEST_METHOD(T004_Constructor04_string)
     {
       Logger::WriteMessage("Construct numeric from string");
-      numeric one(6,4,"10");
+      numeric one(6,4,_T("10"));
 
       SQL_NUMERIC_STRUCT num;
       one.AsNumeric(&num);
@@ -71,7 +71,7 @@ namespace UnitTest
     TEST_METHOD(T005_Constructor05_string)
     {
       Logger::WriteMessage("Construct numeric from string");
-      numeric one(6,4,"10.00100000");
+      numeric one(6,4,_T("10.00100000"));
 
       SQL_NUMERIC_STRUCT num;
       one.AsNumeric(&num);
@@ -88,27 +88,27 @@ namespace UnitTest
     TEST_METHOD(T006_Constructor06_string)
     {
       Logger::WriteMessage("Construct numeric from string");
-      numeric one(6, 4, "10.00100000");
+      numeric one(6, 4, _T("10.00100000"));
 
       SQL_NUMERIC_STRUCT num;
       one.AsNumeric(&num);
 
       // Check the filling
       CString check = one.AsString();
-      Assert::AreEqual(check, "10.0010");
+      Assert::AreEqual(check, _T("10.0010"));
     }
 
     TEST_METHOD(T07_Addition)
     {
       Logger::WriteMessage("Adding two numerics");
-      numeric one(6, 4, "10.00100000");
-      numeric two(6, 4, "20.00300000");
+      numeric one(6, 4, _T("10.00100000"));
+      numeric two(6, 4, _T("20.00300000"));
 
       numeric three = one + two;
 
       // Check the filling
       CString check = three.AsString();
-      Assert::AreEqual(check, "30.0040");
+      Assert::AreEqual(check, _T("30.0040"));
     }
 
     TEST_METHOD(T08_Constant_PI)
@@ -119,11 +119,11 @@ namespace UnitTest
       // Check the constant
       // +31415926_53589793_23846264_33832795_02884197
       CString check = pi.AsString();
-      Assert::AreEqual(check, "3.1415926535897932384626433832795");
+      Assert::AreEqual(check, _T("3.1415926535897932384626433832795"));
 
       numeric pi2 = numeric::PI(16,15);
       check = pi2.AsString();
-      Assert::AreEqual(check, "3.141592653589793");
+      Assert::AreEqual(check, _T("3.141592653589793"));
     }
 
     TEST_METHOD(T09_Constant_LN2)
@@ -134,11 +134,11 @@ namespace UnitTest
       // Check the constant
       // +0.69314718_05599453_09417232_12145817_65680755
       CString check = ln2.AsString();
-      Assert::AreEqual(check, "0.6931471805599453094172321214581");
+      Assert::AreEqual(check, _T("0.6931471805599453094172321214581"));
 
       numeric ln22 = numeric::LN2(16, 15);
       check = ln22.AsString();
-      Assert::AreEqual(check, "0.693147180559945");
+      Assert::AreEqual(check, _T("0.693147180559945"));
     }
 
     TEST_METHOD(T10_Constant_LN10)
@@ -149,11 +149,11 @@ namespace UnitTest
       // Check the constant
       // +2.3025850_92994045_68401799_14546843_64207601
       CString check = ln10.AsString();
-      Assert::AreEqual(check,"2.3025850929940456840179914546843");
+      Assert::AreEqual(check,_T("2.3025850929940456840179914546843"));
 
       numeric ln102 = numeric::LN10(16, 15);
       check = ln102.AsString();
-      Assert::AreEqual(check, "2.302585092994045");
+      Assert::AreEqual(check, _T("2.302585092994045"));
     }
   };
 }

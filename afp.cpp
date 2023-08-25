@@ -14,54 +14,54 @@
 
 // Core Supporting functions. Works directly on string class
 // All forward declarations to statics in this implementation file
-static int  _afp_normalize( std::string * );
-static int  _afp_rounding(std::string* m, int sign, unsigned int precision, enum round_mode mode );
-static void _afp_strip_leading_zeros( std::string * );
-static void _afp_strip_trailing_zeros( std::string * );
-static void _afp_right_shift( std::string *, int );
-static void _afp_left_shift( std::string *, int );
-static int  _afp_compare( std::string *, std::string * );
+static int  _afp_normalize( std::tstring * );
+static int  _afp_rounding(std::tstring* m, int sign, unsigned int precision, enum round_mode mode );
+static void _afp_strip_leading_zeros( std::tstring * );
+static void _afp_strip_trailing_zeros( std::tstring * );
+static void _afp_right_shift( std::tstring *, int );
+static void _afp_left_shift( std::tstring *, int );
+static int  _afp_compare( std::tstring *, std::tstring * );
 static void _int_real_fourier( double data[], unsigned int n, int isign );
 static void _int_fourier( std::complex<double> data[], unsigned int n, int isign );
 static void _int_reverse_binary( std::complex<double> data[], unsigned int n );
 
-static std::string _afp_uadd_short( std::string *, unsigned int );
-static std::string _afp_uadd( std::string *, std::string * );
-static std::string _afp_usub_short( int *, std::string *, unsigned int );
-static std::string _afp_usub( int *, std::string *, std::string * );
-static std::string _afp_umul_short( std::string *, unsigned int );
-static std::string _afp_umul( std::string *, std::string * );
-static std::string _afp_umul_fourier( std::string *, std::string * );
-static std::string _afp_udiv_short( unsigned int *, std::string *, unsigned int );
+static std::tstring _afp_uadd_short( std::tstring *, unsigned int );
+static std::tstring _afp_uadd( std::tstring *, std::tstring * );
+static std::tstring _afp_usub_short( int *, std::tstring *, unsigned int );
+static std::tstring _afp_usub( int *, std::tstring *, std::tstring * );
+static std::tstring _afp_umul_short( std::tstring *, unsigned int );
+static std::tstring _afp_umul( std::tstring *, std::tstring * );
+static std::tstring _afp_umul_fourier( std::tstring *, std::tstring * );
+static std::tstring _afp_udiv_short( unsigned int *, std::tstring *, unsigned int );
 
 // Inline functions for the internals of the AFP
-inline unsigned char FDIGIT(unsigned char x)  
+inline _TUCHAR FDIGIT(_TUCHAR x)  
 {
 #if (F_RADIX == BASE_10)
-  return (unsigned char) (x - '0');
+  return (_TUCHAR) (x - '0');
 #else
-  return (unsigned char) x;
+  return (_TUCHAR) x;
 #endif
 }
 
-inline unsigned char FCHARACTER(unsigned char x ) 
+inline _TUCHAR FCHARACTER(_TUCHAR x ) 
 {
 #if (F_RADIX == BASE_10)
-  return (unsigned char)(x + '0');
+  return (_TUCHAR)(x + '0');
 #else
-  return (unsigned char) x;
+  return (_TUCHAR) x;
 #endif
 }
 
-inline unsigned char FCHARACTER10(unsigned char x)
+inline _TUCHAR FCHARACTER10(_TUCHAR x)
 { 
-  return (unsigned char)( x + '0'); 
+  return (_TUCHAR)( x + '0'); 
 }
 
 inline int FCARRY( unsigned int x )       { return x / F_RADIX; }
 inline int FSINGLE( unsigned int x )      { return x % F_RADIX; }
-inline std::string SIGN_STRING( int x )   { return x >=0 ? "+" : "-" ; }
-inline int CHAR_SIGN( char x )            { return x == '-' ? -1 : 1; }
+inline std::tstring SIGN_STRING( int x )  { return x >=0 ? _T("+") : _T("-") ; }
+inline int CHAR_SIGN(TCHAR x )            { return x == '-' ? -1 : 1; }
 
 //////////////////////////////////////////////////////////////////////////////////////
 ///
@@ -72,10 +72,10 @@ inline int CHAR_SIGN( char x )            { return x == '-' ? -1 : 1; }
 
 // Description:
 //   Constructor through a char number
-//   Validate and initilize with a character
+//   Validate and initialize with a character
 //   Input Always in BASE_10
 //
-afp::afp(const char p_number, unsigned int p_precision, enum round_mode p_mode)
+afp::afp(TCHAR p_number, unsigned int p_precision, enum round_mode p_mode)
 {
   int i;
 
@@ -86,7 +86,7 @@ afp::afp(const char p_number, unsigned int p_precision, enum round_mode p_mode)
   else
   { 
     i = p_number - '0';  // Convert to integer
-    m_number  = "+";
+    m_number  = _T("+");
     m_number += FCHARACTER( FSINGLE( i ) );
     m_expo    = 0;
     m_rmode   = p_mode;
@@ -103,7 +103,7 @@ afp::afp(const char p_number, unsigned int p_precision, enum round_mode p_mode)
 afp::afp(int p_number, unsigned int p_precision, enum round_mode p_mode)
 {
   int sign = 1;
-  std::string number;
+  std::tstring number;
 
   m_rmode = p_mode;
   m_prec = p_precision;
@@ -112,7 +112,7 @@ afp::afp(int p_number, unsigned int p_precision, enum round_mode p_mode)
   // Optimize null
   if(p_number == 0)
   {
-    m_number = "+";
+    m_number = _T("+");
     m_number.append( 1, FCHARACTER( 0 ) );
     return;
   }
@@ -126,7 +126,7 @@ afp::afp(int p_number, unsigned int p_precision, enum round_mode p_mode)
   if(F_RADIX == BASE_256)  // Fast BASE_256 conversion
   {
     int j;
-    unsigned char *p = (unsigned char *)&p_number;
+    _TUCHAR* p = (_TUCHAR *)&p_number;
 
     for( j = sizeof( int ); j > 0; j-- )
     {
@@ -145,7 +145,7 @@ afp::afp(int p_number, unsigned int p_precision, enum round_mode p_mode)
     // All other BASE
     for( ; p_number != 0; p_number /= F_RADIX )
     {
-      number.insert((std::string::size_type)0, 1, FCHARACTER(p_number % F_RADIX));
+      number.insert((std::tstring::size_type)0, 1, FCHARACTER(p_number % F_RADIX));
     }
   }
   _afp_strip_leading_zeros( &number );                       // First strip for leading zeros
@@ -162,7 +162,7 @@ afp::afp(int p_number, unsigned int p_precision, enum round_mode p_mode)
 //   Only use core base functions to create multi precision numbers
 //   The float can be any integer or decimal float representation
 //
-afp::afp(const char *p_number, unsigned int p_precision, enum round_mode p_mode)
+afp::afp(LPCTSTR p_number, unsigned int p_precision, enum round_mode p_mode)
 {
   if(p_number == NULL || *p_number== '\0' )
   { 
@@ -213,7 +213,7 @@ unsigned
 afp::precision(unsigned int p_precision)         
 { 
   int sign; 
-  std::string m;
+  std::tstring m;
   
   sign   = CHAR_SIGN(m_number[0]);
   m_prec = p_precision > 0 ? p_precision : PRECISION;
@@ -274,16 +274,16 @@ int
 afp::operator int()     
 {
   // Conversion to int
-  std::string s = _afp_ftoa(*this); 
-  return atoi( s.c_str() ); 
+  std::tstring s = _afp_ftoa(*this); 
+  return _ttoi( s.c_str() ); 
 } 
 
 // Cast to a double
 afp::operator double()  
 {
   // Conversion to double
-  std::string s = _afp_ftoa(*this); 
-  return atof( s.c_str() ); 
+  std::tstring s = _afp_ftoa(*this); 
+  return _ttof( s.c_str() ); 
 } 
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -315,7 +315,7 @@ afp::operator=(const afp& p_other)
       m_expo++;
     }
   }
-  m_number.insert((std::string::size_type)0,SIGN_STRING(sign));
+  m_number.insert((std::tstring::size_type)0,SIGN_STRING(sign));
 
   return *this;
 }
@@ -342,7 +342,7 @@ afp::operator+=(const afp& p_other)
   int sign, sign1, sign2, wrap;
   int expo_max, digits_max;
   unsigned int precision_max;
-  std::string s, s1, s2;
+  std::tstring s, s1, s2;
 
   if(p_other.m_number.length() == 2 && FDIGIT(p_other.m_number[1]) == 0)  // Add zero
   {
@@ -362,7 +362,7 @@ afp::operator+=(const afp& p_other)
 
   // Check if add makes sense. Still missing
 
-  // Right shift (padd leading zeros) to the smallest number
+  // Right shift (padding leading zeros) to the smallest number
   if(p_other.m_expo != expo_max )
   {
     _afp_right_shift(&s1, expo_max - p_other.m_expo);
@@ -380,7 +380,7 @@ afp::operator+=(const afp& p_other)
   {
     _afp_right_shift( &s2, 1 );
   }
-  // Alignment to same number of digits, so add can be perfomed as integer add
+  // Alignment to same number of digits, so add can be performed as integer add
   digits_max = (int) MAX( s1.length(), s2.length() );
   if( s1.length() != digits_max )
   {
@@ -403,7 +403,7 @@ afp::operator+=(const afp& p_other)
   else
   {
     int cmp = _afp_compare( &s1, &s2 );
-    if( cmp > 0 ) // Since we subctract less the wrap indicater need not to be checked
+    if( cmp > 0 ) // Since we subtract less the wrap indicator need not to be checked
     {
       s = _afp_usub( &wrap, &s1, &s2 );
       sign = sign1;
@@ -418,7 +418,8 @@ afp::operator+=(const afp& p_other)
       else
       {  // Result zero
         sign = 1;
-        s = "0"; s[0] = FCHARACTER( 0 );
+        s = _T("0");
+        s[0] = FCHARACTER( 0 );
         expo_max = 0;
       }
     }
@@ -465,7 +466,7 @@ afp::operator*=(const afp& p_other)
 {
   int expo_res;
   int sign, sign1, sign2;
-  std::string s, s1, s2;
+  std::tstring s, s1, s2;
 
   // extract sign and unsigned portion of number
   sign1 = p_other.sign();
@@ -790,10 +791,10 @@ operator<<( std::ostream& strm, const afp& d )
   return strm << _afp_ftoa( const_cast<afp &>(d) ).c_str();
 }
 
-std::istream& 
-operator>>( std::istream& strm, afp& d )
+std::tistream& 
+operator>>( std::tistream& strm, afp& d )
 { 
-  char ch; std::string s; int cnt, exp_cnt;
+  TCHAR ch; std::tstring s; int cnt, exp_cnt;
   strm >> std::ws >> ch; 
   if( ch == '+' || ch == '-' ) 
   { 
@@ -826,10 +827,10 @@ operator>>( std::istream& strm, afp& d )
     }
     for( exp_cnt =0; ch >= '0' && ch <= '9'; exp_cnt++, strm >> ch ) s += ch;  // Parse expo number
   }
-  std::cin.putback( ch );  // ch contains the first character not part of the number, so put it back
+  std::cin.putback((char) ch );  // ch contains the first character not part of the number, so put it back
   if( !strm.fail() && ( cnt > 0 || exp_cnt > 0 ) )  // Valid number 
   {
-    d = afp( const_cast<char *>( s.c_str() ), PRECISION, ROUND_NEAR );
+    d = afp( const_cast<PTCHAR>( s.c_str() ), PRECISION, ROUND_NEAR );
   }
   return strm;
 }
@@ -859,9 +860,9 @@ _afp_inverse(const afp& p_number)
   int    expo;
   double fv, fu;
   afp    r, u, v, c2;
-  std::string::reverse_iterator rpos;
-  std::string::iterator pos;
-  std::string *p;
+  std::tstring::reverse_iterator rpos;
+  std::tstring::iterator pos;
+  std::tstring *p;
 
   precision = p_number.precision();  
   v.precision(precision + 2);
@@ -881,7 +882,7 @@ _afp_inverse(const afp& p_number)
 
   // Get a initial guess using ordinary floating point
   rpos = v.ref_mantissa()->rbegin();
-  fv = FDIGIT( (unsigned char)*rpos );
+  fv = FDIGIT( (_TUCHAR)*rpos );
   for( rpos++; rpos+1 != v.ref_mantissa()->rend(); rpos++ )
   {
     fv *= (double)1/(double)F_RADIX;
@@ -895,7 +896,7 @@ _afp_inverse(const afp& p_number)
 
   u = afp( fu );
 
-  // Now iterate using Netwon Un=U(2-UV)
+  // Now iterate using Newton Un=U(2-UV)
   for(;;)
   {
     r = u * v;                 // UV
@@ -936,9 +937,9 @@ sqrt(const afp p_number)
   afp    r, u, v;
   afp    c3(3);
   afp    c05(0.5);
-  std::string::reverse_iterator rpos;
-  std::string::iterator pos;
-  std::string *p;
+  std::tstring::reverse_iterator rpos;
+  std::tstring::iterator pos;
+  std::tstring *p;
 
   precision = p_number.precision(); 
   v.precision( precision + 2 );
@@ -963,7 +964,7 @@ sqrt(const afp p_number)
 
   // Get a initial guess using ordinary floating point
   rpos = v.ref_mantissa()->rbegin();
-  fv = FDIGIT( (unsigned char)*rpos );
+  fv = FDIGIT( (_TUCHAR)*rpos );
   for( rpos++; rpos+1 != v.ref_mantissa()->rend(); rpos++ )
   {
     fv *= (double)1/(double)F_RADIX;
@@ -984,7 +985,7 @@ sqrt(const afp p_number)
 
   u = afp( fu );
 
-  // Now iterate using Netwon Un=0.5U(3-VU^2)
+  // Now iterate using Newton Un=0.5U(3-VU^2)
   for(;;)
   {
     r = v * u * u;             // VU^2
@@ -1226,8 +1227,8 @@ exp(const afp p_number )
   return u;
 }
 
-// Description: Natural logaritme
-//   Use a taylor series until their is no more change in the result
+// Description: Natural logarithm
+//   Use a Taylor series until their is no more change in the result
 //   Equivalent with the same standard C function call
 //   ln(x) == 2( z + z^3/3 + z^5/5 ...
 //   z = (x-1)/(x+1)
@@ -1247,7 +1248,7 @@ log(const afp p_number)
   }
 
   precision = p_number.precision() + 1;  
-  z.precision( precision ); // Do calc at one higher precision to allow correct rounding of result
+  z.precision( precision ); // Do calculate at one higher precision to allow correct rounding of result
   r.precision( precision ); 
   z2.precision( precision );
   res.precision( precision );
@@ -1731,14 +1732,14 @@ acos(afp p_number)
 }
 
 // Description:
-//   Use the taylor series. Sin(x) = x - x^3/3! + x^5/5! ...
+//   Use the Taylor series. Sin(x) = x - x^3/3! + x^5/5! ...
 //   1) However first reduce x to between 0..2*PI 
 //   2) Then reduced further to between 0..PI using sin(x+PI)=-Sin(x)
 //   3) Finally reduced it to below 0.5 using the trisection identity
 //         sin(3x)=3*sin(x)-4*sin(x)^3
-//   4) Then do the taylor. 
+//   4) Then do the Taylor. 
 //   The argument reduction is used to reduced the number of taylor iteration 
-//   and to minimize round off erros and calculation time
+//   and to minimize round off errors and calculation time
 //
 afp 
 sin(afp p_number)
@@ -1792,7 +1793,7 @@ sin(afp p_number)
   v2 = v * v;
   r = v;
   u = v;
-  // Now iterate using taylor expansion
+  // Now iterate using Taylor expansion
   for( j=3;; j+=2 )
   {
     v = v2 / ( afp(j) * afp( j-1) );
@@ -1821,7 +1822,7 @@ sin(afp p_number)
 }
 
 // Description:
-//   Use the taylor series. Cos(x) = 1 - x^2/2! + x^4/4! - x^6/6! ...
+//   Use the Taylor series. Cos(x) = 1 - x^2/2! + x^4/4! - x^6/6! ...
 //   1) However first reduce x to between 0..2*PI
 //   2) Then reduced it further to between 0..PI using cos(x)=Cos(2PI-x) for x >= PI
 //   3) Now use the trisection identity cos(3x)=-3*cos(x)+4*cos(x)^3
@@ -1873,7 +1874,7 @@ cos(afp p_number)
   v2 = v * v;
   r = c1;
   u = r;
-  // Now iterate using taylor expansion
+  // Now iterate using Taylor expansion
   for( j=2;; j+=2 )
   {
     v = v2 / ( afp(j) * afp( j-1) );
@@ -1900,7 +1901,7 @@ cos(afp p_number)
 // Description:
 //   Use the identity tan(x)=Sin(x)/Sqrt(1-Sin(x)^2)
 //   1) However first reduce x to between 0..2*PI
-//   2) Use taylot
+//   2) Use Taylor
 //
 afp 
 tan(afp p_number)
@@ -1967,16 +1968,16 @@ tan(afp p_number)
 /// Description:
 ///   Convert afp numbers into string (decimal representation)
 //    Digits is the number of decimal digits to print
-//    Threshold is the number of decimals. Above +thresold and below -threshold 
+//    Threshold is the number of decimals. Above +threshold and below -threshold 
 //              the scientific E+/-XXX form is used. Otherwise floating point is used
 //
-std::string 
+std::tstring 
 _afp_ftoa(afp& p_number,unsigned int p_digits /*=PRECISION*/,int p_threshold /*= PRECISION*/)
 {
   int rem;
-  char buf[ 33 ];
-  std::string s;
-  std::string src;
+  TCHAR buf[33];
+  std::tstring s;
+  std::tstring src;
   afp r256;
   int expo10, expo256;
 
@@ -2012,21 +2013,21 @@ _afp_ftoa(afp& p_number,unsigned int p_digits /*=PRECISION*/,int p_threshold /*=
       no_integer = true;
       if( r256.sign() < 0 )
       {
-        s = "-0";
+        s = _T("-0");
       }
       else
       {
-        s = "+0";
+        s = _T("+0");
       }
     }
     else
     {
-      std::string::reverse_iterator rpos;
+      std::tstring::reverse_iterator rpos;
       expo256 = ipart.exponent();
       src = ipart.get_mantissa();
       if( (int)src.length() - 1 <= expo256 )
       {
-        src.append( (std::string::size_type)( expo256-src.length()+2 ), (char)0 );
+        src.append( (std::tstring::size_type)( expo256-src.length()+2 ), (TCHAR)0 );
       }
       if( F_RADIX == BASE_10 )
       {
@@ -2034,28 +2035,28 @@ _afp_ftoa(afp& p_number,unsigned int p_digits /*=PRECISION*/,int p_threshold /*=
       }
       else
       {
-        std::string c0;
+        std::tstring c0;
 
-        c0.insert( (std::string::size_type)0, 1, FCHARACTER( 0 ) );
+        c0.insert( (std::tstring::size_type)0, 1, FCHARACTER( 0 ) );
         s.append( src, 0, 1 );     // Copy sign
         src.erase( src.begin() );  // Erase sign
         for( ; _afp_compare( &src, &c0 ) != 0;  )
         {
           src = _afp_udiv_short( (unsigned int *)&rem, &src, BASE_10 );
           _afp_strip_leading_zeros( &src );
-          s.insert( (std::string::size_type)1, 1, (char)FCHARACTER10( rem ) );  
+          s.insert( (std::tstring::size_type)1, 1, (TCHAR)FCHARACTER10( rem ) );  
         }
       }
     }
 
     if( frac != afp(0) ) 
     {
-      std::string::reverse_iterator rpos;
-      std::string::iterator pos;
+      std::tstring::reverse_iterator rpos;
+      std::tstring::iterator pos;
       int count;
       bool leading_zero = true;
 
-      s.append( "." );
+      s.append( _T(".") );
       src = frac.get_mantissa(); 
       rem = p_digits;
       while(rem > 0)
@@ -2063,7 +2064,7 @@ _afp_ftoa(afp& p_number,unsigned int p_digits /*=PRECISION*/,int p_threshold /*=
         frac *= afp( 10 );
         frac = modf( frac, &ipart );
         src = ipart.get_mantissa();
-        s.append( (std::string::size_type)1, (char)FCHARACTER10( (unsigned char)src[1] % 10 ) );
+        s.append( (std::tstring::size_type)1, (TCHAR)FCHARACTER10( (_TUCHAR)src[1] % 10 ) );
         if( frac == afp( 0 ) )
         {
           break;
@@ -2092,18 +2093,18 @@ _afp_ftoa(afp& p_number,unsigned int p_digits /*=PRECISION*/,int p_threshold /*=
         }
         if( s.length() > 2 )
         {
-          s.insert( 2, "." );           // Insert dot again
+          s.insert( 2, _T(".") );           // Insert dot again
         }
       }
       else
       {
-        std::string::size_type nidx;
+        std::tstring::size_type nidx;
 
         nidx = s.find_first_of( '.' );
         if( nidx > 2 )
         {
           s.erase( nidx, 1 );     // Erase dot
-          s.insert( 2, "." );     // and move it to after the first digit
+          s.insert( 2, _T(".") );     // and move it to after the first digit
           expo10 += (int)nidx - 2;     // increase the exponent by number os positions moved
         }
       }
@@ -2115,7 +2116,7 @@ _afp_ftoa(afp& p_number,unsigned int p_digits /*=PRECISION*/,int p_threshold /*=
         if( s.length() > 2 )
         {
           expo10 += (int)s.length() - 2;
-          s.insert( (std::string::size_type)2, "." );
+          s.insert( (std::tstring::size_type)2, _T("."));
         }
       }
     }
@@ -2125,7 +2126,7 @@ _afp_ftoa(afp& p_number,unsigned int p_digits /*=PRECISION*/,int p_threshold /*=
     s = r256.get_mantissa();
     if( s.length() > 2 ) 
     {
-      s.insert( (std::string::size_type)2, "." );
+      s.insert( (std::tstring::size_type)2,_T("."));
     }
     expo10 = p_number.exponent();
   }
@@ -2134,10 +2135,10 @@ _afp_ftoa(afp& p_number,unsigned int p_digits /*=PRECISION*/,int p_threshold /*=
   if((expo10 >  p_threshold) ||
      (expo10 < -p_threshold) )
   {
-    // Has te be an E+/-xxx form
+    // Has to be an E+/-xxx form
     // Because normalized form would be too long
-    s += "E";
-    _itoa_s( expo10, buf, 32, 10 );
+    s += _T("E");
+    _itot_s( expo10, buf, 32, 10 );
     s += buf;
   }
   else
@@ -2162,7 +2163,7 @@ _afp_ftoa(afp& p_number,unsigned int p_digits /*=PRECISION*/,int p_threshold /*=
       }
       if(point_pos < s.length())
       {
-        s.insert(point_pos,".");
+        s.insert(point_pos,_T("."));
       }
     }
     else
@@ -2170,8 +2171,8 @@ _afp_ftoa(afp& p_number,unsigned int p_digits /*=PRECISION*/,int p_threshold /*=
       // EXPO10 below zero
       // No E-Form needed. Decimal point to the right
       s.erase(2,1);
-      s.insert((std::string::size_type)1,(std::string::size_type)-expo10,'0'); 
-      s.insert(2,".");
+      s.insert((std::tstring::size_type)1,(std::tstring::size_type)-expo10,'0'); 
+      s.insert(2,_T("."));
     }
   }
   return s;
@@ -2186,8 +2187,8 @@ afp
 _afp_dtof(double p_number, unsigned int p_precision, enum round_mode p_mode)
 {
   int expo;
-  std::string n;
-  char buf[ 32 ];
+  std::tstring n;
+  TCHAR buf[ 32 ];
   afp fp(0,p_precision,p_mode);
 
   if( p_number == 0 )
@@ -2198,8 +2199,10 @@ _afp_dtof(double p_number, unsigned int p_precision, enum round_mode p_mode)
 
   if( F_RADIX == BASE_10 )
   {
-    //_gcvt( d, 18, buf);
-    _gcvt_s(buf,p_number,18);
+    // _gcvt( d, 18, buf);
+    // _gcvt_s(buf,p_number,18);
+    _stprintf_s(buf,32,_T("%.18g"), p_number);
+
     // sprintf( buf, "%.16e", d );
     fp = _afp_atof( buf, p_precision, p_mode );
   }
@@ -2208,8 +2211,9 @@ _afp_dtof(double p_number, unsigned int p_precision, enum round_mode p_mode)
     int i;
     afp cpower2(2);
 
-    memcpy( buf, (char *)&p_number, sizeof( double ) );
-    n += "+1"; n[1] = FCHARACTER( 1 );
+    memcpy( buf, (TCHAR *)&p_number, sizeof( double ) );
+    n += _T("+1");
+    n[1] = FCHARACTER( 1 );
     n += ( ( buf[ 6 ] & 0xf ) << 4 ) + ( ( buf[ 5 ] & 0xf0 ) >> 4 );
     n += ( ( buf[ 5 ] & 0xf ) << 4 ) + ( ( buf[ 4 ] & 0xf0 ) >> 4 );
     n += ( ( buf[ 4 ] & 0xf ) << 4 ) + ( ( buf[ 3 ] & 0xf0 ) >> 4 );
@@ -2229,7 +2233,7 @@ _afp_dtof(double p_number, unsigned int p_precision, enum round_mode p_mode)
     }
     fp.set_n( n );
     // convert exponent in 2^expo to 256^x. exponent modulo 8 is set straight into expo the remainding 
-    // is converted by multiplying repeately with 2 or 0.5
+    // is converted by multiplying repeatedly with 2 or 0.5
     i = expo % 8;
     expo /= 8;
     fp.exponent( expo );
@@ -2238,13 +2242,13 @@ _afp_dtof(double p_number, unsigned int p_precision, enum round_mode p_mode)
       // Create 2^i where i [1..7]
       switch( i )
       {
-        case 1: (*cpower2.ref_mantissa())[1] = (char)2; break;
-        case 2: (*cpower2.ref_mantissa())[1] = (char)4; break;
-        case 3: (*cpower2.ref_mantissa())[1] = (char)8; break;
-        case 4: (*cpower2.ref_mantissa())[1] = (char)16; break;
-        case 5: (*cpower2.ref_mantissa())[1] = (char)32; break;
-        case 6: (*cpower2.ref_mantissa())[1] = (char)64; break;
-        case 7: (*cpower2.ref_mantissa())[1] = (char)128; break;
+        case 1: (*cpower2.ref_mantissa())[1] = (TCHAR)2;   break;
+        case 2: (*cpower2.ref_mantissa())[1] = (TCHAR)4;   break;
+        case 3: (*cpower2.ref_mantissa())[1] = (TCHAR)8;   break;
+        case 4: (*cpower2.ref_mantissa())[1] = (TCHAR)16;  break;
+        case 5: (*cpower2.ref_mantissa())[1] = (TCHAR)32;  break;
+        case 6: (*cpower2.ref_mantissa())[1] = (TCHAR)64;  break;
+        case 7: (*cpower2.ref_mantissa())[1] = (TCHAR)128; break;
       }
       fp *= cpower2;
     }
@@ -2252,17 +2256,17 @@ _afp_dtof(double p_number, unsigned int p_precision, enum round_mode p_mode)
     {
       if( i < 0 )
       {
-        // std::string s = cpower2.get_mantissa();
+        // std::tstring s = cpower2.get_mantissa();
         // Create 2^-i where i [-1..-7]
         switch( -i )
         {
-          case 1: (*cpower2.ref_mantissa())[1] = (char)0x80; break;
-          case 2: (*cpower2.ref_mantissa())[1] = (char)0x40; break;
-          case 3: (*cpower2.ref_mantissa())[1] = (char)0x20; break;
-          case 4: (*cpower2.ref_mantissa())[1] = (char)0x10; break;
-          case 5: (*cpower2.ref_mantissa())[1] = (char)0x8; break;
-          case 6: (*cpower2.ref_mantissa())[1] = (char)0x4; break;
-          case 7: (*cpower2.ref_mantissa())[1] = (char)0x2; break;
+          case 1: (*cpower2.ref_mantissa())[1] = (TCHAR)0x80; break;
+          case 2: (*cpower2.ref_mantissa())[1] = (TCHAR)0x40; break;
+          case 3: (*cpower2.ref_mantissa())[1] = (TCHAR)0x20; break;
+          case 4: (*cpower2.ref_mantissa())[1] = (TCHAR)0x10; break;
+          case 5: (*cpower2.ref_mantissa())[1] = (TCHAR)0x8; break;
+          case 6: (*cpower2.ref_mantissa())[1] = (TCHAR)0x4; break;
+          case 7: (*cpower2.ref_mantissa())[1] = (TCHAR)0x2; break;
         }
         cpower2.exponent( -1 );
         fp *= cpower2;
@@ -2277,16 +2281,16 @@ _afp_dtof(double p_number, unsigned int p_precision, enum round_mode p_mode)
 //    The ascii float format is based on standard C notation
 //
 afp 
-_afp_atof(const char *str, unsigned int p_precision, enum round_mode p_mode)
+_afp_atof(LPCTSTR str, unsigned int p_precision, enum round_mode p_mode)
 {
   int sign, sign_expo;
   int expo, expo_radix, expo_e;
   int s_digit, f_digit;
-  std::string::size_type nidx, idx;
+  std::tstring::size_type nidx, idx;
   unsigned int i;
-  std::string s(str);
-  std::string::iterator pos;
-  std::string number, fraction, exponent;
+  std::tstring s(str);
+  std::tstring::iterator pos;
+  std::tstring number, fraction, exponent;
   afp fp(0,p_precision,p_mode);
 
   expo = 0;
@@ -2306,8 +2310,8 @@ _afp_atof(const char *str, unsigned int p_precision, enum round_mode p_mode)
     }
   }
   // Determine any significant, fraction sign or exponent sign
-  nidx = s.find_first_of( ".eE", idx );
-  if( nidx == std::string::npos ) // Only digits (INTEGER) if any
+  nidx = s.find_first_of( _T(".eE"), idx );
+  if( nidx == std::tstring::npos ) // Only digits (INTEGER) if any
   {
     if( *pos == '0' ) // Octal or hex representation
     {
@@ -2322,8 +2326,8 @@ _afp_atof(const char *str, unsigned int p_precision, enum round_mode p_mode)
           }
           else
           {
-            char buf[ 16 ];
-            std::string tmp;
+            TCHAR buf[ 16 ];
+            std::tstring tmp;
 
             int hexvalue = *pos - '0';
             if( hexvalue > 10 )
@@ -2331,11 +2335,11 @@ _afp_atof(const char *str, unsigned int p_precision, enum round_mode p_mode)
               hexvalue = tolower( *pos ) - 'a' + 10;
             }
             //itoa( BASE_16, &buf[ 0 ], BASE_10 );
-            _itoa_s(BASE_16,&buf[0],16,BASE_10);
+            _itot_s(BASE_16,&buf[0],16,BASE_10);
             tmp = buf;
             number = _afp_umul_fourier( &number, &tmp );
 
-            _itoa_s( hexvalue, &buf[ 0 ], 16,BASE_10 );
+            _itot_s( hexvalue, &buf[ 0 ], 16,BASE_10 );
             tmp = buf;
             number = _afp_uadd( &number, &tmp );
           }
@@ -2343,7 +2347,7 @@ _afp_atof(const char *str, unsigned int p_precision, enum round_mode p_mode)
       }
       else
       { 
-        // Collect octal represenation
+        // Collect octal representation
         for( ; pos != s.end(); pos++ )
         {
           if( *pos < '0' || *pos > '7' )
@@ -2382,7 +2386,7 @@ _afp_atof(const char *str, unsigned int p_precision, enum round_mode p_mode)
     expo = (int)number.length() -1;            // Always one digit before the dot
     _afp_strip_trailing_zeros( &number ); // Get rid of trailing non-significant zeros
     expo += _afp_rounding( &number, sign, p_precision, p_mode );
-    number.insert( (std::string::size_type)0, SIGN_STRING( sign ) ); // Build the complete number
+    number.insert( (std::tstring::size_type)0, SIGN_STRING( sign ) ); // Build the complete number
     fp.set_n( number );
     fp.exponent( expo );
 
@@ -2391,7 +2395,7 @@ _afp_atof(const char *str, unsigned int p_precision, enum round_mode p_mode)
 
   s_digit = 0;
   f_digit = 0;
-  // Pick up significant beteen idx and nidx 
+  // Pick up significant between idx and nidx 
   if( nidx > idx ) // Number of digits before the . sign or exponent
   {
     // Strip leading zeros
@@ -2423,8 +2427,8 @@ _afp_atof(const char *str, unsigned int p_precision, enum round_mode p_mode)
   if( s[ nidx ] == '.' ) // Any fraction ?
   { 
     idx = nidx + 1;                      // Find start of fraction
-    nidx = s.find_first_of( "eE", idx ); // Find end of fraction
-    if( nidx == std::string::npos )
+    nidx = s.find_first_of( _T("eE"), idx ); // Find end of fraction
+    if( nidx == std::tstring::npos )
     {
       nidx = s.length();
     }
@@ -2449,8 +2453,8 @@ _afp_atof(const char *str, unsigned int p_precision, enum round_mode p_mode)
         number = _afp_uadd_short( &number, s[i] - '0' );
         f_digit++; // fraction digits. trailing zeros are not counted
       }
-      nidx = s.find_first_of( "eE", idx );
-      if( nidx == std::string::npos )
+      nidx = s.find_first_of( _T("eE"), idx );
+      if( nidx == std::tstring::npos )
       {
         nidx = s.length();
       }
@@ -2458,7 +2462,7 @@ _afp_atof(const char *str, unsigned int p_precision, enum round_mode p_mode)
   }
 
   expo_e = 0;
-  if( nidx != std::string::npos && 
+  if( nidx != std::tstring::npos && 
       nidx < s.length() && 
       ( s[ nidx ] == 'e' || s[ nidx ] == 'E' ) )
   {
@@ -2506,7 +2510,7 @@ _afp_atof(const char *str, unsigned int p_precision, enum round_mode p_mode)
         //
         if( number.length() == 0 )
         {
-          number += "1";
+          number += _T("1");
         }
       }
     }
@@ -2526,7 +2530,7 @@ _afp_atof(const char *str, unsigned int p_precision, enum round_mode p_mode)
   expo_radix += _afp_normalize( &number );                // Normalize
   expo = _afp_rounding( &number, sign, p_precision, p_mode );    // Perform rounding
   expo += expo_radix;
-  number.insert( (std::string::size_type)0, SIGN_STRING( sign ) ); // Build the complete number
+  number.insert( (std::tstring::size_type)0, SIGN_STRING( sign ) ); // Build the complete number
   fp.set_n( number );
   fp.exponent( expo_radix );
 
@@ -2551,8 +2555,8 @@ _afp_atof(const char *str, unsigned int p_precision, enum round_mode p_mode)
       {
         afp cpower01(10, p_precision+1, p_mode ), cpower001(100, p_precision+1, p_mode );
 
-        cpower01 = _afp_inverse( cpower01 );   // Hand craf it to the correct precision
-        cpower001 = _afp_inverse( cpower001 ); // Hand craf it to the correct precision
+        cpower01 = _afp_inverse( cpower01 );   // Hand crafted it to the correct precision
+        cpower001 = _afp_inverse( cpower001 ); // Hand crafted it to the correct precision
 
         for( ; expo_e < -1; expo_e += 2 )
         {
@@ -2599,12 +2603,12 @@ _afp_atof(const char *str, unsigned int p_precision, enum round_mode p_mode)
 //////////////////////////////////////////////////////////////////////////////////////
 
 // Description:
-//   Remove leading nosignificant zeros
+//   Remove leading non-significant zeros
 //
 static void 
-_afp_strip_leading_zeros( std::string *s )
+_afp_strip_leading_zeros( std::tstring *s )
 {
-  std::string::iterator pos;
+  std::tstring::iterator pos;
 
   // Strip leading zeros
   for( pos = s->begin(); pos != s->end() && FDIGIT( *pos ) == 0; )
@@ -2619,12 +2623,12 @@ _afp_strip_leading_zeros( std::string *s )
 }
 
 // Description:
-//   Remove trailing nosignificant zeros
+//   Remove trailing non-significant zeros
 //
 static void 
-_afp_strip_trailing_zeros( std::string *s )
+_afp_strip_trailing_zeros( std::tstring *s )
 {
-  std::string::reverse_iterator pos;
+  std::tstring::reverse_iterator pos;
   int count;
 
   // Strip trailing zeros
@@ -2644,16 +2648,16 @@ _afp_strip_trailing_zeros( std::string *s )
 //   Right shift number x decimals by inserting 0 in front of the number
 //
 static void 
-_afp_right_shift( std::string *s, int shift )
+_afp_right_shift( std::tstring *s, int shift )
 {
-  s->insert( (std::string::size_type)0, shift, FCHARACTER( 0 ) );
+  s->insert( (std::tstring::size_type)0, shift, FCHARACTER( 0 ) );
 }
 
 // Description:
 //   Left shift number x decimals by appending 0 in the back of the number
 //
 static void 
-_afp_left_shift( std::string *s, int shift )
+_afp_left_shift( std::tstring *s, int shift )
 {
   s->append( shift, FCHARACTER( 0 ) );
 }
@@ -2666,10 +2670,10 @@ _afp_left_shift( std::string *s, int shift )
 //   3) The mantissa NEVER contain a leading sign
 //
 static int 
-_afp_normalize( std::string *m )
+_afp_normalize( std::tstring *m )
 {
   int expo = 0;
-  std::string::iterator pos;
+  std::tstring::iterator pos;
 
   // Left shift until a digit is not 0
   for( pos = m->begin(); pos != m->end() && FDIGIT( *pos ) == 0; )
@@ -2705,7 +2709,7 @@ _afp_normalize( std::string *m )
 //   Rounding down) (toward -·)       -·   
 //
 static int 
-_afp_rounding(std::string* m, int sign, unsigned int precision, enum round_mode mode )
+_afp_rounding(std::tstring* m, int sign, unsigned int precision, enum round_mode mode )
 {
   enum round_mode rm = mode;
 
@@ -2739,11 +2743,11 @@ _afp_rounding(std::string* m, int sign, unsigned int precision, enum round_mode 
       }
     }
     // Chuck excessive digits
-    m->erase( (std::string::size_type)precision, m->length() - precision );
+    m->erase( (std::tstring::size_type)precision, m->length() - precision );
 
     if( rm == ROUND_UP ) 
     {
-      std::string::size_type before;
+      std::tstring::size_type before;
 
       before = m->length();
       *m = _afp_uadd_short( m, 1 );
@@ -2751,7 +2755,7 @@ _afp_rounding(std::string* m, int sign, unsigned int precision, enum round_mode 
       {
         if( m->length() > precision )
         {
-          m->erase( (std::string::size_type)precision, m->length() - precision );
+          m->erase( (std::tstring::size_type)precision, m->length() - precision );
         }
         _afp_strip_trailing_zeros( m );            
         return 1;
@@ -2769,7 +2773,7 @@ _afp_rounding(std::string* m, int sign, unsigned int precision, enum round_mode 
 //   compare the strings
 //
 static int 
-_afp_compare( std::string *s1, std::string *s2 )
+_afp_compare( std::tstring *s1, std::tstring *s2 )
 {
   int cmp;
 
@@ -2796,17 +2800,17 @@ _afp_compare( std::string *s1, std::string *s2 )
 //   Short float Add: The digit d [0..F_RADIX] is added to the unsigned fraction string
 //   Optimized 0 add or early out add is implemented
 //
-static std::string 
-_afp_uadd_short( std::string *src1, unsigned int d )
+static std::tstring 
+_afp_uadd_short( std::tstring *src1, unsigned int d )
 {
   unsigned short ireg;
-  std::string::reverse_iterator r1_pos, rd_pos;
-  std::string des1;
+  std::tstring::reverse_iterator r1_pos, rd_pos;
+  std::tstring des1;
 
   if( d > F_RADIX )
   {
     throw afp::out_of_range();
-    des1.insert( (std::string::size_type)0, 1, FCHARACTER(0) );
+    des1.insert( (std::tstring::size_type)0, 1, FCHARACTER(0) );
     return des1;
   }
 
@@ -2830,7 +2834,7 @@ _afp_uadd_short( std::string *src1, unsigned int d )
   }
   if( FCARRY( ireg ) != 0 )  // Insert the carry in the front of the number
   {
-    des1.insert( (std::string::size_type)0, 1, FCHARACTER( FCARRY( ireg ) ) );
+    des1.insert( (std::tstring::size_type)0, 1, FCHARACTER( FCARRY( ireg ) ) );
   }
   return des1;
 }
@@ -2839,12 +2843,12 @@ _afp_uadd_short( std::string *src1, unsigned int d )
 //   Add two unsigned decimal strings
 //   Optimized: Used early out add
 //
-static std::string 
-_afp_uadd( std::string *src1, std::string *src2 )
+static std::tstring 
+_afp_uadd( std::tstring *src1, std::tstring *src2 )
 {
   unsigned short ireg = 0;
-  std::string des1;
-  std::string::reverse_iterator r_pos, r_end, rd_pos;
+  std::tstring des1;
+  std::tstring::reverse_iterator r_pos, r_end, rd_pos;
 
   if( src1->length() >= src2->length() )
   {
@@ -2869,7 +2873,7 @@ _afp_uadd( std::string *src1, std::string *src2 )
     rd_pos++;
   }
 
-  // Exhaust the smalles of the number, so only the carry can changes the uppper radix digits
+  // Exhaust the smallest of the number, so only the carry can changes the upper radix digits
   for( ; FCARRY( ireg ) != 0 && rd_pos != des1.rend(); )
   {
     ireg = FDIGIT( *rd_pos ) + FCARRY( ireg );
@@ -2880,7 +2884,7 @@ _afp_uadd( std::string *src1, std::string *src2 )
   // No more carry or end of upper radix number. 
   if( FCARRY( ireg ) != 0 ) // If carry add the carry as a extra radix digit to the front of the number
   {
-    des1.insert( (std::string::size_type)0, 1, FCHARACTER( FCARRY( ireg ) ) );
+    des1.insert( (std::tstring::size_type)0, 1, FCHARACTER( FCARRY( ireg ) ) );
   }
   return des1;
 }
@@ -2890,18 +2894,18 @@ _afp_uadd( std::string *src1, std::string *src2 )
 //   Short Subtract: The digit d [0..F_RADIX] is subtracted from a unsigned decimal string
 //   if src1 < src2 return -1 (wrap around) otherwise return 0 (no wrap around)
 //
-static std::string 
-_afp_usub_short( int *result, std::string *src1, unsigned int d )
+static std::tstring 
+_afp_usub_short( int *result, std::tstring *src1, unsigned int d )
 {
   unsigned short ireg = F_RADIX;
-  std::string::reverse_iterator r1_pos;
-  std::string::iterator d_pos;
-  std::string des1;
+  std::tstring::reverse_iterator r1_pos;
+  std::tstring::iterator d_pos;
+  std::tstring des1;
 
   if( d > F_RADIX )
   {
     throw afp::out_of_range();
-    des1.insert( (std::string::size_type)0, 1, FCHARACTER(0) );
+    des1.insert( (std::tstring::size_type)0, 1, FCHARACTER(0) );
     return des1;
   }
 
@@ -2931,13 +2935,13 @@ _afp_usub_short( int *result, std::string *src1, unsigned int d )
 //   Subtract two unsigned decimal strings
 //   if src1 < src2 return -1 (wrap around) otherwise return 0 (no wrap around)
 //
-static std::string 
-_afp_usub( int *result, std::string *src1, std::string *src2 )
+static std::tstring 
+_afp_usub( int *result, std::tstring *src1, std::tstring *src2 )
 {
   unsigned short ireg = F_RADIX;
-  std::string::reverse_iterator r1_pos, r2_pos;
-  std::string::iterator d_pos;
-  std::string des1;
+  std::tstring::reverse_iterator r1_pos, r2_pos;
+  std::tstring::iterator d_pos;
+  std::tstring des1;
 
   des1.erase();
   d_pos  = des1.begin();
@@ -2977,24 +2981,24 @@ _afp_usub( int *result, std::string *src1, std::string *src2 )
 //   Short float Multiplication: The unsigned digit d [0..F_RADIX] is multiplied to the unsigned fraction 
 //   Optimize: Multiply with zero yields zero;
 //
-static std::string 
-_afp_umul_short( std::string *src1, unsigned int d )
+static std::tstring 
+_afp_umul_short( std::tstring *src1, unsigned int d )
 {
   unsigned short ireg = 0;
-  std::string::reverse_iterator r1_pos;
-  std::string::iterator d_pos;
-  std::string des1;
+  std::tstring::reverse_iterator r1_pos;
+  std::tstring::iterator d_pos;
+  std::tstring des1;
 
   if( d > F_RADIX )
   {
     throw afp::out_of_range();
-    des1.insert( (std::string::size_type)0, 1, ( FCHARACTER(0) ) );
+    des1.insert( (std::tstring::size_type)0, 1, ( FCHARACTER(0) ) );
     return des1;
   }
 
   if( d == 0 )
   {
-    des1.insert( (std::string::size_type)0, 1, ( FCHARACTER(0) ) );
+    des1.insert( (std::tstring::size_type)0, 1, ( FCHARACTER(0) ) );
     return des1;
   }
 
@@ -3006,7 +3010,7 @@ _afp_umul_short( std::string *src1, unsigned int d )
 
   if( d == F_RADIX )  
   {
-    des1.insert( (std::string::size_type)0, 1, ( FCHARACTER(0) ) );
+    des1.insert( (std::tstring::size_type)0, 1, ( FCHARACTER(0) ) );
     des1 = *src1 + des1;
     _afp_strip_leading_zeros( &des1 );
     return des1;
@@ -3034,13 +3038,13 @@ _afp_umul_short( std::string *src1, unsigned int d )
 //   Optimized: Used early out add and multiplication w. zero
 //   NO LONGER IN USE. Replaced by _afp_umul_fourier
 //
-static std::string 
-_afp_umul( std::string *src1, std::string *src2 )
+static std::tstring 
+_afp_umul( std::tstring *src1, std::tstring *src2 )
 {
   unsigned short ireg = 0;
   int disp;
-  std::string des1, tmp;
-  std::string::reverse_iterator r_pos2;
+  std::tstring des1, tmp;
+  std::tstring::reverse_iterator r_pos2;
 
   r_pos2 = src2->rbegin();
   des1 = _afp_umul_short( src1, FDIGIT( *r_pos2 ) );
@@ -3063,12 +3067,12 @@ _afp_umul( std::string *src1, std::string *src2 )
 //   Optimized: Used early out add and multiplication w. zero
 //   This is considerable faster than the previous methode and is used now
 //
-static std::string 
-_afp_umul_fourier( std::string *src1, std::string *src2 )
+static std::tstring 
+_afp_umul_fourier( std::tstring *src1, std::tstring *src2 )
 {
   unsigned short ireg = 0;
-  std::string des1;
-  std::string::iterator pos;
+  std::tstring des1;
+  std::tstring::iterator pos;
   unsigned int n, l, l1, l2;
   int j;
   double *a, *b, cy;
@@ -3118,11 +3122,11 @@ _afp_umul_fourier( std::string *src1, std::string *src2 )
   ireg = (unsigned short)cy;
   if( ireg != 0 )
   {
-    des1.append( 1, FCHARACTER((unsigned char) ireg ) );
+    des1.append( 1, FCHARACTER((_TUCHAR) ireg ) );
   }
   for( j = 0; j < (int)(l1 + l2 - 1); j++ )
   {
-    des1.append( 1, FCHARACTER((unsigned char) b[ j ] ) );
+    des1.append( 1, FCHARACTER((_TUCHAR) b[ j ] ) );
   }
   _afp_strip_leading_zeros( &des1 );
   delete [] a;
@@ -3135,24 +3139,24 @@ _afp_umul_fourier( std::string *src1, std::string *src2 )
 //   divide a short integer into a floating point string (mantissa)
 //   Short Division: The digit d [1..F_RADIX] is divide up into the unsigned decimal string
 //
-static std::string 
-_afp_udiv_short( unsigned int *remaind, std::string *src1, unsigned int d )
+static std::tstring 
+_afp_udiv_short( unsigned int *remaind, std::tstring *src1, unsigned int d )
 {
   int i, ir;
-  std::string::iterator s1_pos;
-  std::string des1;
+  std::tstring::iterator s1_pos;
+  std::tstring des1;
 
   if( d > F_RADIX )
   {
     throw afp::out_of_range();
-    des1.insert( (std::string::size_type)0, 1, FCHARACTER(0) );
+    des1.insert( (std::tstring::size_type)0, 1, FCHARACTER(0) );
     return des1;
   }
 
   if( d == 0 )
   {
     throw afp::divide_by_zero();
-    des1.insert( (std::string::size_type)0, 1, FCHARACTER(0) );
+    des1.insert( (std::tstring::size_type)0, 1, FCHARACTER(0) );
     return des1;
   }
 
@@ -3163,7 +3167,7 @@ _afp_udiv_short( unsigned int *remaind, std::string *src1, unsigned int d )
   for(; s1_pos != src1->end(); s1_pos++ )
   {
     i = F_RADIX * ir + FDIGIT( *s1_pos );
-    des1 += FCHARACTER( (unsigned char)( i / d ) );
+    des1 += FCHARACTER( (_TUCHAR)( i / d ) );
     ir = i % d;
   }
 
@@ -3172,7 +3176,7 @@ _afp_udiv_short( unsigned int *remaind, std::string *src1, unsigned int d )
 }
 
 // Description:
-//   Convert n discrete double data into a fourier transform data set
+//   Convert n discrete double data into a Fourier transform data set
 //   n must be a power of 2
 //  isign must be 1 (in) or -1 (out)
 //

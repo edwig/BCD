@@ -14,6 +14,14 @@
 // #include <ostream>
 // #include <istream>
 
+#ifdef UNICODE
+#define tstring  wstring
+#define tistream wistream
+#else
+#define tstring  string
+#define tistream istream
+#endif
+
 // RADIX can either be 2,10 or 256!
 static const int BASE_8   = 8;
 static const int BASE_10  = 10;
@@ -94,9 +102,9 @@ afp _afp_inverse(const afp& p_number);
 // Get constant LN2,LN10 or PI in x precision decimals
 afp _float_table(enum table_type p_type,unsigned int p_precision);
 // Conversion of a AFP back to a string
-std::string _afp_ftoa( afp& p_number,unsigned int p_digits = PRECISION,int p_threshold = PRECISION);
+std::tstring _afp_ftoa( afp& p_number,unsigned int p_digits = PRECISION,int p_threshold = PRECISION);
 // Conversion from a string to a AFP
-afp _afp_atof(const char* str, unsigned int p_precision, enum round_mode p_mode);
+afp _afp_atof(LPCTSTR str, unsigned int p_precision, enum round_mode p_mode);
 // Conversion of a double to a AFP
 afp _afp_dtof(double p_number, unsigned int p_precision, enum round_mode p_mode);
 
@@ -110,9 +118,9 @@ public:
   // AFP initialized through a double
   afp(      double p_number, unsigned int p_precision = PRECISION, enum round_mode p_mode = ROUND_NEAR);
   // AFP initialized through a char
-  afp(const char   p_number, unsigned int p_precision = PRECISION, enum round_mode p_mode = ROUND_NEAR);  
+  afp(const TCHAR  p_number, unsigned int p_precision = PRECISION, enum round_mode p_mode = ROUND_NEAR);  
   // AFP initialized through a char string
-  afp(const char*  p_number, unsigned int p_precision = PRECISION, enum round_mode p_mode = ROUND_NEAR);    
+  afp(LPCTSTR      p_number, unsigned int p_precision = PRECISION, enum round_mode p_mode = ROUND_NEAR);    
   // AFP initialized through another afp
   afp(const afp&   p_number = afp(0, PRECISION, ROUND_NEAR));
   
@@ -126,8 +134,8 @@ public:
   int sign() const;
 
   // Coordinate functions
-  std::string get_mantissa() const             { return m_number; };      // Copy of mantissa
-  std::string *ref_mantissa()                  { return &m_number; }      // Reference of Mantissa
+  std::tstring get_mantissa() const            { return m_number; };      // Copy of mantissa
+  std::tstring *ref_mantissa()                 { return &m_number; }      // Reference of Mantissa
   enum round_mode mode() const                 { return m_rmode; }        // Get the rounding mode
   enum round_mode mode( enum round_mode m )    { return( m_rmode = m ); } // Set the roudding mode
   int exponent() const                         { return m_expo; };        // Get the exponent
@@ -160,13 +168,13 @@ public:
 
 public: // Should be private
   // Set the mantissa number
-  void set_n( std::string mantissa )   { m_number = mantissa; }   
+  void set_n( std::tstring mantissa )   { m_number = mantissa; }   
 
 private:
   enum round_mode   m_rmode;  // Rounding mode. Default Round Nearest
   unsigned int      m_prec;   // Number of decimals in mantissa. Default 20, We make a shot cut by assuming the number of digits can't exceed 2^32-1
   int               m_expo;   // Exponent as a power of RADIX (not 2 as in IEEE 754). We make a short cut here and use a standard int to hold 
                               // the exponent. This will allow us exponent in the range from -RADIX^2^31 to  RADIX^2^31. Which should be enough
-  std::string       m_number; // The mantissa any length however the fraction point is always after the first digit and is implied
+  std::tstring      m_number; // The mantissa any length however the fraction point is always after the first digit and is implied
 };
 

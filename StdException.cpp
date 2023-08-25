@@ -47,7 +47,7 @@ StdException::StdException(const StdException& p_other)
 }
 
 // CTOR: Create exception from static text or CString
-StdException::StdException(const char* p_fault)
+StdException::StdException(LPCTSTR p_fault)
              :m_applicationFault(p_fault)
 {
 }
@@ -143,11 +143,11 @@ StdException::GetErrorMessage()
 		CASE(INVALID_HANDLE,          errorstring);
     case 0:   if(m_applicationCode)
               {
-                errorstring.Format("Error: %d ",m_applicationCode);
+                errorstring.Format(_T("Error: %d "),m_applicationCode);
               }
               errorstring += m_applicationFault;
               break;
-	  default:  errorstring = "Unknown exception.";
+	  default:  errorstring = _T("Unknown exception.");
 		          break;
 	}
 	return errorstring;
@@ -156,7 +156,7 @@ StdException::GetErrorMessage()
 // The CException way of getting an error message
 // By copying it out of the object through a string pointer
 BOOL
-StdException::GetErrorMessage(LPTSTR p_error,UINT p_maxSize,PUINT p_helpContext /*= NULL*/)
+StdException::GetErrorMessage(LPCTSTR p_error,UINT p_maxSize,PUINT p_helpContext /*= NULL*/)
 {
   // Reset help context
   if(p_helpContext)
@@ -166,7 +166,7 @@ StdException::GetErrorMessage(LPTSTR p_error,UINT p_maxSize,PUINT p_helpContext 
   // Get compound error message
   CString error = GetErrorMessage();
   // Copy it out
-  strncpy_s(p_error,p_maxSize,error.GetString(),error.GetLength() + 1);
+  _tcsncpy_s((LPTSTR)p_error,(size_t)p_maxSize,(LPTSTR)error.GetString(),error.GetLength() + 1);
   return TRUE;
 }
 
@@ -174,7 +174,7 @@ StdException::GetErrorMessage(LPTSTR p_error,UINT p_maxSize,PUINT p_helpContext 
 CString
 MessageFromException(CException& p_exception)
 {
-  char buffer[4 * _MAX_PATH + 1];
+  TCHAR buffer[4 * _MAX_PATH + 1];
   p_exception.GetErrorMessage(buffer,4 * _MAX_PATH);
   return CString(buffer);
 }

@@ -29,8 +29,10 @@ class uint128
 public:
   // XTOR's
   uint128();
-  uint128(char           p_value);
-  uint128(unsigned char  p_value);
+  uint128(TCHAR          p_value);
+#ifndef UNICODE
+  uint128(_TUCHAR        p_value);
+#endif
   uint128(short          p_value);
   uint128(unsigned short p_value);
   uint128(int            p_value);
@@ -38,7 +40,7 @@ public:
   uint128(float          p_value);
   uint128(double         p_value);
   uint128(const uint128& p_value);
-  uint128(const char*    p_string);
+  uint128(LPCTSTR        p_string);
   uint128(uint64 p_low,uint64 p_high = 0);
   uint128(const SQL_NUMERIC_STRUCT* p_numeric);
 
@@ -113,7 +115,7 @@ public:
 #endif
 
 private:
-  void    SetString (const char* p_string);
+  void    SetString (LPCTSTR p_string);
   void    SetNumeric(const SQL_NUMERIC_STRUCT* p_numeric);
 
   // DATA: Our 128 bits integer

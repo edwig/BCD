@@ -49,36 +49,36 @@ typedef enum _testfunc
 }
 TestFunction;
 
-char* operators[] = 
+LPCTSTR operators[] = 
 {
-  "adding"
- ,"subtracting"
- ,"multiplication"
- ,"division"
- ,"modulo"
+  _T("adding")
+ ,_T("subtracting")
+ ,_T("multiplication")
+ ,_T("division")
+ ,_T("modulo")
 };
 
-char* functions[] =
+LPCTSTR functions[] =
 {
-  "sine"
- ,"cosine"
- ,"tangent"
- ,"arcsine"
- ,"arccosine"
- ,"arctangent"
- ,"tangens2points"
- ,"floor"
- ,"ceiling"
- ,"absolute"
- ,"squareroot"
- ,"log10"
- ,"log"
- ,"exp"
- ,"power"
- ,"splitfloat"
- ,"modulo"
- ,"mantissa-exponent split"
- ,"mult-2-power"
+  _T("sine")
+ ,_T("cosine")
+ ,_T("tangent")
+ ,_T("arcsine")
+ ,_T("arccosine")
+ ,_T("arctangent")
+ ,_T("tangens2points")
+ ,_T("floor")
+ ,_T("ceiling")
+ ,_T("absolute")
+ ,_T("squareroot")
+ ,_T("log10")
+ ,_T("log")
+ ,_T("exp")
+ ,_T("power")
+ ,_T("splitfloat")
+ ,_T("modulo")
+ ,_T("mantissa-exponent split")
+ ,_T("mult-2-power")
  ,NULL
 };
 
@@ -108,47 +108,47 @@ Calibrate(int p_count)
   }
   count.Stop();
   delta = count.GetCounter();
-  printf("Calibrating delta = %.6f\n\n",delta);
+  _tprintf(_T("Calibrating delta = %.6f\n\n"),delta);
 }
 
 void
 DoFunctionTest(TestFunction p_function
-              ,char*        p_number1
-              ,char*        p_number2
-              ,char*        p_expect
-              ,char*        p_extra
+              ,LPCTSTR      p_number1
+              ,LPCTSTR      p_number2
+              ,LPCTSTR      p_expect
+              ,LPCTSTR      p_extra
               ,int          p_count)
 {
   bool extraFloat   = p_function == Func_modf  ? true : false;
   bool extraInteger = p_function == Func_frexp ? true : false;
 
-  char* name = functions[p_function];
-  printf("Testing the function [%s] for a total of [%d] iterations:\n\n",name,p_count);
+  LPCTSTR name = functions[p_function];
+  _tprintf(_T("Testing the function [%s] for a total of [%d] iterations:\n\n"),name,p_count);
 
-  if(strcmp(p_number2,"0"))
+  if(_tcscmp(p_number2,_T("0")))
   {
-    printf("Input1: %s\n",p_number1);
-    printf("Input2: %s\n",p_number2);
+    _tprintf(_T("Input1: %s\n"),p_number1);
+    _tprintf(_T("Input2: %s\n"),p_number2);
   }
   else
   {
-    printf("Input: %s\n",p_number1);
+    _tprintf(_T("Input: %s\n"),p_number1);
   }
-  printf("\n");
+  _tprintf(_T("\n"));
 
-  printf("Type         Time Value\n");
-  printf("------ ---------- ------------------------------------------------------\n");
-  printf("calc     0.000000 +%s\n",p_expect);
+  _tprintf(_T("Type         Time Value\n"));
+  _tprintf(_T("------ ---------- ------------------------------------------------------\n"));
+  _tprintf(_T("calc     0.000000 +%s\n"),p_expect);
   if(extraInteger || extraFloat)
   {
-    printf("         0.000000 +%s\n",p_extra);
+    _tprintf(_T("         0.000000 +%s\n"),p_extra);
   }
 
   // DOUBLE
-  double d_number1 = atof(p_number1);
-  double d_number2 = atof(p_number2);
+  double d_number1 = _ttof(p_number1);
+  double d_number2 = _ttof(p_number2);
   double d_result;
-  int    exponent  = atoi(p_number2);
+  int    exponent  = _ttoi(p_number2);
   HPFCounter counter;
   for(int x = 0; x < p_count; ++x)
   {
@@ -173,19 +173,19 @@ DoFunctionTest(TestFunction p_function
       case Func_fmod:     d_result = fmod (d_number1, d_number2);  break;
       case Func_frexp:    d_result = frexp(d_number1,&exponent);   break;
       case Func_ldexp:    d_result = ldexp(d_number1, exponent);   break;
-      default:            printf("Unknown function in DoFunctionTest -> double\n");
+      default:            _tprintf(_T("Unknown function in DoFunctionTest -> double\n"));
                           break;
     }
   }
   counter.Stop();
-  printf("double %10.6f +%.15f\n",counter.GetCounter(),d_result);
+  _tprintf(_T("double %10.6f +%.15f\n"),counter.GetCounter(),d_result);
   if(extraInteger)
   {
-    printf("                  +%d\n",exponent);
+    _tprintf(_T("                  +%d\n"),exponent);
   }
   if(extraFloat)
   {
-    printf("                  +%.15f\n",d_number2);
+    _tprintf(_T("                  +%.15f\n"),d_number2);
   }
 
   // afp
@@ -216,19 +216,19 @@ DoFunctionTest(TestFunction p_function
       case Func_fmod:     b_result = fmod (b_number1, b_number2);  break;
       case Func_frexp:    b_result = frexp(b_number1,&exponent);   break;
       case Func_ldexp:    b_result = ldexp(b_number1, exponent);   break;
-      default:            printf("Unknown function in DoFunctionTest -> afp\n");
+      default:            _tprintf(_T("Unknown function in DoFunctionTest -> afp\n"));
                           break;
     }
   }
   counter2.Stop();
-  printf("afp    %10.6f %s\n",counter2.GetCounter(),_afp_ftoa(b_result,40,40).c_str());
+  _tprintf(_T("afp    %10.6f %s\n"),counter2.GetCounter(),_afp_ftoa(b_result,40,40).c_str());
   if(extraInteger)
   {
-    printf("                  +%d\n",exponent);
+    _tprintf(_T("                  +%d\n"),exponent);
   }
   if(extraFloat)
   {
-    printf("                  %s\n",_afp_ftoa(b_number2,40,40).c_str());
+    _tprintf(_T("                  %s\n"),_afp_ftoa(b_number2,40,40).c_str());
   }
 
   // ICD8
@@ -260,19 +260,19 @@ DoFunctionTest(TestFunction p_function
       case Func_fmod:     i_result = fmod (i_number1, i_number2);  break;
       case Func_frexp:    i_result = frexp(i_number1,&exponent);   break;
       case Func_ldexp:    i_result = ldexp(i_number1, exponent);   break;
-      default:            printf("Unknown function in DoFunctionTest -> icd\n");
+      default:            _tprintf(_T("Unknown function in DoFunctionTest -> icd\n"));
                           break;
     }
   }
   counter3.Stop();
-  printf("icd    %10.6f %s\n",counter3.GetCounter(),i_result.AsString());
+  _tprintf(_T("icd    %10.6f %s\n"),counter3.GetCounter(),i_result.AsString());
   if(extraInteger)
   {
-    printf("                  +%d\n",exponent);
+    _tprintf(_T("                  +%d\n"),exponent);
   }
   if(extraFloat)
   {
-    printf("                  %s\n",i_number2.AsString());
+    _tprintf(_T("                  %s\n"),i_number2.AsString());
   }
 
 
@@ -304,38 +304,38 @@ DoFunctionTest(TestFunction p_function
       case Func_fmod:     c_result = fmod (c_number1, c_number2);  break;
       case Func_frexp:    c_result = frexp(c_number1,&exponent);   break;
       case Func_ldexp:    c_result = ldexp(c_number1, exponent);   break;
-      default:            printf("Unknown function in DoFunctionTest -> bcd\n");
+      default:            _tprintf(_T("Unknown function in DoFunctionTest -> bcd\n"));
                           break;
     }
   }
   counter4.Stop();
-  printf("bcd    %10.6f %s\n",counter4.GetCounter(),c_result.AsString(bcd::Format::Bookkeeping,true));
+  _tprintf(_T("bcd    %10.6f %s\n"),counter4.GetCounter(),c_result.AsString(bcd::Format::Bookkeeping,true));
   if(extraInteger)
   {
-    printf("                  +%d\n",exponent);
+    _tprintf(_T("                  +%d\n"),exponent);
   }
   if(extraFloat)
   {
-    printf("                  %s\n",c_number2.AsString(bcd::Format::Bookkeeping,true));
+    _tprintf(_T("                  %s\n"),c_number2.AsString(bcd::Format::Bookkeeping,true));
   }
   
-  printf("\n\n");
+  _tprintf(_T("\n\n"));
 }
 
 void
-DoOperatorTest(TestOperator p_operator,char* p_een,char* p_two,char* p_expect,int p_count)
+DoOperatorTest(TestOperator p_operator,LPCTSTR p_een,LPCTSTR p_two,LPCTSTR p_expect,int p_count)
 {
-  char* name = operators[p_operator];
+  LPCTSTR name = operators[p_operator];
 
-  printf("Testing [%s] for a total of [%d] iterations:\n\n",name,p_count);
+  _tprintf(_T("Testing [%s] for a total of [%d] iterations:\n\n"),name,p_count);
 
-  printf("Type         Time Value\n");
-  printf("------ ---------- ------------------------------------------------------\n");
-  printf("calc     0.000000 +%s\n",p_expect);
+  _tprintf(_T("Type         Time Value\n"));
+  _tprintf(_T("------ ---------- ------------------------------------------------------\n"));
+  _tprintf(_T("calc     0.000000 +%s\n"),p_expect);
 
   // DOUBLE
-  double d_number1 = atof(p_een);
-  double d_number2 = atof(p_two);
+  double d_number1 = _ttof(p_een);
+  double d_number2 = _ttof(p_two);
   double d_result;
 
   HPFCounter counter1;
@@ -351,7 +351,7 @@ DoOperatorTest(TestOperator p_operator,char* p_een,char* p_two,char* p_expect,in
     }
   }
   counter1.Stop();
-  printf("double %10.6f +%.15f\n",counter1.GetCounter(),d_result);
+  _tprintf(_T("double %10.6f +%.15f\n"),counter1.GetCounter(),d_result);
 
   // afp
   afp b_number1(p_een, 60);
@@ -371,7 +371,7 @@ DoOperatorTest(TestOperator p_operator,char* p_een,char* p_two,char* p_expect,in
     }
   }
   counter2.Stop();
-  printf("afp    %10.6f %s\n",counter2.GetCounter(),_afp_ftoa(b_result,60,60).c_str());
+  _tprintf(_T("afp    %10.6f %s\n"),counter2.GetCounter(),_afp_ftoa(b_result,60,60).c_str());
 
  
   // ICD (Improved)
@@ -392,7 +392,7 @@ DoOperatorTest(TestOperator p_operator,char* p_een,char* p_two,char* p_expect,in
     }
   }
   counter4.Stop();
-  printf("icd    %10.6f %s\n",counter4.GetCounter(),i_result.AsString());
+  _tprintf(_T("icd    %10.6f %s\n"),counter4.GetCounter(),i_result.AsString());
 
   bcd c_number1(p_een);
   bcd c_number2(p_two);
@@ -411,7 +411,7 @@ DoOperatorTest(TestOperator p_operator,char* p_een,char* p_two,char* p_expect,in
     }
   }
   counter5.Stop();
-  printf("bcd    %10.6f %s\n",counter5.GetCounter(),c_result.AsString(bcd::Format::Bookkeeping,true));
+  _tprintf(_T("bcd    %10.6f %s\n"),counter5.GetCounter(),c_result.AsString(bcd::Format::Bookkeeping,true));
 
 
 //   numeric n_number1(32,16,p_een);
@@ -431,9 +431,9 @@ DoOperatorTest(TestOperator p_operator,char* p_een,char* p_two,char* p_expect,in
 //     }
 //   }
 //   counter6.Stop();
-//   printf("numeric%10.6f %s\n", counter6.GetCounter(), n_result.AsString(numeric::Format::Bookkeeping,true));
+//   _tprintf("numeric%10.6f %s\n", counter6.GetCounter(), n_result.AsString(numeric::Format::Bookkeeping,true));
 
-  printf("\n\n");
+  _tprintf(_T("\n\n"));
 }
 
 void
@@ -450,9 +450,9 @@ PrintConstants(int p_count)
   bcd  c_ln2;
   numeric n_pi;
 
-  printf("Floating point constants in [%d] iterations are:\n\n",p_count);
-  printf("Constant Type   Time     Value\n");
-  printf("-------  ------ -------- ---------------------------------------------\n");
+  _tprintf(_T("Floating point constants in [%d] iterations are:\n\n"),p_count);
+  _tprintf(_T("Constant Type   Time     Value\n"));
+  _tprintf(_T("-------  ------ -------- ---------------------------------------------\n"));
 
   // Calculate PI
   HPFCounter count1;
@@ -479,11 +479,11 @@ PrintConstants(int p_count)
 //   }
 //   count4.Stop();
 // 
-//   printf("PI       Calc   0.000000 +3.1415926535897932384626433832795\n");
-//   printf("         afp    %0.6f %s\n",count1.GetCounter(),_afp_ftoa(b_pi,41,41).c_str());
-//   printf("         icd    %0.6f %s\n",count2.GetCounter(),i_pi.AsString());
-//   printf("         bcd    %0.6f %s\n",count3.GetCounter(),c_pi.AsString(bcd::Bookkeeping,true));
-//   printf("         numeric%0.6f %s\n",count4.GetCounter(),n_pi.AsString(numeric::Format::Bookkeeping,true));
+//   _tprintf("PI       Calc   0.000000 +3.1415926535897932384626433832795\n");
+//   _tprintf("         afp    %0.6f %s\n",count1.GetCounter(),_afp_ftoa(b_pi,41,41).c_str());
+//   _tprintf("         icd    %0.6f %s\n",count2.GetCounter(),i_pi.AsString());
+//   _tprintf("         bcd    %0.6f %s\n",count3.GetCounter(),c_pi.AsString(bcd::Bookkeeping,true));
+//   _tprintf("         numeric%0.6f %s\n",count4.GetCounter(),n_pi.AsString(numeric::Format::Bookkeeping,true));
 
   // BEREKEN LN(10)
   count1.Start();
@@ -505,10 +505,10 @@ PrintConstants(int p_count)
   }
   count3.Stop();
 
-  printf("LN10     Calc   0.000000 +2.3025850929940456840179914546844\n");
-  printf("         afp    %0.6f %s\n",count1.GetCounter(),_afp_ftoa(b_ln10,41).c_str());
-  printf("         icd    %0.6f %s\n",count2.GetCounter(),i_ln10.AsString());
-  printf("         bcd    %0.6f %s\n",count3.GetCounter(),c_ln10.AsString(bcd::Format::Bookkeeping,true));
+  _tprintf(_T("LN10     Calc   0.000000 +2.3025850929940456840179914546844\n"));
+  _tprintf(_T("         afp    %0.6f %s\n"),count1.GetCounter(),_afp_ftoa(b_ln10,41).c_str());
+  _tprintf(_T("         icd    %0.6f %s\n"),count2.GetCounter(),i_ln10.AsString());
+  _tprintf(_T("         bcd    %0.6f %s\n"),count3.GetCounter(),c_ln10.AsString(bcd::Format::Bookkeeping,true));
 
   // BEREKEN LN(2)
   count1.Start();
@@ -530,29 +530,29 @@ PrintConstants(int p_count)
   }
   count3.Stop();
 
-  printf("LN2      Calc   0.000000 +0.69314718055994530941723212145818\n");
-  printf("         afp    %0.6f %s\n",count1.GetCounter(),_afp_ftoa(b_ln2,41).c_str());
-  printf("         icd    %0.6f %s\n",count2.GetCounter(),i_ln2.AsString());
-  printf("         bcd    %0.6f %s\n",count3.GetCounter(),c_ln2.AsString(bcd::Format::Bookkeeping,true));
+  _tprintf(_T("LN2      Calc   0.000000 +0.69314718055994530941723212145818\n"));
+  _tprintf(_T("         afp    %0.6f %s\n"),count1.GetCounter(),_afp_ftoa(b_ln2,41).c_str());
+  _tprintf(_T("         icd    %0.6f %s\n"),count2.GetCounter(),i_ln2.AsString());
+  _tprintf(_T("         bcd    %0.6f %s\n"),count3.GetCounter(),c_ln2.AsString(bcd::Format::Bookkeeping,true));
 
-  printf("\n\n");
+  _tprintf(_T("\n\n"));
 }
 
 void
 TestOperatoren(int p_count)
 {
-  char* a_big1      = "1234567890123456.1234567890123456";
-  char* a_big2      =                "5.1234567890123456";
-  char* a_big3      =  "876543210876543.21087654321087654321";
-  char* r_big_mult  = "6325255238149668.8052126159533604";
-  char* r_big_div   =  "240963853305269.14298709106993387";
-  char* r_big_mod   =                "0.7325881824833792";
+  LPCTSTR a_big1      = _T("1234567890123456.1234567890123456");
+  LPCTSTR a_big2      =                _T("5.1234567890123456");
+  LPCTSTR a_big3      =  _T("876543210876543.21087654321087654321");
+  LPCTSTR r_big_mult  = _T("6325255238149668.8052126159533604");
+  LPCTSTR r_big_div   =  _T("240963853305269.14298709106993387");
+  LPCTSTR r_big_mod   =                _T("0.7325881824833792");
 
-  char* a_small1    = "0.8347366295099261173476093153791068840878";
-  char* a_small2    = "0.5506493978516714425340844117564672940305";
-  char* r_small_add = "2111111100999999.3343333322232221";
-  char* r_small_div = "1.5159130887395963684392407742872"; 
-  char* r_big_min   =  "358024679246912.91258024580146906";
+  LPCTSTR a_small1    = _T("0.8347366295099261173476093153791068840878");
+  LPCTSTR a_small2    = _T("0.5506493978516714425340844117564672940305");
+  LPCTSTR r_small_add = _T("2111111100999999.3343333322232221");
+  LPCTSTR r_small_div = _T("1.5159130887395963684392407742872"); 
+  LPCTSTR r_big_min   = _T("358024679246912.91258024580146906");
 
   DoOperatorTest(Operator_mult, a_big1,   a_big2,   r_big_mult,   p_count);
   DoOperatorTest(Operator_div,  a_big1,   a_big2,   r_big_div,    p_count);
@@ -565,67 +565,67 @@ TestOperatoren(int p_count)
 void
 TestFuncties(int p_count)
 {
-  char* a_angle     = "0.9876543210123456";
-  char* r_sine      = "0.83473662950992611734760931537911";
-  char* r_cosine    = "0.55064939785167144253408441175647";
-  char* r_tangent   = "1.5159130887395963684392407742872";
+  LPCTSTR a_angle     = _T("0.9876543210123456");
+  LPCTSTR r_sine      = _T("0.83473662950992611734760931537911");
+  LPCTSTR r_cosine    = _T("0.55064939785167144253408441175647");
+  LPCTSTR r_tangent   = _T("1.5159130887395963684392407742872");
   
-  char* a_ratio     =  "0.765498765404321098765";
-  char* r_asine     = "0.87181613107055910102494602134303";
-  char* r_acosine   = "0.69898019572433751820637567029672";
-  char* r_atangent  = "0.653346752384431270749403109172";
+  LPCTSTR a_ratio     = _T("0.765498765404321098765");
+  LPCTSTR r_asine     = _T("0.87181613107055910102494602134303");
+  LPCTSTR r_acosine   = _T("0.69898019572433751820637567029672");
+  LPCTSTR r_atangent  = _T("0.653346752384431270749403109172");
 
-  char* a_big       =  "98765432109876543210.123456789012345678901234567890";
-  char* a_big_n     = "-98765432109876543210.123456789012345678901234567890";
-  char* a_small1    =  "26.5566778899001122334455";
-  char* a_small2    =   "7.6655443322110099887766";
-  char* a_mini      =   "0.00000000000000077665544332211998877665544332211";
-  char* r_sqroot    =  "9938079900.558082311745752865316";
-  char* r_floor     =  "98765432109876543210";
-  char* r_ceiling   =  "98765432109876543211";
-  char* r_log10     =  "19.994604968162151965673558368195";
-  char* r_log       =  "46.039279339994856527044707840045";
-  char* r_exp       =  "341521984409.089389680737393624";
-  char* r_pow       =  "82616536947.2042654425347359351";
+  LPCTSTR a_big       =  _T("98765432109876543210.123456789012345678901234567890");
+  LPCTSTR a_big_n     = _T("-98765432109876543210.123456789012345678901234567890");
+  LPCTSTR a_small1    =  _T("26.5566778899001122334455");
+  LPCTSTR a_small2    =   _T("7.6655443322110099887766");
+  LPCTSTR a_mini      =   _T("0.00000000000000077665544332211998877665544332211");
+  LPCTSTR r_sqroot    =  _T("9938079900.558082311745752865316");
+  LPCTSTR r_floor     =  _T("98765432109876543210");
+  LPCTSTR r_ceiling   =  _T("98765432109876543211");
+  LPCTSTR r_log10     =  _T("19.994604968162151965673558368195");
+  LPCTSTR r_log       =  _T("46.039279339994856527044707840045");
+  LPCTSTR r_exp       =  _T("341521984409.089389680737393624");
+  LPCTSTR r_pow       =  _T("82616536947.2042654425347359351");
 
-  char* a_big1      = "1234567890123456.1234567890123456";
-  char* a_big2      =                "5.1234567890123456";
-  char* r_big_mod   =                "0.7325881824833792";
-  char* r_modf1     =                "0.1234567890123456";
-  char* r_modf2     = "1234567890123456";
-  char* r_frexp1    = "1.2345678901234561234567890123456";
-  char* r_frexp2    = "15";
-  char* r_frexp3    = "7.7665544332211998877665544332211";
-  char* r_frexp4    = "-16";
-  char* r_ldexp     = "3399.254769907214365881024";
+  LPCTSTR a_big1      = _T("1234567890123456.1234567890123456");
+  LPCTSTR a_big2      =                _T("5.1234567890123456");
+  LPCTSTR r_big_mod   =                _T("0.7325881824833792");
+  LPCTSTR r_modf1     =                _T("0.1234567890123456");
+  LPCTSTR r_modf2     = _T("1234567890123456");
+  LPCTSTR r_frexp1    = _T("1.2345678901234561234567890123456");
+  LPCTSTR r_frexp2    = _T("15");
+  LPCTSTR r_frexp3    = _T("7.7665544332211998877665544332211");
+  LPCTSTR r_frexp4    = _T("-16");
+  LPCTSTR r_ldexp     = _T("3399.254769907214365881024");
 
-  DoFunctionTest(Func_sine,   a_angle,     "0",      r_sine,     "0",         p_count);
-  DoFunctionTest(Func_cosine, a_angle,     "0",      r_cosine,   "0",         p_count);
-  DoFunctionTest(Func_tangent,a_angle,     "0",      r_tangent,  "0",         p_count);
-  DoFunctionTest(Func_asin,   a_ratio,     "0",      r_asine,    "0",         p_count);
-  DoFunctionTest(Func_acos,   a_ratio,     "0",      r_acosine,  "0",         p_count);
-  DoFunctionTest(Func_atan,   a_ratio,     "0",      r_atangent, "0",         p_count);
-  DoFunctionTest(Func_sqrt,   a_big,       "0",      r_sqroot,   "0",         p_count);
-  DoFunctionTest(Func_floor,  a_big,       "0",      r_floor,    "0",         p_count);
-  DoFunctionTest(Func_ceiling,a_big,       "0",      r_ceiling,  "0",         p_count);
-  DoFunctionTest(Func_fabs,   a_big_n,     "0",      a_big,      "0",         p_count);
-  DoFunctionTest(Func_log10,  a_big,       "0",      r_log10,    "0",         p_count);
-  DoFunctionTest(Func_log,    a_big,       "0",      r_log,      "0",         p_count);
-  DoFunctionTest(Func_exp,    a_small1,    "0",      r_exp,      "0",         p_count);
-  DoFunctionTest(Func_pow,    a_small1,    a_small2, r_pow,      "0",         p_count);
-  DoFunctionTest(Func_modf,   a_big1,      "0",      r_modf1,    r_modf2,     p_count);
-  DoFunctionTest(Func_fmod,   a_big1,      a_big2,   r_big_mod,  "0",         p_count);
-  DoFunctionTest(Func_frexp,  a_big1,      "0",      r_frexp1,   r_frexp2,    p_count);
-  DoFunctionTest(Func_frexp,  a_big_n,     "0",      r_frexp1,   r_frexp2,    p_count);
-  DoFunctionTest(Func_frexp,  a_mini,      "0",      r_frexp3,   r_frexp4,    p_count);
-  DoFunctionTest(Func_ldexp,  a_small1,    a_small2, r_ldexp,    "0",         p_count);
+  DoFunctionTest(Func_sine,   a_angle,     _T("0"),      r_sine,     _T("0"),         p_count);
+  DoFunctionTest(Func_cosine, a_angle,     _T("0"),      r_cosine,   _T("0"),         p_count);
+  DoFunctionTest(Func_tangent,a_angle,     _T("0"),      r_tangent,  _T("0"),         p_count);
+  DoFunctionTest(Func_asin,   a_ratio,     _T("0"),      r_asine,    _T("0"),         p_count);
+  DoFunctionTest(Func_acos,   a_ratio,     _T("0"),      r_acosine,  _T("0"),         p_count);
+  DoFunctionTest(Func_atan,   a_ratio,     _T("0"),      r_atangent, _T("0"),         p_count);
+  DoFunctionTest(Func_sqrt,   a_big,       _T("0"),      r_sqroot,   _T("0"),         p_count);
+  DoFunctionTest(Func_floor,  a_big,       _T("0"),      r_floor,    _T("0"),         p_count);
+  DoFunctionTest(Func_ceiling,a_big,       _T("0"),      r_ceiling,  _T("0"),         p_count);
+  DoFunctionTest(Func_fabs,   a_big_n,     _T("0"),      a_big,      _T("0"),         p_count);
+  DoFunctionTest(Func_log10,  a_big,       _T("0"),      r_log10,    _T("0"),         p_count);
+  DoFunctionTest(Func_log,    a_big,       _T("0"),      r_log,      _T("0"),         p_count);
+  DoFunctionTest(Func_exp,    a_small1,    _T("0"),      r_exp,      _T("0"),         p_count);
+  DoFunctionTest(Func_pow,    a_small1,    a_small2,     r_pow,      _T("0"),         p_count);
+  DoFunctionTest(Func_modf,   a_big1,      _T("0"),      r_modf1,    r_modf2,         p_count);
+  DoFunctionTest(Func_fmod,   a_big1,      a_big2,       r_big_mod,  _T("0"),         p_count);
+  DoFunctionTest(Func_frexp,  a_big1,      _T("0"),      r_frexp1,   r_frexp2,        p_count);
+  DoFunctionTest(Func_frexp,  a_big_n,     _T("0"),      r_frexp1,   r_frexp2,        p_count);
+  DoFunctionTest(Func_frexp,  a_mini,      _T("0"),      r_frexp3,   r_frexp4,        p_count);
+  DoFunctionTest(Func_ldexp,  a_small1,    a_small2,     r_ldexp,    _T("0"),         p_count);
 }
 
 int
 TestNumeric(int p_count)
 {
   // Header
-  printf("Testing SQL_NUMERIC_STRUCT for a total of [%d] iterations\n\n",p_count);
+  _tprintf(_T("Testing SQL_NUMERIC_STRUCT for a total of [%d] iterations\n\n"),p_count);
 
   // num = 10.001 (ten and 1 thousandth)
   SQL_NUMERIC_STRUCT num;
@@ -647,8 +647,7 @@ TestNumeric(int p_count)
   }
   counter.Stop();
   bcd ten(&num);
-  printf("SQL_NUMERIC_STRUCT -> bcd %10.6f : %s\n",counter.GetCounter(),ten.AsString());
-
+  _tprintf(_T("SQL_NUMERIC_STRUCT -> bcd %10.6f : %s\n"),counter.GetCounter(),ten.AsString());
 
   // Now back again to a SQL_NUMERIC_STRUCT
   HPFCounter cnt2;
@@ -659,19 +658,19 @@ TestNumeric(int p_count)
   cnt2.Stop();
 
 
-//     printf("Precision: %d\n",num.precision);
-//     printf("Scale    : %d\n",num.scale);
-//     printf("Sign     : %d\n",num.sign);
+//     _tprintf("Precision: %d\n",num.precision);
+//     _tprintf("Scale    : %d\n",num.scale);
+//     _tprintf("Sign     : %d\n",num.sign);
 // 
 //     for(unsigned ind = 0;ind < SQL_MAX_NUMERIC_LEN; ++ind)
 //     {
-//       printf("Numeric mantissa [%d:%02.2X]\n",ind,num.val[ind]);
+//       _tprintf("Numeric mantissa [%d:%02.2X]\n",ind,num.val[ind]);
 //     }
 
   bcd check(&num);
-  printf("bcd -> SQL_NUMERIC_STRUCT %10.6f : %s\n",cnt2.GetCounter(),check.AsString());
+  _tprintf(_T("bcd -> SQL_NUMERIC_STRUCT %10.6f : %s\n"),cnt2.GetCounter(),check.AsString());
 
-  printf("\n");
+  _tprintf(_T("\n"));
   return 0;
 }
 
@@ -693,18 +692,18 @@ _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 		_tprintf(_T("Fatal Error: MFC initialization failed\n"));
 		return 1;
 	}
-  printf("TESTPROGRAM EXACT NUMERICS WITH LARGE PRECISION\n");
-  printf("===============================================\n");
-  printf("\n");
-  printf("Legenda:\n");
-  printf("--------\n");
-  printf("calc    -> Calculations in MS-Calc (standard calculator)\n");
-  printf("double  -> Build in C++ datatype 'double'\n");
-  printf("afp     -> Datatype 'Arbitrairy Floating Point' of Henrik Vestermark\n");
-  printf("icd     -> Datatype 'Integer Coded Decimal'\n");
-  printf("bcd     -> Datatype 'Binairy Coded Decimal'\n");
-//printf("numeric -> Datatype 'Numeric / Decimal'\n");
-  printf("\n");
+  _tprintf(_T("TESTPROGRAM EXACT NUMERICS WITH LARGE PRECISION\n"));
+  _tprintf(_T("===============================================\n"));
+  _tprintf(_T("\n"));
+  _tprintf(_T("Legenda:\n"));
+  _tprintf(_T("--------\n"));
+  _tprintf(_T("calc    -> Calculations in MS-Calc (standard calculator)\n"));
+  _tprintf(_T("double  -> Build in C++ datatype 'double'\n"));
+  _tprintf(_T("afp     -> Datatype 'Arbitrairy Floating Point' of Henrik Vestermark\n"));
+  _tprintf(_T("icd     -> Datatype 'Integer Coded Decimal'\n"));
+  _tprintf(_T("bcd     -> Datatype 'Binairy Coded Decimal'\n"));
+//_tprintf("numeric -> Datatype 'Numeric / Decimal'\n");
+  _tprintf(_T("\n"));
 
 #ifdef DEBUG
   int count = 10;     // Quicker in debug mode 
@@ -726,7 +725,7 @@ _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
   TestNumeric(count);
 
   // Wait until user has seen the result
-  printf("Seen the output? ");
+  _tprintf(_T("Seen the output? "));
   char buffer[1024];
   gets_s(buffer,1024);
 

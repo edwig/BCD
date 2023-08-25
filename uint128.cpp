@@ -33,7 +33,7 @@ uint128::uint128()
   lo = 0;
 }
 
-uint128::uint128(char p_value)
+uint128::uint128(TCHAR p_value)
 {
   hi = 0;
   lo = static_cast<uint64>(p_value);
@@ -43,11 +43,13 @@ uint128::uint128(char p_value)
   }
 }
 
-uint128::uint128(unsigned char p_value)
+#ifndef UNICODE
+uint128::uint128(_TUCHAR p_value)
 {
   hi = 0;
   lo = static_cast<uint64>(p_value);
 }
+#endif
 
 uint128::uint128(short p_value)
 {
@@ -117,7 +119,7 @@ uint128::uint128(const uint128& p_value)
   lo = p_value.lo;
 }
 
-uint128::uint128(const char* p_string)
+uint128::uint128(LPCTSTR p_string)
         :hi(0)
         ,lo(0)
 {
@@ -522,7 +524,7 @@ uint128::AsShort() const
 {
   if (hi || lo & 0xFFFFFFFFFFFF0000UI64)
   {
-    throw new StdException("Number to big");
+    throw new StdException(_T("Number to big"));
   }
   return static_cast<short>(lo);
 }
@@ -532,7 +534,7 @@ uint128::AsInteger() const
 {
   if(hi || lo & 0xFFFFFFFF00000000UI64)
   {
-    throw new StdException("Number to big");
+    throw new StdException(_T("Number to big"));
   }
   return static_cast<int>(lo);
 }
@@ -542,7 +544,7 @@ uint128::AsUInt64() const
 {
   if(hi)
   {
-    throw new StdException("Number to big");
+    throw new StdException(_T("Number to big"));
   }
   return lo;
 }
@@ -553,17 +555,17 @@ uint128::AsString(unsigned int radix /*= 10*/) const
   // Optimize for zero
   if(*this == 0) 
   {
-    return "0";
+    return _T("0");
   }
 
   if (radix < 2 || radix > 37) 
   {
-    throw new StdException("invalid radix");
+    throw new StdException(_T("invalid radix"));
   }
 
   // at worst it will be size digits (base 2) so make our buffer
   // that plus room for null terminator
-  static char sz[size128 + 1];
+  static TCHAR sz[size128 + 1];
   sz[sizeof(sz) - 1] = '\0';
 
   uint128 ii(*this);
@@ -573,7 +575,7 @@ uint128::AsString(unsigned int radix /*= 10*/) const
   {
     uint128 remainder;
     divide(ii, uint128(radix), ii, remainder);
-    sz[--i] = "0123456789abcdefghijklmnopqrstuvwxyz"[remainder.AsInteger()];
+    sz[--i] = _T("0123456789abcdefghijklmnopqrstuvwxyz")[remainder.AsInteger()];
   }
   return &sz[i];
 }
@@ -621,7 +623,7 @@ uint128::AsNumeric(SQL_NUMERIC_STRUCT* p_numeric) const
   uint64 lowval = lo;
   for(int index = 0; index < lower; ++index)
   {
-    p_numeric->val[index] = static_cast<unsigned char>(lowval & 0x0FF);
+    p_numeric->val[index] = static_cast<_TUCHAR>(lowval & 0x0FF);
     lowval >>= 8;
   }
 
@@ -631,7 +633,7 @@ uint128::AsNumeric(SQL_NUMERIC_STRUCT* p_numeric) const
     uint64 higher = hi;
     for(int index = SQL_MAX_NUMERIC_LEN / 2; index < num; ++index)
     {
-      p_numeric->val[index] = static_cast<unsigned char>(higher & 0xFF);
+      p_numeric->val[index] = static_cast<_TUCHAR>(higher & 0xFF);
       higher >>= 8;
     }
   }
@@ -644,7 +646,7 @@ uint128::AsNumeric(SQL_NUMERIC_STRUCT* p_numeric) const
 //////////////////////////////////////////////////////////////////////////
 
 void
-uint128::SetString(const char* p_string)
+uint128::SetString(LPCTSTR p_string)
 {
   // do we have at least one character?
   if(*p_string == 0)
@@ -656,7 +658,7 @@ uint128::SetString(const char* p_string)
   int  radix = 10;
   bool minus = false;
 
-  const char* i = p_string;
+  LPCTSTR i = p_string;
 
   // check for minus sign, i suppose technically this should only apply
   // to base 10, but who says that -0x1 should be invalid?
@@ -686,7 +688,7 @@ uint128::SetString(const char* p_string)
     while (*i) 
     {
       unsigned int n;
-      const char ch = *i;
+      const TCHAR ch = *i;
 
       if (ch >= 'A' && ch <= 'Z') 
       {
@@ -790,7 +792,7 @@ void divide(const uint128& numerator
 {
   if (denominator == 0) 
   {
-    throw new StdException("divide by zero");
+    throw new StdException(_T("divide by zero"));
   }
   else 
   {

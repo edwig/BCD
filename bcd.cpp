@@ -60,13 +60,13 @@ static char THIS_FILE[] = __FILE__;
 #define SEP_LEN 10
 
 // string format number and money format functions
-bool g_locale_valutaInit = false;
-char g_locale_decimalSep [SEP_LEN + 1];
-char g_locale_thousandSep[SEP_LEN + 1];
-char g_locale_strCurrency[SEP_LEN + 1];
-int  g_locale_decimalSepLen   = 0;
-int  g_locale_thousandSepLen  = 0;
-int  g_locale_strCurrencyLen  = 0;
+bool  g_locale_valutaInit = false;
+TCHAR g_locale_decimalSep [SEP_LEN + 1];
+TCHAR g_locale_thousandSep[SEP_LEN + 1];
+TCHAR g_locale_strCurrency[SEP_LEN + 1];
+int   g_locale_decimalSepLen   = 0;
+int   g_locale_thousandSepLen  = 0;
+int   g_locale_strCurrencyLen  = 0;
 
 // Error handling throws or we silently return -INF, INF, NaN
 bool g_throwing = true;
@@ -80,9 +80,9 @@ InitValutaString()
     GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SDECIMAL,  g_locale_decimalSep, SEP_LEN);
     GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_STHOUSAND, g_locale_thousandSep,SEP_LEN);
     GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SCURRENCY, g_locale_strCurrency,SEP_LEN);
-    g_locale_decimalSepLen  = (int)strlen(g_locale_decimalSep);
-    g_locale_thousandSepLen = (int)strlen(g_locale_thousandSep);
-    g_locale_strCurrencyLen = (int)strlen(g_locale_strCurrency);
+    g_locale_decimalSepLen  = (int)_tclen(g_locale_decimalSep);
+    g_locale_thousandSepLen = (int)_tclen(g_locale_thousandSep);
+    g_locale_strCurrencyLen = (int)_tclen(g_locale_strCurrency);
 
     g_locale_valutaInit = true;
   }
@@ -109,25 +109,25 @@ bcd::bcd(const bcd& p_arg)
 {
   m_sign      = p_arg.m_sign;
   m_exponent  = p_arg.m_exponent;
-  m_precision = p_arg.m_precision;
-  m_scale     = p_arg.m_scale;
   // Create and copy mantissa
   memcpy(m_mantissa,p_arg.m_mantissa,bcdLength * sizeof(long));
 }
 
 // bcd::bcd(value)
 // Description: BCD from a char value
-bcd::bcd(const char p_value)
+bcd::bcd(const TCHAR p_value)
 {
   SetValueInt((int)p_value);
 }
 
+#ifndef UNICODE
 // bcd::bcd(value)
 // Description: BCD from an unsigned char value
-bcd::bcd(const unsigned char p_value)
+bcd::bcd(const _TUCHAR p_value)
 {
   SetValueInt((int)p_value);
 }
+#endif
 
 // bcd::bcd(value)
 // Description: BCD from a short value
@@ -210,7 +210,7 @@ bcd::bcd(const double p_value)
 // Description: Assignment-constructor from an elementary character data pointer
 // Parameters:  p_string -> Input character pointer (containing a number)
 //              p_fromDB -> Input comes from a  database (always American format)
-bcd::bcd(const char* p_string,bool p_fromDB /*= false*/)
+bcd::bcd(LPCTSTR p_string,bool p_fromDB /*= false*/)
 {
   SetValueString(p_string,p_fromDB);
 }
@@ -358,7 +358,7 @@ bcd::operator+(const double p_value) const
 }
 
 const bcd
-bcd::operator+(const char* p_value) const
+bcd::operator+(LPCTSTR p_value) const
 {
   return Add(bcd(p_value));
 }
@@ -384,7 +384,7 @@ bcd::operator-(const double p_value) const
 }
 
 const bcd
-bcd::operator-(const char* p_value) const
+bcd::operator-(LPCTSTR p_value) const
 {
   return Sub(bcd(p_value));
 }
@@ -410,7 +410,7 @@ bcd::operator*(const double p_value) const
 }
 
 const bcd
-bcd::operator*(const char* p_value) const
+bcd::operator*(LPCTSTR p_value) const
 {
   return Mul(bcd(p_value));
 }
@@ -436,7 +436,7 @@ bcd::operator/(const double p_value) const
 }
 
 const bcd
-bcd::operator/(const char* p_value) const
+bcd::operator/(LPCTSTR p_value) const
 {
   return Div(bcd(p_value));
 }
@@ -462,7 +462,7 @@ bcd::operator%(const double p_value) const
 }
 
 const bcd
-bcd::operator%(const char* p_value) const
+bcd::operator%(LPCTSTR p_value) const
 {
   return Mod(bcd(p_value));
 }
@@ -491,7 +491,7 @@ bcd::operator+=(const double p_value)
 }
 
 bcd&
-bcd::operator+=(const char* p_value)
+bcd::operator+=(LPCTSTR p_value)
 {
   *this = Add(bcd(p_value));
   return *this;
@@ -521,7 +521,7 @@ bcd::operator-=(const double p_value)
 }
 
 bcd&
-bcd::operator-=(const char* p_value)
+bcd::operator-=(LPCTSTR p_value)
 {
   *this = Sub(bcd(p_value));
   return *this;
@@ -551,7 +551,7 @@ bcd::operator*=(const double p_value)
 }
 
 bcd&
-bcd::operator*=(const char* p_value)
+bcd::operator*=(LPCTSTR p_value)
 {
   *this = Mul(bcd(p_value));
   return *this;
@@ -581,7 +581,7 @@ bcd::operator/=(const double p_value)
 }
 
 bcd&
-bcd::operator/=(const char* p_value)
+bcd::operator/=(LPCTSTR p_value)
 {
   *this = Div(bcd(p_value));
   return *this;
@@ -611,7 +611,7 @@ bcd::operator%=(const double p_value)
 }
 
 bcd&
-bcd::operator%=(const char* p_value)
+bcd::operator%=(LPCTSTR p_value)
 {
   *this = Mod(bcd(p_value));
   return *this;
@@ -718,7 +718,7 @@ bcd::operator=(const double p_value)
 // bcd::=
 // Description: Assignment operator from a string
 bcd& 
-bcd::operator=(const char* p_value)
+bcd::operator=(const PCTSTR p_value)
 {
   SetValueString(p_value);
   return *this;
@@ -781,7 +781,7 @@ bcd::operator==(const double p_value) const
 }
 
 bool
-bcd::operator==(const char* p_value) const
+bcd::operator==(LPCTSTR p_value) const
 {
   bcd value(p_value);
   return *this == value;
@@ -812,7 +812,7 @@ bcd::operator!=(const double p_value) const
 }
 
 bool
-bcd::operator!=(const char* p_value) const
+bcd::operator!=(LPCTSTR p_value) const
 {
   bcd value(p_value);
   return !(*this == value);
@@ -887,7 +887,7 @@ bcd::operator<(const double p_value) const
 }
 
 bool
-bcd::operator<(const char* p_value) const
+bcd::operator<(LPCTSTR p_value) const
 {
   bcd value(p_value);
   return *this < value;
@@ -958,7 +958,7 @@ bcd::operator>(const double p_value) const
 }
 
 bool
-bcd::operator>(const char* p_value) const
+bcd::operator>(LPCTSTR p_value) const
 {
   bcd value(p_value);
   return *this > value;
@@ -986,7 +986,7 @@ bcd::operator<=(const double p_value) const
 }
 
 bool
-bcd::operator<=(const char* p_value) const
+bcd::operator<=(LPCTSTR p_value) const
 {
   bcd value(p_value);
   return !(*this > value);
@@ -1014,7 +1014,7 @@ bcd::operator>=(const double p_value) const
 }
 
 bool
-bcd::operator>=(const char* p_value) const
+bcd::operator>=(LPCTSTR p_value) const
 {
   bcd value(p_value);
   return !(*this < value);
@@ -1041,8 +1041,6 @@ bcd::Zero()
 {
   m_sign = Sign::Positive;
   m_exponent = 0;
-  m_precision = 0;
-  m_scale = 0;
   memset(m_mantissa,0,bcdLength * sizeof(long));
 }
 
@@ -1228,10 +1226,6 @@ bcd::SetLengthAndPrecision(int p_precision /*= bcdPrecision*/,int p_scale /*= (b
     return;
   }
 
-  // Record the new precision and scale
-  m_precision = (uchar) p_precision;
-  m_scale     = (uchar) p_scale;
-
   if(IsZero())
   {
     // Optimize for NULL situation
@@ -1241,7 +1235,7 @@ bcd::SetLengthAndPrecision(int p_precision /*= bcdPrecision*/,int p_scale /*= (b
   if(m_exponent > p_precision)
   {
     XString error;
-    error.Format("Overflow in BCD at set precision and scale as NUMERIC(%d,%d)",p_precision,p_scale);
+    error.Format(_T("Overflow in BCD at set precision and scale as NUMERIC(%d,%d)"),p_precision,p_scale);
     *this = SetInfinity(error);
     return;
   }
@@ -1262,7 +1256,7 @@ bcd::SetLengthAndPrecision(int p_precision /*= bcdPrecision*/,int p_scale /*= (b
   // Strip this on mantissa part
   if(mpos)
   {
-    static int significations[] = {1,10000000,1000000,100000,10000,1000,100,10,1};
+    static const int significations[] = {1,10000000,1000000,100000,10000,1000,100,10,1};
     int  significant = significations[mpos];
     int64       accu = m_mantissa[mant] / significant;
     m_mantissa[mant] = (long) (accu * significant);
@@ -1301,7 +1295,7 @@ bcd::Floor() const
   }
   if(!IsValid())
   {
-    return SetInfinity("BCD: Infinity doesn't have a floor");
+    return SetInfinity(_T("BCD: Infinity doesn't have a floor"));
   }
 
   // Shortcut: If number is null. Floor is always zero
@@ -1336,8 +1330,7 @@ bcd::Floor() const
 bcd     
 bcd::Fraction() const
 {
-  bcd floor = Floor();
-  return (*this) - floor;
+  return (*this) - Floor();
 }
 
 // Value after the decimal point
@@ -1354,7 +1347,7 @@ bcd::Ceiling() const
   }
   if(!IsValid())
   {
-    return SetInfinity("BCD: Infinity does not have a ceiling.");
+    return SetInfinity(_T("BCD: Infinity does not have a ceiling."));
   }
 
   // Shortcut: If number is null. Ceiling is always zero
@@ -1392,7 +1385,7 @@ bcd
 bcd::SquareRoot() const
 {
   bcd number;
-  bcd half("0.5");
+  bcd half(_T("0.5"));
   bcd two(2);
   bcd three(3);
 
@@ -1403,7 +1396,7 @@ bcd::SquareRoot() const
   }
   if(!IsValid())
   {
-    return SetInfinity("BCD: Infinity does not have a square root!");
+    return SetInfinity(_T("BCD: Infinity does not have a square root!"));
   }
 
   // Optimalization sqrt(0) = 0
@@ -1417,7 +1410,7 @@ bcd::SquareRoot() const
   number = *this; // Number to get the root from
   if(number.GetSign() == -1)
   {
-    return SetInfinity("BCD: Cannot get a square root from a negative number.");
+    return SetInfinity(_T("BCD: Cannot get a square root from a negative number."));
   }
   // Reduction by dividing through square of a whole number
   // for speed a power of two
@@ -1474,7 +1467,7 @@ bcd::Power(const bcd& p_power) const
   }
   if(!IsValid())
   {
-    return SetInfinity("BCD: Can not take a power of infinity!");
+    return SetInfinity(_T("BCD: Can not take a power of infinity!"));
   }
 
   result = this->Log() * p_power;
@@ -1495,7 +1488,7 @@ bcd::AbsoluteValue() const
   }
   if(!IsValid())
   {
-    return SetInfinity("BCD: Can change the sign of infinity!");
+    return SetInfinity(_T("BCD: Can change the sign of infinity!"));
   }
   bcd result(*this);
   result.m_sign = Sign::Positive;
@@ -1503,7 +1496,7 @@ bcd::AbsoluteValue() const
 }
 
 // bcd::Reciprocal
-// Description: Reciproke / Inverse = 1/x
+// Description: Reciprocal / Inverse = 1/x
 bcd     
 bcd::Reciprocal() const
 {
@@ -1514,7 +1507,7 @@ bcd::Reciprocal() const
   }
   if(!IsValid())
   {
-    return SetInfinity("BCD: Can do the reciprocal of infinity!");
+    return SetInfinity(_T("BCD: Can do the reciprocal of infinity!"));
   }
   bcd result = bcd(1) / *this;
   return result;
@@ -1533,7 +1526,7 @@ bcd::Log() const
   long expo = 0;
   bcd res, number, z2;
   bcd number10(10L);
-  bcd fast("1.2");
+  bcd fast(_T("1.2"));
   bcd one(1L);
   bcd epsilon = Epsilon(5);
 
@@ -1544,7 +1537,7 @@ bcd::Log() const
   }
   if((GetSign() == -1) || !IsValid())
   { 
-    return SetInfinity("BCD: Cannot calculate a natural logarithm of a number <= 0");
+    return SetInfinity(_T("BCD: Cannot calculate a natural logarithm of a number <= 0"));
   }
   // Bring number under 10 and save exponent
   number = *this;
@@ -1599,10 +1592,8 @@ bcd
 bcd::Exp() const
 {
   long step, k = 0;
-  long expo;
   bcd between, result, number;
-  bcd half("0.5");
-  bcd ten(10L);
+  bcd half(_T("0.5"));
   bcd epsilon = Epsilon(5);
 
   // Check if we can do this
@@ -1612,7 +1603,7 @@ bcd::Exp() const
   }
   if(!IsValid())
   {
-    return SetInfinity("BCD: Cannot take the exponent of infinity!");
+    return SetInfinity(_T("BCD: Cannot take the exponent of infinity!"));
   }
   number = *this;
 
@@ -1628,7 +1619,7 @@ bcd::Exp() const
   }
   for( k = 0; number > half; )
   {
-    expo = number.GetExponent();
+    long expo = number.GetExponent();
     if( expo > 0 )
     {
       step   = 3 * min( 10, expo );  // 2^3
@@ -1688,11 +1679,11 @@ bcd::Log10() const
   }
   if(!IsValid())
   {
-    return SetInfinity("BCD: Cannot take the Log10 of infinity!");
+    return SetInfinity(_T("BCD: Cannot take the Log10 of infinity!"));
   }
   if(GetSign() <= 0) 
   { 
-    return SetInfinity("BCD: Cannot get a 10-logarithm of a number <= 0");
+    return SetInfinity(_T("BCD: Cannot get a 10-logarithm of a number <= 0"));
   }
   res = *this;
   res = res.Log() / LN10();
@@ -1713,7 +1704,7 @@ bcd::TenPower(int n)
   }
   if(!IsValid())
   {
-    return SetInfinity("BCD: Cannot take the 10th power of infinity!");
+    return SetInfinity(_T("BCD: Cannot take the 10th power of infinity!"));
   }
   bcd res = *this;
   res.m_exponent += (short)n;
@@ -1758,7 +1749,7 @@ bcd::Sine() const
   }
   if(!IsValid())
   {
-    return SetInfinity("BCD: Cannot take the sine of infinity!");
+    return SetInfinity(_T("BCD: Cannot take the sine of infinity!"));
   }
 
   number = *this;
@@ -1840,7 +1831,7 @@ bcd::Cosine() const
 {
   long trisection, step;
   bcd between, result, number, number2;
-  bcd c05("0.5"), c1(1), c2(2), c3(3), c4(4);
+  bcd c05(_T("0.5")), c1(1), c2(2), c3(3), c4(4);
   bcd epsilon = Epsilon(2);
 
   // Check if we can do this
@@ -1850,7 +1841,7 @@ bcd::Cosine() const
   }
   if(!IsValid())
   {
-    return SetInfinity("BCD: Cannot take the cosine of infinity!");
+    return SetInfinity(_T("BCD: Cannot take the cosine of infinity!"));
   }
 
   number = *this;
@@ -1936,7 +1927,7 @@ bcd::Tangent() const
   }
   if(!IsValid())
   {
-    return SetInfinity("BCD: Cannot take the tangent of infinity!");
+    return SetInfinity(_T("BCD: Cannot take the tangent of infinity!"));
   }
 
   number = *this;
@@ -1959,7 +1950,7 @@ bcd::Tangent() const
   bcd oneandhalf = three * halfpi;
   if( number == halfpi || number == oneandhalf)
   { 
-    return SetInfinity("BCD: Cannot calculate a tangent from a angle of 1/2 pi or 3/2 pi");
+    return SetInfinity(_T("BCD: Cannot calculate a tangent from a angle of 1/2 pi or 3/2 pi"));
   }
   // Sin(x)/Sqrt(1-Sin(x)^2)
   result     = number.Sine(); 
@@ -1988,7 +1979,9 @@ bcd::ArcSine() const
   long step, reduction, sign;
   double d;
   bcd between, number, result, factor;
-  bcd c1(1), c05("0.5"), c2(2);
+  bcd c1(1);
+  bcd c2(2);
+  bcd c05(_T("0.5"));
   bcd epsilon = Epsilon(5);
 
   // Check if we can do this
@@ -1998,13 +1991,13 @@ bcd::ArcSine() const
   }
   if(!IsValid())
   {
-    return SetInfinity("BCD: Cannot take the arcsine of infinity!");
+    return SetInfinity(_T("BCD: Cannot take the arcsine of infinity!"));
   }
 
   number = *this;
   if(number > c1 || number < -c1)
   {
-    return SetInfinity("BCD: Cannot calculate an arcsine from a number > 1 or < -1");
+    return SetInfinity(_T("BCD: Cannot calculate an arcsine from a number > 1 or < -1"));
   }
 
   // Save the sign
@@ -2064,7 +2057,7 @@ bcd::ArcCosine() const
   }
   if(!IsValid())
   {
-    return SetInfinity("BCD: Cannot take the arc-cosine of infinity!");
+    return SetInfinity(_T("BCD: Cannot take the arc-cosine of infinity!"));
   }
 
   y  = PI();
@@ -2085,7 +2078,7 @@ bcd::ArcTangent() const
 {
   bcd  result, square;
   bcd  between1,between2;
-  bcd  half("0.5");
+  bcd  half(_T("0.5"));
   bcd  one(1);
   bcd  epsilon = Epsilon(5);
   long k = 2;
@@ -2097,7 +2090,7 @@ bcd::ArcTangent() const
   }
   if(!IsValid())
   {
-    return SetInfinity("BCD: Cannot take the arc-tangent of infinity!");
+    return SetInfinity(_T("BCD: Cannot take the arc-tangent of infinity!"));
   }
 
   result   = *this;
@@ -2137,11 +2130,11 @@ bcd::ArcTangent() const
 //              use atan() to calculate atan2()
 //
 bcd
-bcd::ArcTangent2Points(bcd p_x) const
+bcd::ArcTangent2Points(const bcd& p_x) const
 {
   bcd result;
   bcd number = *this;
-  bcd nul, c05("0.5");
+  bcd nul, c05(_T("0.5"));
 
   // Check if we can do this
   if(IsNULL())
@@ -2150,7 +2143,7 @@ bcd::ArcTangent2Points(bcd p_x) const
   }
   if(!IsValid() || !p_x.IsValid())
   {
-    return SetInfinity("BCD: Cannot take the arc-tangent-2 of infinity!");
+    return SetInfinity(_T("BCD: Cannot take the arc-tangent-2 of infinity!"));
   }
 
   if( p_x == nul && number == nul)
@@ -2302,14 +2295,14 @@ bcd::AsShort() const
   {
     if(result > SHORT_MAX)
     {
-      throw StdException("BCD: Overflow in conversion to short number.");
+      throw StdException(_T("BCD: Overflow in conversion to short number."));
     }
   }
   else
   {
     if(result < SHORT_MIN)
     {
-      throw StdException("BCD: Underflow in conversion to short number.");
+      throw StdException(_T("BCD: Underflow in conversion to short number."));
     }
     result = -result;
   }
@@ -2330,7 +2323,7 @@ bcd::AsUShort() const
   // Check for unsigned
   if(m_sign == Sign::Negative)
   {
-    throw StdException("BCD: Cannot convert a negative number to an unsigned short number.");
+    throw StdException(_T("BCD: Cannot convert a negative number to an unsigned short number."));
   }
   // Quick check for zero
   if(m_exponent < 0)
@@ -2351,7 +2344,7 @@ bcd::AsUShort() const
   // Take care of overflow
   if(result > USHORT_MAX)
   {
-    throw StdException("BCD: Overflow in conversion to unsigned short number.");
+    throw StdException(_T("BCD: Overflow in conversion to unsigned short number."));
   }
 
   return (short)result;
@@ -2389,14 +2382,14 @@ bcd::AsLong() const
   {
     if(result > LONG_MAX)
     {
-      throw StdException("BCD: Overflow in conversion to integer number.");
+      throw StdException(_T("BCD: Overflow in conversion to integer number."));
     }
   }
   else
   {
     if(result < LONG_MIN)
     {
-      throw StdException("BCD: Underflow in conversion to integer number.");
+      throw StdException(_T("BCD: Underflow in conversion to integer number."));
     }
     result = -result;
   }
@@ -2417,7 +2410,7 @@ bcd::AsULong() const
   // Check for unsigned
   if(m_sign == Sign::Negative)
   {
-    throw StdException("BCD: Cannot convert a negative number to an unsigned long.");
+    throw StdException(_T("BCD: Cannot convert a negative number to an unsigned long."));
   }
 
   // Quick optimization for really small numbers
@@ -2439,7 +2432,7 @@ bcd::AsULong() const
   // Take care of overflow
   if(result > ULONG_MAX)
   {
-    throw StdException("BCD: Overflow in conversion to unsigned long integer.");
+    throw StdException(_T("BCD: Overflow in conversion to unsigned long integer."));
   }
   return (long)result;
 }
@@ -2461,7 +2454,6 @@ bcd::AsInt64() const
   {
     return 0L;
   }
-  int64 carry   = 0L;
   int64 result1 = 0L;
   int64 result2 = 0L;
   int exponent  = 4 * bcdDigits - m_exponent - 1;
@@ -2475,7 +2467,7 @@ bcd::AsInt64() const
   // Adjust to exponent
   while(exponent--)
   {
-    carry    = result1 %10;
+    int64 carry = result1 %10;
     result1 /= 10;
     result2 /= 10;
     result2 += carry * base;
@@ -2484,7 +2476,7 @@ bcd::AsInt64() const
   // Take care of overflow
   if(result1 > (LLONG_MAX / base2))
   {
-    throw StdException("BCD: Overflow in conversion to 64 bits integer number.");
+    throw StdException(_T("BCD: Overflow in conversion to 64 bits integer number."));
   }
   result2 += (result1 * base2);
 
@@ -2509,14 +2501,13 @@ bcd::AsUInt64() const
   // Check for negative
   if(m_sign == Sign::Negative)
   {
-    throw StdException("BCD: Cannot convert a negative number to an unsigned 64 bits integer");
+    throw StdException(_T("BCD: Cannot convert a negative number to an unsigned 64 bits integer"));
   }
   // Quick optimization for really small numbers
   if(m_exponent < 0)
   {
     return 0L;
   }
-  uint64 carry   = 0L;
   uint64 result1 = 0L;
   uint64 result2 = 0L;
   int exponent   = 4 * bcdDigits - m_exponent - 1;
@@ -2530,7 +2521,7 @@ bcd::AsUInt64() const
   // Adjust to exponent
   while(exponent--)
   {
-    carry    = result1 %10;
+    uint64 carry    = result1 %10;
     result1 /= 10;
     result2 /= 10;
     result2 += carry * base;
@@ -2539,7 +2530,7 @@ bcd::AsUInt64() const
   // Take care of overflow
   if(result1 > (ULLONG_MAX / base2))
   {
-    throw StdException("BCD: Overflow in conversion to 64 bits unsigned integer number.");
+    throw StdException(_T("BCD: Overflow in conversion to 64 bits unsigned integer number."));
   }
   result2 += (result1 * base2);
 
@@ -2558,20 +2549,20 @@ XString
 bcd::AsString(Format p_format /*=Bookkeeping*/,bool p_printPositive /*=false*/,int p_decimals /*=2*/) const
 {
   XString result;
-  int exp    = m_exponent;
+  int expo   = m_exponent;
   int prec   = bcdDigits * bcdLength;
 
   // Shortcut for infinity and not-a-number
   switch(m_sign)
   {
-    case Sign::NaN:     return  "NaN";
-    case Sign::INF:     return  "INF";
-    case Sign::MIN_INF: return "-INF";
-    case Sign::ISNULL:  return "NULL";
+    case Sign::NaN:     return  _T("NaN");
+    case Sign::INF:     return  _T("INF");
+    case Sign::MIN_INF: return _T("-INF");
+    case Sign::ISNULL:  return _T("NULL");
   }
 
   // Check format possibilities
-  if(exp < -(prec/2) || exp > (prec/2))
+  if(expo < -(prec/2) || expo > (prec/2))
   {
     p_format = Format::Engineering;
   }
@@ -2585,7 +2576,7 @@ bcd::AsString(Format p_format /*=Bookkeeping*/,bool p_printPositive /*=false*/,i
     {
       long num = number / base;
       number   = number % base;
-      char c   = (char)num + '0';
+      TCHAR c  = (TCHAR)num + '0';
       base    /= 10;
 
       result += c;
@@ -2597,17 +2588,17 @@ bcd::AsString(Format p_format /*=Bookkeeping*/,bool p_printPositive /*=false*/,i
   if(p_format == Format::Engineering)
   {
     XString left = result.Left(1);
-    result = left + XString(".") + result.Mid(1) + XString("E");
-    result += LongToString(exp);
+    result = left + XString(_T(".")) + result.Mid(1) + XString(_T("E"));
+    result += LongToString(expo);
   }
   else // Bookkeeping
   {
     if(m_exponent < 0)
     {
-      XString left("0.");
+      XString left(_T("0."));
       for(int ind = -1; ind > m_exponent; --ind)
       {
-        left += "0";
+        left += _T("0");
       }
       result = left + result;
     }
@@ -2618,7 +2609,7 @@ bcd::AsString(Format p_format /*=Bookkeeping*/,bool p_printPositive /*=false*/,i
       XString behind = result.Mid(pos);
       while(before.GetLength() < pos)
       {
-        before += "0";
+        before += _T("0");
       }
       result = before;
       while(p_decimals > 0 && behind.GetLength() < p_decimals)
@@ -2627,7 +2618,7 @@ bcd::AsString(Format p_format /*=Bookkeeping*/,bool p_printPositive /*=false*/,i
       }
       if(!behind.IsEmpty())
       {
-        result += XString(".") + behind;
+        result += XString(_T(".")) + behind;
       }
     }
   }
@@ -2638,12 +2629,12 @@ bcd::AsString(Format p_format /*=Bookkeeping*/,bool p_printPositive /*=false*/,i
   {
     if(p_printPositive)
     {
-      result = "+" + result;
+      result = _T("+") + result;
     }
   }
   else
   {
-    result = "-" + result;
+    result = _T("-") + result;
   }
 
   // Ready
@@ -2658,10 +2649,10 @@ bcd::AsDisplayString(int p_decimals /*=2*/) const
   // Shortcut for infinity and not-a-number
   switch(m_sign)
   {
-    case Sign::NaN:     return  "NaN";
-    case Sign::INF:     return  "INF";
-    case Sign::MIN_INF: return "-INF";
-    case Sign::ISNULL:  return "NULL";
+    case Sign::NaN:     return  _T("NaN");
+    case Sign::INF:     return  _T("INF");
+    case Sign::MIN_INF: return _T("-INF");
+    case Sign::ISNULL:  return _T("NULL");
   }
 
   // Initialize locale strings
@@ -2679,7 +2670,7 @@ bcd::AsDisplayString(int p_decimals /*=2*/) const
   int pos = str.Find('.');
   if(pos >= 0)
   {
-    str.Replace(".",g_locale_decimalSep);
+    str.Replace(_T("."),g_locale_decimalSep);
   }
 
   // Apply thousand separators in first part of the number
@@ -2712,7 +2703,7 @@ bcd::AsDisplayString(int p_decimals /*=2*/) const
     }
     for(int index = 0;index < decimals; ++index)
     {
-      str += "0";
+      str += _T("0");
     }
   }
   return str;
@@ -2731,11 +2722,6 @@ bcd::AsNumeric(SQL_NUMERIC_STRUCT* p_numeric) const
     return;
   }
 
-  // Setting the sign, precision and scale
-  p_numeric->sign      = (m_sign == Sign::Positive) ? 1 : 0;
-  p_numeric->precision = m_precision;
-  p_numeric->scale     = m_scale;
-
   // Special case for 0.0 or smaller than can be contained (1.0E-38)
   if(IsZero() || m_exponent < -SQLNUM_MAX_PREC)
   {
@@ -2745,8 +2731,17 @@ bcd::AsNumeric(SQL_NUMERIC_STRUCT* p_numeric) const
   // Check for overflow. Cannot be greater than 9.999999999E+37
   if(m_exponent >= SQLNUM_MAX_PREC)
   {
-    throw StdException("BCD: Overflow in converting bcd to SQL NUMERIC/DECIMAL");
+    throw StdException(_T("BCD: Overflow in converting bcd to SQL NUMERIC/DECIMAL"));
   }
+
+  SQLCHAR precision = 0;
+  SQLCHAR scale = 0;
+  CalculatePrecisionAndScale(precision,scale);
+
+  // Setting the sign, precision and scale
+  p_numeric->sign      = (m_sign == Sign::Positive) ? 1 : 0;
+  p_numeric->precision = precision;
+  p_numeric->scale     = scale;
 
   // Converting the value array
   bcd one(1);
@@ -2756,7 +2751,7 @@ bcd::AsNumeric(SQL_NUMERIC_STRUCT* p_numeric) const
 
   // Here is the big trick: use the exponent to scale up the number
   // Adjusting m_exponent to positive scaled integer result
-  accu.m_exponent += (short)m_scale;
+  accu.m_exponent += (short)scale;
   accu.m_sign      = Sign::Positive;
 
   while(true)
@@ -3071,7 +3066,7 @@ bcd::GetMantissa() const
 {
   if(!IsValid() || IsNULL())
   {
-    return SetInfinity("BCD: Infinity cannot give a mantissa.");
+    return SetInfinity(_T("BCD: Infinity cannot give a mantissa."));
   }
 
   bcd number(*this);
@@ -3113,9 +3108,6 @@ bcd::SetValueInt(const int p_value)
 {
   Zero();
 
-  // Length of LONG_MAX = 2147483647L
-  m_precision = 10; 
-
   // Shortcut if value is zero
   if(p_value == 0)
   {
@@ -3141,9 +3133,6 @@ bcd::SetValueLong(const long p_value, const long p_restValue)
 {
   Zero();
 
-  // Length of LONG_MAX = 2147483647L
-  m_precision = 10;
-
   if(p_value == 0 && p_restValue == 0)
   {
     // Nothing more to do. We are zero
@@ -3163,10 +3152,6 @@ bcd::SetValueLong(const long p_value, const long p_restValue)
 
   if(p_restValue)
   {
-    // Initial size and scale
-    m_precision = 20; // 2 * length of a long
-    m_scale     = 10; // length of a long
-
     m_mantissa[0] = long_abs(p_restValue % bcdBase);
     norm = -1;
 
@@ -3213,9 +3198,6 @@ bcd::SetValueInt64(const int64 p_value, const int64 p_restValue)
 {
   Zero();
 
-  // Length of LONGLONG_MAX = 9223372036854775807i64
-  m_precision = 19;
-
   int64 dblBcdDigits = (int64)bcdBase * (int64)bcdBase;
 
   if(p_value == 0L && p_restValue == 0L)
@@ -3253,7 +3235,6 @@ bcd::SetValueInt64(const int64 p_value, const int64 p_restValue)
     m_mantissa[0] = long_abs((long)(p_restValue / dblBcdDigits));
     norm = 3 * bcdDigits - 1;
   }
-  m_scale = (unsigned char)norm;
 
   if(p_restValue)
   {
@@ -3352,7 +3333,7 @@ bcd::SetValueDouble(const double p_value)
 // Technical:   Scans [sign][digit][.[digit]*][E[sign][digits]+]
 //              part =       1        2          3    
 void
-bcd::SetValueString(const char* p_string,bool /*p_fromDB*/)
+bcd::SetValueString(LPCTSTR p_string,bool /*p_fromDB*/)
 {
   // Zero out this number
   Zero();
@@ -3370,32 +3351,32 @@ bcd::SetValueString(const char* p_string,bool /*p_fromDB*/)
   m_exponent = -1;
 
   // Check special cases
-  if(strcmp(p_string,"INF") == 0)
+  if(_tcscmp(p_string,_T("INF")) == 0)
   {
     m_sign = Sign::INF;
     return;
   }
-  if(strcmp(p_string,"-INF") == 0)
+  if(_tcscmp(p_string,_T("-INF")) == 0)
   {
     m_sign = Sign::MIN_INF;
     return;
   }
-  if(strcmp(p_string,"NaN") == 0)
+  if(_tcscmp(p_string,_T("NaN")) == 0)
   {
     m_sign = Sign::NaN;
     return;
   }
-  if(strcmp(p_string,"NULL") == 0)
+  if(_tcscmp(p_string,_T("NULL")) == 0)
   {
     m_sign = Sign::ISNULL;
     return;
   }
 
   // Scan the entire string
-  for(const char* pos = p_string; *pos; ++pos)
+  for(LPCTSTR pos = p_string; *pos; ++pos)
   {
     // Get a char at the next position
-    unsigned char c = *pos;
+    _TUCHAR c = *pos;
 
     // Skip whitespace at the beginning
     if(spacing)
@@ -3441,7 +3422,7 @@ bcd::SetValueString(const char* p_string,bool /*p_fromDB*/)
                   m_sign = Sign::NaN;
                   if(g_throwing)
                   {
-                    throw StdException("BCD: Conversion from string. Bad format in decimal number");
+                    throw StdException(_T("BCD: Conversion from string. Bad format in decimal number"));
                   }
                   return;
                 }
@@ -3554,15 +3535,6 @@ bcd::SetValueNumeric(const SQL_NUMERIC_STRUCT* p_numeric)
 
   // Adjust the sign
   m_sign      = (p_numeric->sign == 1) ? Sign::Positive : Sign::Negative;
-  m_precision = p_numeric->precision;
-  m_scale     = p_numeric->scale;
-
-  int precision = GetPrecision();
-  if(m_scale < precision)
-  {
-    m_scale = (unsigned char)precision;
-  }
-
 }
 
 // bcd::Normalize
@@ -3624,13 +3596,12 @@ bcd::Mult10(int p_times /* = 1 */)
   }
   while(p_times--)
   {
-    long between = 0;
     long carry   = 0;
 
     // Multiply all positions by 10
     for(int ind = bcdLength -1; ind >= 0; --ind)
     {
-      between         = m_mantissa[ind] * 10 + carry;
+      long between    = m_mantissa[ind] * 10 + carry;
       m_mantissa[ind] = between % bcdBase;
       carry           = between / bcdBase;
     }
@@ -3657,12 +3628,11 @@ bcd::Div10(int p_times /*=1*/)
   }
   while(p_times--)
   {
-    long between = 0;
     long carry   = 0;
 
     for(int ind = 0; ind < bcdLength; ++ind)
     {
-      between         = m_mantissa[ind] + (carry * bcdBase);
+      long between    = m_mantissa[ind] + (carry * bcdBase);
       carry           = between % 10;
       m_mantissa[ind] = between / 10;
     }
@@ -3697,17 +3667,17 @@ bcd::ShiftLeft()
 XString
 bcd::LongToString(long p_value) const
 {
-  char buffer[20];
-  _itoa_s(p_value,buffer,20,10);
+  TCHAR buffer[20];
+  _itot_s(p_value,buffer,20,10);
   return XString(buffer);
 }
 
 // bcd::StringNaarLong
 // Description: Convert a string to a single long value
 long
-bcd::StringToLong(const char* p_string) const
+bcd::StringToLong(LPCTSTR p_string) const
 {
-  return atoi(p_string);
+  return _ttoi(p_string);
 }
 
 // bcd::SplitMantissa
@@ -3785,26 +3755,26 @@ bcd::CompareMantissa(const bcd& p_value) const
 #ifdef _DEBUG
 // Debug print of the mantissa
 XString
-bcd::DebugPrint(char* p_name)
+bcd::DebugPrint(PTCHAR p_name)
 {
   XString debug;
 
   // Print the debug name
-  debug.Format("%-14s ",p_name);
+  debug.Format(_T("%-14s "),p_name);
 
   // Print the sign
-  debug.AppendFormat("%c ",m_sign == Sign::Positive ? '+' : '-');
+  debug.AppendFormat(_T("%c "),m_sign == Sign::Positive ? '+' : '-');
 
   // Print the exponent
-  debug.AppendFormat("E%+d ",m_exponent);
+  debug.AppendFormat(_T("E%+d "),m_exponent);
 
   // Print the mantissa in special format
   for(int ind = 0;ind < bcdLength; ++ind)
   {
     // Text "%08ld" dependent on bcdDigits
-    debug.AppendFormat(" %08ld",m_mantissa[ind]);
+    debug.AppendFormat(_T(" %08ld"),m_mantissa[ind]);
   }
-  debug += "\n";
+  debug += _T("\n");
 
   return debug;
 }
@@ -3823,6 +3793,95 @@ bcd::Epsilon(long p_fraction) const
   epsilon.m_mantissa[0] = p_fraction * bcdBase / 10;
   epsilon.m_exponent    = 2 - bcdPrecision;
   return epsilon;
+}
+
+// Calculate the precision and scale for a SQL_NUMERIC
+// Highly optimized version as we do this a lot when
+// streaming bcd numbers to the database
+void
+bcd::CalculatePrecisionAndScale(SQLCHAR& p_precision,SQLCHAR& p_scale) const
+{
+  // Default max values
+  p_precision = bcdDigits * bcdLength;
+  p_scale     = 0;
+
+  // Quick check on zero
+  if(IsZero())
+  {
+    p_precision = 1;
+    return;
+  }
+
+  int index;
+  // Find the first non-zero mantissa digit
+  for(index = bcdLength - 1;index >= 0; --index)
+  {
+    if(m_mantissa[index] == 0)
+    {
+      p_precision -= bcdDigits;
+    }
+    else break;
+  }
+  if(index < 0)
+  {
+    return;
+  }
+  // Find the number of digits in this mantissa
+  // Change this optimalization when changing bcdDigits or bcdLength !!
+  if(m_mantissa[index] % 10000)
+  {
+    // Lower half filled
+    if(m_mantissa[index] % 100)
+    {
+      // 7 or 8 digits
+      p_precision -= (m_mantissa[index] % 10) ? 0 : 1;
+    }
+    else
+    {
+      // 5 or 6 digits
+      p_precision -= (m_mantissa[index] % 1000) ? 2 : 3;
+    }
+  }
+  else
+  {
+    // Lower half is empty
+    if(m_mantissa[index] % 1000000)
+    {
+      // 3 or 4 digits
+      p_precision -= (m_mantissa[index] % 100000) ? 4 : 5;
+    }
+    else
+    {
+      // just two digits
+      p_precision -= (m_mantissa[index] % 10000000) ? 6 : 7;
+    }
+  }
+  // Final check on maximum precision
+  // Cannot exceed SQLNUM_MAX_PREC as otherwise 
+  // we **will** crash on certain RDBMS (MS SQL-Server)
+  if(p_precision > SQLNUM_MAX_PREC)
+  {
+    p_precision = SQLNUM_MAX_PREC;
+  }
+
+  // Now adjust the scale to accommodate precision and exponent
+  // m_exponent always below (-)SQLNUM_MAX_PREC, so this is safe
+  if(m_exponent < 0)
+  {
+    p_scale      = p_precision - (SQLCHAR) m_exponent - 1;
+    p_precision -= (SQLCHAR) m_exponent;
+  }
+  else
+  {
+    if((p_precision - 1) > (SQLCHAR) m_exponent)
+    {
+      p_scale = p_precision - (SQLCHAR) m_exponent - 1;
+    }
+    if(p_precision <= m_exponent)
+    {
+      p_precision = (SQLCHAR) m_exponent + 1;
+    }
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -3844,7 +3903,7 @@ bcd::Add(const bcd& p_number) const
   // Check if we can add
   if(!IsValid() || !p_number.IsValid())
   {
-    return SetInfinity("Cannot add to INFINITY");
+    return SetInfinity(_T("Cannot add to INFINITY"));
   }
   // NULL always yield a NULL
   if(IsNULL() || p_number.IsNULL())
@@ -3890,7 +3949,7 @@ bcd::Sub(const bcd& p_number) const
   // Check if we can subtract
   if(!IsValid() || !p_number.IsValid())
   {
-    return SetInfinity("Cannot subtract with INFINITY");
+    return SetInfinity(_T("Cannot subtract with INFINITY"));
   }
   // NULL always yield a NULL
   if(IsNULL() || p_number.IsNULL())
@@ -3908,7 +3967,7 @@ bcd::Mul(const bcd& p_number) const
   // Check if we can multiply
   if(!IsValid() || !p_number.IsValid())
   {
-    return SetInfinity("Cannot multiply with INFINITY");
+    return SetInfinity(_T("Cannot multiply with INFINITY"));
   }
   // NULL always yield a NULL
   if(IsNULL() || p_number.IsNULL())
@@ -3931,7 +3990,7 @@ bcd::Div(const bcd& p_number) const
   // Check if we can divide
   if(!IsValid() || !p_number.IsValid())
   {
-    return SetInfinity("Cannot divide with INFINITY");
+    return SetInfinity(_T("Cannot divide with INFINITY"));
   }
   // NULL always yield a NULL
   if(IsNULL() || p_number.IsNULL())
@@ -3941,7 +4000,7 @@ bcd::Div(const bcd& p_number) const
   // If divisor is zero -> ERROR
   if(p_number.IsZero())
   {
-    return SetInfinity("BCD: Division by zero.");
+    return SetInfinity(_T("BCD: Division by zero."));
   }
   // Shortcut: result is zero if this is zero
   if(IsZero())
@@ -3966,7 +4025,7 @@ bcd::Mod(const bcd& p_number) const
   // Check if we can do a modulo
   if(!IsValid() || !p_number.IsValid())
   {
-    return SetInfinity("Cannot do a modulo with INFINITY");
+    return SetInfinity(_T("Cannot do a modulo with INFINITY"));
   }
   // NULL always yield a NULL
   if(IsNULL() || p_number.IsNULL())
@@ -4089,11 +4148,10 @@ bcd::PositiveAddition(bcd& arg1,bcd& arg2) const
     }
   }
   // Do the addition of the mantissa
-  int64 reg   = 0L;
   int64 carry = 0L;
   for(int ind = bcdLength - 1;ind >= 0; --ind)
   {
-    reg   = ((int64)arg1.m_mantissa[ind]) + ((int64)arg2.m_mantissa[ind]) + carry;
+    int64 reg = ((int64)arg1.m_mantissa[ind]) + ((int64)arg2.m_mantissa[ind]) + carry;
     carry = reg / bcdBase;
     arg1.m_mantissa[ind] = reg % bcdBase;
   }
@@ -4136,7 +4194,6 @@ bcd::PositiveSubtraction(bcd& arg1,bcd& arg2) const
     }
   }
   // Do the subtraction of the mantissa
-  int64 reg   = 0L;
   for(int ind = bcdLength - 1;ind >= 0; --ind)
   {
     if(arg1.m_mantissa[ind] >= arg2.m_mantissa[ind])
@@ -4145,7 +4202,7 @@ bcd::PositiveSubtraction(bcd& arg1,bcd& arg2) const
     }
     else
     {
-      reg = ((int64)bcdBase + arg1.m_mantissa[ind]) - arg2.m_mantissa[ind];
+      int64 reg = ((int64)bcdBase + arg1.m_mantissa[ind]) - arg2.m_mantissa[ind];
       arg1.m_mantissa[ind] = (long) reg;
       // Take care of carry
       if(ind > 0)
@@ -4173,12 +4230,11 @@ bcd::PositiveMultiplication(const bcd& p_arg1,const bcd& p_arg2) const
   int64 res[2 * bcdLength] = { 0 };
 
   // Multiplication of the mantissa
-  int64 between = 0;
   for(int i = bcdLength - 1; i >= 0; --i)
   {
     for(int j = bcdLength - 1; j >= 0; --j)
     {
-      between = (int64)p_arg1.m_mantissa[i] * (int64)p_arg2.m_mantissa[j];
+      int64 between = (int64)p_arg1.m_mantissa[i] * (int64)p_arg2.m_mantissa[j];
       res[i + j + 1] += between % bcdBase; // result
       res[i + j    ] += between / bcdBase; // carry
     }
@@ -4227,7 +4283,6 @@ bcd::PositiveDivision(bcd& p_arg1,bcd& p_arg2) const
   long divisor   = 0; 
   long quotient  = 0;
   int  guess     = 2;
-  bool zero      = true;
 
   // Grade down arg2 one position
   p_arg2.Div10();
@@ -4239,7 +4294,7 @@ bcd::PositiveDivision(bcd& p_arg1,bcd& p_arg2) const
 //     p_arg2.DebugPrint("argument2");
 
     // Check for intermediate of zero. Arg1 != zero, so it must end!!
-    zero = true;
+    bool zero = true;
     for(int x = 0;x < bcdLength; ++x)
     {
       if(p_arg1.m_mantissa[x]) 
@@ -4292,10 +4347,9 @@ bcd::PositiveDivision(bcd& p_arg1,bcd& p_arg2) const
     {
       // quotient * p_arg2 -> subtrahend
       int64 carry  = 0;
-      int64 number = 0;
       for(int pos = bcdLength - 1; pos >= 0; --pos)
       {
-        number = (int64)quotient * (int64)p_arg2.m_mantissa[pos] + carry;
+        int64 number = (int64)quotient * (int64)p_arg2.m_mantissa[pos] + carry;
         subtrahend.m_mantissa[pos] = number % bcdBase;
         carry = number / bcdBase;
       }
@@ -4324,7 +4378,7 @@ bcd::PositiveDivision(bcd& p_arg1,bcd& p_arg2) const
           }
           else
           {
-            number = ((int64)bcdBase + p_arg1.m_mantissa[pos]) - subtrahend.m_mantissa[pos];
+            int64 number = ((int64)bcdBase + p_arg1.m_mantissa[pos]) - subtrahend.m_mantissa[pos];
             p_arg1.m_mantissa[pos] = (long)number;
             if(pos > 0)
             {
@@ -4409,64 +4463,64 @@ bcd::SetInfinity(XString p_reason /*= ""*/) const
 // Overloaded math precision floating point functions equivalent with the std C functions
 // Overloaded to work with the BCD number class, always yielding a bcd number.
 
-bcd modf(bcd p_number, bcd* p_intpart)
+bcd modf(const bcd& p_number, bcd* p_intpart)
 {
   *p_intpart = p_number.Floor();
   return p_number.Fraction();
 }
 
-bcd fmod(bcd p_number,bcd p_divisor)
+bcd fmod(const bcd& p_number,const bcd& p_divisor)
 {
   return p_number % p_divisor;
 }
 
-bcd floor(bcd p_number)
+bcd floor(const bcd& p_number)
 {
   return p_number.Floor();
 }
 
-bcd ceil(bcd p_number)
+bcd ceil(const bcd& p_number)
 {
   return p_number.Ceiling();
 }
 
-bcd fabs(bcd p_number)
+bcd fabs(const bcd& p_number)
 {
   return p_number.AbsoluteValue();
 }
 
-bcd sqrt(bcd p_number)
+bcd sqrt(const bcd& p_number)
 {
   return p_number.SquareRoot();
 }
 
-bcd log10(bcd p_number)
+bcd log10(const bcd& p_number)
 {
   return p_number.Log10();
 }
 
-bcd log(bcd p_number)
+bcd log(const bcd& p_number)
 {
   return p_number.Log();
 }
 
-bcd exp(bcd p_number)
+bcd exp(const bcd& p_number)
 {
   return p_number.Exp();
 }
 
-bcd pow(bcd p_number,bcd  p_power)
+bcd pow(const bcd& p_number,const bcd& p_power)
 {
   return p_number.Power(p_power);
 }
 
-bcd frexp(bcd p_number,int* p_exponent)
+bcd frexp(const bcd& p_number,int* p_exponent)
 {
   *p_exponent = p_number.GetExponent();
   return p_number.GetMantissa();
 }
 
-bcd ldexp(bcd p_number,int p_power)
+bcd ldexp(const bcd& p_number,int p_power)
 {
   if(p_power == 0)
   {
@@ -4481,37 +4535,37 @@ bcd ldexp(bcd p_number,int p_power)
 
 // Overloaded trigonometric functions on a bcd number
 
-bcd atan (bcd p_number) 
+bcd atan (const bcd& p_number) 
 { 
   return p_number.ArcTangent(); 
 }
 
-bcd atan2(bcd p_y,bcd p_x)
+bcd atan2(const bcd& p_y,const bcd& p_x)
 {
   return p_y.ArcTangent2Points(p_x);
 }
 
-bcd asin(bcd p_number)
+bcd asin(const bcd& p_number)
 {
   return p_number.ArcSine();
 }
 
-bcd acos(bcd p_number)
+bcd acos(const bcd& p_number)
 {
   return p_number.ArcCosine();
 }
 
-bcd sin(bcd p_number)
+bcd sin(const bcd& p_number)
 {
   return p_number.Sine();
 }
 
-bcd cos(bcd p_number)
+bcd cos(const bcd& p_number)
 {
   return p_number.Cosine();
 }
 
-bcd tan(bcd p_number)
+bcd tan(const bcd& p_number)
 {
   return p_number.Tangent();
 }

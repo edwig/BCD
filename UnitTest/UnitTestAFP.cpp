@@ -18,9 +18,9 @@ namespace UnitTest
       afp af(30.0);
       double daf = (double)af;
 
-      CString expect("30.0");
+      CString expect(_T("30.0"));
       CString result;
-      result.Format("%2.1f",daf);
+      result.Format(_T("%2.1f"),daf);
 
       Assert::AreEqual(expect.GetString(),result.GetString());
     }

@@ -18,7 +18,7 @@ class StdException
 public:
   // Application type constructors
   StdException(int p_errorCode);
-  StdException(const char* p_fault);
+  StdException(LPCTSTR p_fault);
   StdException(const CString& p_fault);
   StdException(int p_errorCode,const char* p_fault);
   // Construct from a SafeExceptionHandler (SEH)
@@ -31,7 +31,7 @@ public:
   int                  GetApplicationCode();
   CString              GetApplicationFault();
   CString              GetErrorMessage();
-  BOOL                 GetErrorMessage(LPTSTR p_error,UINT p_maxSize,PUINT p_helpContext = NULL);
+  BOOL                 GetErrorMessage(LPCTSTR p_error,UINT p_maxSize,PUINT p_helpContext = NULL);
 
 private:
   UINT                 m_safeExceptionCode { 0 };
