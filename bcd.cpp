@@ -2829,7 +2829,7 @@ bcd::IsNearZero()
   {
     return false;
   }
-  bcd epsilon = Epsilon(2);
+  bcd epsilon = Epsilon(10);
   return AbsoluteValue() < epsilon;
 }
 
@@ -3827,7 +3827,7 @@ bcd::CalculatePrecisionAndScale(SQLCHAR& p_precision,SQLCHAR& p_scale) const
     return;
   }
   // Find the number of digits in this mantissa
-  // Change this optimalization when changing bcdDigits or bcdLength !!
+  // Change this optimization when changing bcdDigits or bcdLength !!
   if(m_mantissa[index] % 10000)
   {
     // Lower half filled

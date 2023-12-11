@@ -302,6 +302,7 @@
   <ItemGroup>
     <ClInclude Include="..\afp.h" />
     <ClInclude Include="..\bcd.h" />
+    <ClInclude Include="..\bcd200.h" />
     <ClInclude Include="..\numeric.h" />
     <ClInclude Include="..\StdException.h" />
     <ClInclude Include="..\uint128.h" />
@@ -311,6 +312,7 @@
   <ItemGroup>
     <ClCompile Include="..\afp.cpp" />
     <ClCompile Include="..\bcd.cpp" />
+    <ClCompile Include="..\bcd200.cpp" />
     <ClCompile Include="..\numeric.cpp" />
     <ClCompile Include="..\StdException.cpp" />
     <ClCompile Include="..\uint128.cpp">
@@ -329,6 +331,7 @@
     </ClCompile>
     <ClCompile Include="UnitTestAFP.cpp" />
     <ClCompile Include="UnitTestBCD.cpp" />
+    <ClCompile Include="UnitTestBCD200.cpp" />
     <ClCompile Include="UnitTestNumeric.cpp" />
     <ClCompile Include="UnitTestUint128.cpp" />
   </ItemGroup>
