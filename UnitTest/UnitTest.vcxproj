@@ -303,6 +303,7 @@
     <ClInclude Include="..\afp.h" />
     <ClInclude Include="..\bcd.h" />
     <ClInclude Include="..\bcd200.h" />
+    <ClInclude Include="..\HPFCounter.h" />
     <ClInclude Include="..\numeric.h" />
     <ClInclude Include="..\StdException.h" />
     <ClInclude Include="..\uint128.h" />
@@ -313,6 +314,7 @@
     <ClCompile Include="..\afp.cpp" />
     <ClCompile Include="..\bcd.cpp" />
     <ClCompile Include="..\bcd200.cpp" />
+    <ClCompile Include="..\HPFCounter.cpp" />
     <ClCompile Include="..\numeric.cpp" />
     <ClCompile Include="..\StdException.cpp" />
     <ClCompile Include="..\uint128.cpp">

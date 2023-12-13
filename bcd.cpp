@@ -1377,10 +1377,14 @@ bcd::Ceiling() const
   return result;
 }
 
+#ifndef ALT_SQUAREROOT
+
 // bcd::SquareRoot
 // Description: Do the square root of the bcd
 // Technical:   Do first approximation by sqrt(double)
 //              Then use Newton's equation
+
+
 bcd
 bcd::SquareRoot() const
 {
@@ -1399,7 +1403,7 @@ bcd::SquareRoot() const
     return SetInfinity(_T("BCD: Infinity does not have a square root!"));
   }
 
-  // Optimalization sqrt(0) = 0
+  // Optimaization sqrt(0) = 0
   if(IsZero())
   {
     return number;
@@ -1451,6 +1455,58 @@ bcd::SquareRoot() const
 
   return result;
 }
+
+#else
+
+// Description: Square root of the number
+// What it does: Does an estimation through a double and then
+// Uses the Newton estimation to calculate the root
+bcd
+bcd::SquareRoot() const
+{
+  bcd number(0L, 0L);
+  bcd half(_T("0.5"));
+  bcd two(2L);
+  bcd three(3L);
+  int sqrti = 0;
+
+  // Optimization: sqrt(0) = 0
+  if (IsNULL())
+  {
+    return number;
+  }
+
+  // Getting the breaking criterion
+  bcd epsilon = Epsilon(10);
+
+  number = *this; // Number to get the square-root from
+  if (number.GetSign() == -1)
+  {
+    return SetInfinity(_T("BCD: Infinity does not have a square root!"));
+  }
+  // First estimate
+  double estimate1 = number.AsDouble() / 2;
+  double estimate2 = 1 / sqrt(estimate1);
+  bcd result(estimate1);
+  bcd between;
+
+  // Newton's iteration
+  bcd last_result(_T("0.0"));
+
+  while (true)
+  {
+    result = (result + number / result) / two;
+    between = last_result - result;
+    if (between.AbsoluteValue() < epsilon)
+    {
+      break;
+    }
+
+    last_result = result;
+  }
+  return result;
+}
+#endif
 
 // bcd::Power
 // Description: Get BCD number to a power

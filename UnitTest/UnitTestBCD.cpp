@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "CppUnitTest.h"
 #include "bcd.h"
+#include "HPFCounter.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -1405,6 +1406,38 @@ namespace UnitTest
       CString reslog = log.AsString();
       CString resint = internal.AsString();
       Assert::IsTrue(reslog == resint);
+    }
+
+    // USE
+    // #define ALT_SQUAREROOT
+    // To test the alternate algorithm provided by blackjetrock
+    // 
+    TEST_METHOD(T100_Root10thousands)
+    {
+      Logger::WriteMessage("Testing BCD square root(0.0001)");
+      bcd value("0.0001");
+      bcd sqroot;
+      
+      HPFCounter count;
+      for (int ind = 0; ind < 100; ++ind)
+      {
+        sqroot = value.SquareRoot();
+      }
+      count.Stop();
+
+      sqroot.Round(20);
+      CString result = sqroot.AsString();
+      CString expected("0.01");
+
+      Assert::IsTrue(result == expected);
+
+      CString timing;
+      timing.Format("Total calculation time: %f", count.GetCounter() / 100);
+      Logger::WriteMessage(timing);
+      // Unmodified: 4 nano-sec
+      // Total calculation time: 0.000004
+      // Modified algorithm blackjetrock: 56 nano-sec
+      // Total calculation time: 0.000056
     }
   };
 }

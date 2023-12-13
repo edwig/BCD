@@ -39,6 +39,9 @@
     <ClInclude Include="..\bcd200.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\HPFCounter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -75,6 +78,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\bcd200.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\HPFCounter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
