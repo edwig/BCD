@@ -282,6 +282,7 @@
     <ClInclude Include="afp.h" />
     <ClInclude Include="bcd.h" />
     <ClInclude Include="bcd200.h" />
+    <ClInclude Include="Icd208.h" />
     <ClInclude Include="numeric.h" />
     <ClInclude Include="HPFCounter.h" />
     <ClInclude Include="Icd.h" />
@@ -301,6 +302,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='UnicodeDebug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="bcd200.cpp" />
+    <ClCompile Include="Icd208.cpp" />
     <ClCompile Include="numeric.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='UnicodeDebug|x64'">NotUsing</PrecompiledHeader>

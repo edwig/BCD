@@ -8,7 +8,7 @@
 #include <math.h>   // Needed for conversions and estimates
 #include <float.h>  // Needed for estimates
 #include <limits.h> // For max sizes of int, long and int64
-#include "Icd.h"
+#include "Icd208.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -27,19 +27,19 @@ static char THIS_FILE[] = __FILE__;
 
 // Icd::Icd
 // Description:   default constructor
-// What it does:  Initializes the icd to 0.0
+// What it does:  Initializes the icd208 to 0.0
 //
-icd::icd()
+icd208::icd208()
 {
   MakeEmpty();
 }
 
 // Icd::Icd
 // Description:   copy constructor
-// Parameters:    const icd& 
+// Parameters:    const icd208& 
 // What it does:  copies all data members
 //
-icd::icd(const icd& p_icd)
+icd208::icd208(const icd208& p_icd)
 {
   m_sign      = p_icd.m_sign;
   m_length    = p_icd.m_length;
@@ -52,9 +52,9 @@ icd::icd(const icd& p_icd)
 // Description:   copy constructor with one or two longs (32bits)
 // Parameters:    const long value      // value before the '.'
 //                const long remainder  // value behind the '.'
-// What it does:  Uses SetValue long to initialize the icd
+// What it does:  Uses SetValue long to initialize the icd208
 //
-icd::icd(const long value, const long remainder)
+icd208::icd208(const long value, const long remainder)
 {
   SetValueLong(value,remainder);
 }
@@ -64,23 +64,23 @@ icd::icd(const long value, const long remainder)
 // Description:   copy constructor with one or two unsigned longs (32bits)
 // Parameters:    const unsigned long value      // value before the '.'
 //                const unsigned long remainder  // value behind the '.'
-// What it does:  Uses SetValue long to initialize the icd
+// What it does:  Uses SetValue long to initialize the icd208
 //
-icd::icd(const ulong value, const ulong remainder /*= 0*/)
+icd208::icd208(const ulong value, const ulong remainder /*= 0*/)
 {
   SetValueULong(value,remainder);
 }
 
 // Icd::Icd
 // Copy constructor with an int64 (64 bits) and an optional remainder (64 bit)
-icd::icd(const int64 value, const int64 remainder)
+icd208::icd208(const int64 value, const int64 remainder)
 {
   SetValueInt64(value, remainder);
 }
 
 // Icd::Icd
 // Copy constructor with an unsigned int64 (64 bits) and an optional remainder (64 bit)
-icd::icd(const UINT64 value, const UINT64 remainder /*= 0*/)
+icd208::icd208(const UINT64 value, const UINT64 remainder /*= 0*/)
 {
   SetValueUInt64(value, remainder);
 }
@@ -90,7 +90,7 @@ icd::icd(const UINT64 value, const UINT64 remainder /*= 0*/)
 // Parameters:    const double value 
 // What it does:  Uses SetValueDouble
 //
-icd::icd(const double value)
+icd208::icd208(const double value)
 {
   SetValueDouble(value);
 }
@@ -101,31 +101,31 @@ icd::icd(const double value)
 //                bool  fromDB      // True if the value came from a database
 // What it does:  Uses SetValueString
 //
-icd::icd(const CString& str)
+icd208::icd208(const CString& str)
 {
   SetValueString(str);
 }
 
 // ICD of a byte/char
-icd::icd(const char value)
+icd208::icd208(const char value)
 {
   SetValueLong((long)value,0L);
 }
 
 // ICD of a byte/char
-icd::icd(const uchar value)
+icd208::icd208(const uchar value)
 {
   SetValueULong((ulong)value, 0L);
 }
 
 // ICD of a short
-icd::icd(const short value)
+icd208::icd208(const short value)
 {
   SetValueLong((long)value, 0L);
 }
 
 // ICD of a short
-icd::icd(const ushort value)
+icd208::icd208(const ushort value)
 {
   SetValueLong((long)value, 0L);
 }
@@ -134,7 +134,7 @@ icd::icd(const ushort value)
 // Description:  copy constructor from a database NUMERIC
 // Parameters    p_numeric   // Pointer to ODBC structure
 // 
-icd::icd(SQL_NUMERIC_STRUCT* p_numeric)
+icd208::icd208(SQL_NUMERIC_STRUCT* p_numeric)
 {
   SetValueNumeric(p_numeric);
 }
@@ -143,7 +143,7 @@ icd::icd(SQL_NUMERIC_STRUCT* p_numeric)
 // Description:   destructor
 // What it does:  Does nothing (yet)
 //
-icd::~icd()
+icd208::~icd208()
 {
 }
 
@@ -162,23 +162,38 @@ icd::~icd()
 // Icd::PI
 // Description:   Ratio between the radius and the circumference of a circle
 // What it does:  Natural constant that never changes
-icd
-icd::PI()
+icd208
+icd208::PI()
 {
-  icd pi;
+  icd208 pi;
 
   pi.m_length    = icdLength * icdDigits;
   pi.m_precision = icdLength * icdDigits / 2;
   pi.m_sign      = Positive;
 
-  // PI in 40 decimals
-  // +3.14159265_35897932_38462643_38327950_28841972
-  pi.m_data[icdPointPosition    ] = 3;
-  pi.m_data[icdPointPosition - 1] = 14159265L;
-  pi.m_data[icdPointPosition - 2] = 35897932L;
-  pi.m_data[icdPointPosition - 3] = 38462643L;
-  pi.m_data[icdPointPosition - 4] = 38327950L;
-  pi.m_data[icdPointPosition - 5] = 28841972L;
+  // PI in 104 decimals
+  // +3,14159265 35897932 38462643 38327950 28841971
+  //    69399375 10582097 49445923 07816406 28620899
+  //    86280348 25342117 06798214 80865132 82306647
+  //    09384460 95505822 31725359 40812848 11174502
+  //    84102701 93852110 55596446 22948954 93038196
+  //    44288109 75665933 44612847 56482337 8678316
+  pi.m_data[icdPointPosition     ] = 3;
+  pi.m_data[icdPointPosition -  1] = 14159265L;
+  pi.m_data[icdPointPosition -  2] = 35897932L;
+  pi.m_data[icdPointPosition -  3] = 38462643L;
+  pi.m_data[icdPointPosition -  4] = 38327950L;
+  pi.m_data[icdPointPosition -  5] = 28841971L;
+
+  pi.m_data[icdPointPosition -  6] = 69399375L;
+  pi.m_data[icdPointPosition -  7] = 10582097L;
+  pi.m_data[icdPointPosition -  8] = 49445923L;
+  pi.m_data[icdPointPosition -  9] =  7816406L;
+  pi.m_data[icdPointPosition - 10] = 28620899L;
+
+  pi.m_data[icdPointPosition - 11] = 86280348L;
+  pi.m_data[icdPointPosition - 12] = 25342117L;
+  pi.m_data[icdPointPosition - 13] =  6798215L; // <- Rounded 4.8 to 5
 
   return pi;
 }
@@ -186,23 +201,38 @@ icd::PI()
 // Icd::LN2
 // Description:  Natural logarithm of two
 // What it does: Mathematical constant that never changes
-icd
-icd::LN2()
+icd208
+icd208::LN2()
 {
-  icd ln2;
+  icd208 ln2;
 
   ln2.m_length    = icdLength * icdDigits;
   ln2.m_precision = icdLength * icdDigits / 2;
   ln2.m_sign      = Positive;
 
   // LN2 in 40 decimals
-  // +0.69314718_05599453_09417232_12145817_65680756
-  ln2.m_data[icdPointPosition    ] = 0;
-  ln2.m_data[icdPointPosition - 1] = 69314718L;
-  ln2.m_data[icdPointPosition - 2] =  5599453L;
-  ln2.m_data[icdPointPosition - 3] =  9417232L;
-  ln2.m_data[icdPointPosition - 4] = 12145817L;
-  ln2.m_data[icdPointPosition - 5] = 65680756L;
+  // +0.69314718_05599453_09417232_12145817_65680755_
+  //    00134360_25525412_06800094_93393621_96969471_
+  //    56058633_26996418_68754200_14810205_70685733_
+  //    68552023_57581305_57032670_75163507_59619307_
+  //    27570828_37143519_03070386_23891673_47111855
+
+  ln2.m_data[icdPointPosition     ] = 0;
+  ln2.m_data[icdPointPosition -  1] = 69314718L;
+  ln2.m_data[icdPointPosition -  2] =  5599453L;
+  ln2.m_data[icdPointPosition -  3] =  9417232L;
+  ln2.m_data[icdPointPosition -  4] = 12145817L;
+  ln2.m_data[icdPointPosition -  5] = 65680755L;
+
+  ln2.m_data[icdPointPosition -  6] =   134360L;
+  ln2.m_data[icdPointPosition -  7] = 25525412L;
+  ln2.m_data[icdPointPosition -  8] =  6800094L;
+  ln2.m_data[icdPointPosition -  9] = 93393621L;
+  ln2.m_data[icdPointPosition - 10] = 96969471L;
+
+  ln2.m_data[icdPointPosition - 11] = 56058633L;
+  ln2.m_data[icdPointPosition - 12] = 26996418L;
+  ln2.m_data[icdPointPosition - 13] = 68754200L;
 
   return ln2;
 }
@@ -210,23 +240,39 @@ icd::LN2()
 // Icd::LN10
 // Description:  Natural logarithm of ten
 // What it does: Mathematical constant that never changes
-icd
-icd::LN10()
+icd208
+icd208::LN10()
 {
-  icd ln10;
+  icd208 ln10;
 
   ln10.m_length    = icdLength * icdDigits;
   ln10.m_precision = icdLength * icdDigits / 2;
   ln10.m_sign      = Positive;
 
-  // LN10 in 40 decimals
-  // +2.30258509_29940456_84017991_45468436_42076019
-  ln10.m_data[icdPointPosition    ] = 2;
-  ln10.m_data[icdPointPosition - 1] = 30258509L;
-  ln10.m_data[icdPointPosition - 2] = 29940456L;
-  ln10.m_data[icdPointPosition - 3] = 84017991L;
-  ln10.m_data[icdPointPosition - 4] = 45468436L;
-  ln10.m_data[icdPointPosition - 5] = 42076019L;
+  // LN10 in 104 decimals
+  // +2.30258509 29940456 84017991 45468436 42076011
+  //    01488628 77297603 33279009 67572609 67735248
+  //    02359972 05089598 29834196 77840422 86248633
+  //    40952546 50828067 56666287 36909878 16894829
+  //    07208325 55468084 37998948 26233198 5283296
+
+
+  ln10.m_data[icdPointPosition     ] = 2;
+  ln10.m_data[icdPointPosition -  1] = 30258509L;
+  ln10.m_data[icdPointPosition -  2] = 29940456L;
+  ln10.m_data[icdPointPosition -  3] = 84017991L;
+  ln10.m_data[icdPointPosition -  4] = 45468436L;
+  ln10.m_data[icdPointPosition -  5] = 42076011L;
+
+  ln10.m_data[icdPointPosition -  6] =  1488628L;
+  ln10.m_data[icdPointPosition -  7] = 77297603L;
+  ln10.m_data[icdPointPosition -  8] = 33279009L;
+  ln10.m_data[icdPointPosition -  9] = 67572609L;
+  ln10.m_data[icdPointPosition - 10] = 67735248L;
+
+  ln10.m_data[icdPointPosition - 11] =  2359972L;
+  ln10.m_data[icdPointPosition - 12] =  5089598L;
+  ln10.m_data[icdPointPosition - 13] = 29834197L; // <- Rounded 6.7 to 7
 
   return ln10;
 }
@@ -244,12 +290,12 @@ icd::LN10()
 //////////////////////////////////////////////////////////////////////////
 
 // Icd::operator=
-// Description:   assignment from an icd
-// Parameters:    const icd& 
-// What it does:  If it is not us, copy the icd
+// Description:   assignment from an icd208
+// Parameters:    const icd208& 
+// What it does:  If it is not us, copy the icd208
 //
-const icd&
-icd::operator=(const icd& p_icd)
+const icd208&
+icd208::operator=(const icd208& p_icd)
 {
   if (this != &p_icd)
   {
@@ -268,10 +314,10 @@ icd::operator=(const icd& p_icd)
 //
 // Description:   assignment from a string
 // Parameters:    const String&
-// What it does:  Uses SetValueString to get the string in the icd
+// What it does:  Uses SetValueString to get the string in the icd208
 //
-const icd&
-icd::operator=(const CString& str)
+const icd208&
+icd208::operator=(const CString& str)
 {
   SetValueString(str);
   return *this;
@@ -280,10 +326,10 @@ icd::operator=(const CString& str)
 // Icd::operator=
 // Description:   assignment from a long
 // Parameters:    const long 
-// What it does:  Uses SetValueLong to get the long in the icd
+// What it does:  Uses SetValueLong to get the long in the icd208
 //
-const icd&
-icd::operator=(const long value)
+const icd208&
+icd208::operator=(const long value)
 {
   SetValueLong(value, 0);
   return *this;
@@ -292,21 +338,21 @@ icd::operator=(const long value)
 // Icd::operator=
 // Description:   assignment from a double
 // Parameters:    const double 
-// What it does:  Uses SetValueDouble to get the double in the icd
+// What it does:  Uses SetValueDouble to get the double in the icd208
 //
-const icd&
-icd::operator=(const double value)
+const icd208&
+icd208::operator=(const double value)
 {
   SetValueDouble(value);
   return *this;
 }
 
 // Icd::operator+=
-// Description:   Adds the icd and returns the result
+// Description:   Adds the icd208 and returns the result
 // What it does:  Uses the + operator and the = operator. (x+=y equivalent to x=x+y)
 //
-const icd&
-icd::operator+=(const icd& p_icd)
+const icd208&
+icd208::operator+=(const icd208& p_icd)
 {
   // x+=y is equal to: x=x+y
   *this = *this + p_icd;
@@ -314,11 +360,11 @@ icd::operator+=(const icd& p_icd)
 }
 
 // Icd::operator-=
-// Description:   Subtracts the icd and returns the result
+// Description:   Subtracts the icd208 and returns the result
 // What it does:  Uses the - operator and the = operator. (x-=y equivalent to x=x-y)
 //
-const icd&
-icd::operator-=(const icd& p_icd)
+const icd208&
+icd208::operator-=(const icd208& p_icd)
 {
   // x-=y is the same as: x=x-y
   *this = *this - p_icd;
@@ -326,29 +372,29 @@ icd::operator-=(const icd& p_icd)
 }
 
 // Icd::operator*=
-// Description:   Multiplies the icd to this one and returns the result
+// Description:   Multiplies the icd208 to this one and returns the result
 // What it does:  Uses the Mul operation
 //
-const icd& 
-icd::operator*=(const icd& p_icd)
+const icd208& 
+icd208::operator*=(const icd208& p_icd)
 {
   *this = Mul(p_icd);
   return *this;
 }
 
 // Icd::operator/=
-// Description:   Divide this icd with the given icd and returns the result
+// Description:   Divide this icd208 with the given icd208 and returns the result
 // What it does:  Uses the Div operation
 //
-const icd&
-icd::operator/=(const icd& p_icd)
+const icd208&
+icd208::operator/=(const icd208& p_icd)
 {
   *this = Div(p_icd);
   return *this;
 }
 
-const icd& 
-icd::operator%=(const icd& p_icd)
+const icd208& 
+icd208::operator%=(const icd208& p_icd)
 {
   *this = Mod(p_icd);
   return *this;
@@ -357,12 +403,12 @@ icd::operator%=(const icd& p_icd)
 
 // Icd::operator- (Unary)
 // Description:   prefix - operator (negation)
-// What it does:  Copies the icd and then negates the result, if not zero
+// What it does:  Copies the icd208 and then negates the result, if not zero
 //
-const icd
-icd::operator-() const
+const icd208
+icd208::operator-() const
 {
-  icd number(*this);
+  icd208 number(*this);
 
   // If null, do not change the sign, otherwise flip it
   if (!number.IsNull())
@@ -376,11 +422,11 @@ icd::operator-() const
 // Description:   postfix ++ operator
 // What it does:  Uses the prefix ++ and the copy constructor
 //
-const icd
-icd::operator++(int)
+const icd208
+icd208::operator++(int)
 {
   // postfix ++ operator: calculate the result first, do the addition afterward
-  icd res(*this);
+  icd208 res(*this);
   ++*this;
   return res;
 }
@@ -389,11 +435,11 @@ icd::operator++(int)
 // Description:   prefix ++ operator
 // What it does:  Adds 1 (one) and returns the result
 //
-icd&
-icd::operator++()
+icd208&
+icd208::operator++()
 {
   //++x is equivalent to: x+=1
-  icd number_1(1L, 0);
+  icd208 number_1(1L, 0);
   *this += number_1;
   return *this;
 }
@@ -402,11 +448,11 @@ icd::operator++()
 // Description:   postfix -- operator
 // What it does   Uses the prefix -- and returns the result
 //
-const icd
-icd::operator--(int)
+const icd208
+icd208::operator--(int)
 {
   // postfix -- operator: calculate result first, subtract later
-  icd res(*this);
+  icd208 res(*this);
   --*this;
   return res;
 }
@@ -415,11 +461,11 @@ icd::operator--(int)
 // Description:   prefix -- operator
 // What it does:  Subtract 1 (one) and return this
 //
-icd&
-icd::operator--()
+icd208&
+icd208::operator--()
 {
   // --x is same as x-=1
-  icd number_1(1L);
+  icd208 number_1(1L);
   *this -= number_1;
   return *this;
 }
@@ -429,7 +475,7 @@ icd::operator--()
 // What it does:  true if sign and all m_data are equal
 //
 const bool
-icd::operator==(const icd& p_icd) const
+icd208::operator==(const icd208& p_icd) const
 {
   // Only equal is signs are equal
   bool isSame = m_sign == p_icd.m_sign;
@@ -450,7 +496,7 @@ icd::operator==(const icd& p_icd) const
 // What it does:  Uses the inversion of the equality operator
 //
 const bool
-icd::operator!=(const icd& p_icd) const
+icd208::operator!=(const icd208& p_icd) const
 {
   // x!=y is equivalent to !(x==y)
   return !(*this == p_icd);
@@ -462,7 +508,7 @@ icd::operator!=(const icd& p_icd) const
 //                Otherwise: test the m_data for the inequality
 //
 const bool
-icd::operator<(const icd& p_icd) const
+icd208::operator<(const icd208& p_icd) const
 {
   // Signs are the same
   bool isSame = (m_sign == p_icd.m_sign);
@@ -496,7 +542,7 @@ icd::operator<(const icd& p_icd) const
 //                 Otherwise test the m_data structure
 //
 const bool
-icd::operator>(const icd& p_icd) const
+icd208::operator>(const icd208& p_icd) const
 {
   // Equality of the signs
   bool isSame = (m_sign == p_icd.m_sign);
@@ -530,7 +576,7 @@ icd::operator>(const icd& p_icd) const
 // What it does:  Uses the inversion of the greater-than operator
 //
 const bool
-icd::operator<=(const icd& p_icd) const
+icd208::operator<=(const icd208& p_icd) const
 {
   // x<=y is equivalent to !(x>y)
   return !(*this>p_icd);
@@ -541,7 +587,7 @@ icd::operator<=(const icd& p_icd) const
 // What it does:  Uses the inversion of the smaller-than operator
 //
 const bool
-icd::operator>=(const icd& p_icd) const
+icd208::operator>=(const icd208& p_icd) const
 {
   // x>=y is equivalent to !(x<y)
   return !(*this < p_icd);
@@ -549,9 +595,9 @@ icd::operator>=(const icd& p_icd) const
 
 // operator<<
 // Description:   standard output operator
-// What it does:  Uses the string 'AsString' method to serialize an icd
+// What it does:  Uses the string 'AsString' method to serialize an icd208
 //
-ostream& operator<<(ostream& os, const icd& p_icd)
+ostream& operator<<(ostream& os, const icd208& p_icd)
 {
   os << p_icd.AsString().operator LPCTSTR();
   return os;
@@ -573,10 +619,10 @@ ostream& operator<<(ostream& os, const icd& p_icd)
 // Description:   First natural number not greater than the input
 // What it does:  Remove the decimal part and subtract 1 for negative numbers
 //
-icd
-icd::Floor() const
+icd208
+icd208::Floor() const
 {  
-  icd res;
+  icd208 res;
   res.m_sign = m_sign;
   for (int n = icdPointPosition; n < icdLength; n++)
   {
@@ -602,10 +648,10 @@ icd::Floor() const
 // Description:   First natural number greater than the input
 // What it does:  Remove decimal part and add 1 for negative numbers
 //
-icd
-icd::Ceil() const
+icd208
+icd208::Ceil() const
 {
-  icd res;
+  icd208 res;
   res.m_sign = m_sign;
   for (int n = icdPointPosition; n < icdLength; n++)
   {
@@ -634,13 +680,13 @@ icd::Ceil() const
 
 #ifdef SLOW_SQUAREROOT
 
-icd
-icd::SquareRoot() const
+icd208
+icd208::SquareRoot() const
 {
-  icd number(0L, 0L);
-  icd half(("0.5"));
-  icd two(2L);
-  icd three(3L);
+  icd208 number(0L, 0L);
+  icd208 half(("0.5"));
+  icd208 two(2L);
+  icd208 three(3L);
   int sqrti = 0;
 
   // Optimization: sqrt(0) = 0
@@ -653,7 +699,7 @@ icd::SquareRoot() const
 #endif
 
   // Getting the breaking criterion
-  icd epsilon = Epsilon(10);
+  icd208 epsilon = Epsilon(10);
 
   number = *this; // Number to get the square-root from
   if (number.GetSign() == -1)
@@ -668,11 +714,11 @@ icd::SquareRoot() const
   // First estimate
   double estimate1 = number.AsDouble() / 2;
   double estimate2 = 1 / sqrt(estimate1);
-  icd result(estimate1);
-  icd between;
+  icd208 result(estimate1);
+  icd208 between;
 
   // Newton's iteration
-  icd last_result("0.0");
+  icd208 last_result("0.0");
 
   while (true)
   {
@@ -695,13 +741,13 @@ icd::SquareRoot() const
 }
 
 #else
-icd
-icd::SquareRoot() const
+icd208
+icd208::SquareRoot() const
 {
-  icd number(0L,0L);
-  icd half(_T("0.5"));
-  icd two(2L);
-  icd three(3L);
+  icd208 number(0L,0L);
+  icd208 half(_T("0.5"));
+  icd208 two(2L);
+  icd208 three(3L);
 
   // Optimization: sqrt(0) = 0
   if(IsNull())
@@ -709,7 +755,7 @@ icd::SquareRoot() const
     return number;
   }
   // Getting the breaking criterion
-  icd epsilon = Epsilon(10);
+  icd208 epsilon = Epsilon(10);
 
   number = *this; // Number to get the square-root from
   if(number.GetSign() == -1)
@@ -718,8 +764,8 @@ icd::SquareRoot() const
   }
   // Reduction by dividing through the square of a whole number
   // For speed we use the powers of two
-  icd reduction(1L);
-  icd hundred(100L);
+  icd208 reduction(1L);
+  icd208 hundred(100L);
   while(number / (reduction * reduction) > hundred)
   {
     reduction *= two;
@@ -731,8 +777,8 @@ icd::SquareRoot() const
   // First estimate
   double estimate1 = number.AsDouble();
   double estimate2 = 1 / sqrt(estimate1);
-  icd result(estimate2);
-  icd between;
+  icd208 result(estimate2);
+  icd208 between;
 
   // Newton's iteration
   // Un = U(3-VU^2)/2
@@ -759,12 +805,12 @@ icd::SquareRoot() const
 
 
 // Icd::Power
-// Description:   icd to the power of another icd
+// Description:   icd208 to the power of another icd208
 // What it does:  x^y = exp(y * ln(x))
-icd
-icd::Power(const icd& p_icd) const
+icd208
+icd208::Power(const icd208& p_icd) const
 {
-  icd result;
+  icd208 result;
 
   result = this->Log() * p_icd;
   result = result.Exp();
@@ -775,10 +821,10 @@ icd::Power(const icd& p_icd) const
 // Icd::Abs
 // Description:   Returning the absolute value
 // What it does:  Setting the sign to positive
-icd
-icd::AbsoluteValue() const
+icd208
+icd208::AbsoluteValue() const
 {
-  icd icd2 = *this;
+  icd208 icd2 = *this;
   icd2.m_sign = Sign::Positive; 
   return icd2;
 }
@@ -787,10 +833,10 @@ icd::AbsoluteValue() const
 // Description:   Inverse of the number = 1 / number
 // What it does:  Using the standard Div
 //
-icd
-icd::Reciproke() const
+icd208
+icd208::Reciproke() const
 {
-  icd number(1L);
+  icd208 number(1L);
   number = number.Div(*this);
   return number;
 }
@@ -802,18 +848,18 @@ icd::Reciproke() const
 //                ln(x) == 2( z + z^3/3 + z^5/5 ...
 //                z = (x-1)/(x+1)
 //
-icd 
-icd::Log() const
+icd208 
+icd208::Log() const
 {
   long k;
   long expo = 0;
-  icd res, number, z2;
-  icd number10(10L);
-  icd fast(_T("1.2"));
-  icd one(1L);
-  icd epsilon = Epsilon(5);
+  icd208 res, number, z2;
+  icd208 number10(10L);
+  icd208 fast(_T("1.2"));
+  icd208 one(1L);
+  icd208 epsilon = Epsilon(5);
 
-  if(*this <= icd(0L)) 
+  if(*this <= icd208(0L)) 
   { 
     throw CString(_T("Cannot get a natural logarithm from a number <= 0"));
   }
@@ -836,11 +882,11 @@ icd::Log() const
   z2    = number * number;
   res   = number;
   // Iterate using taylor series ln(x) == 2( z + z^3/3 + z^5/5 ... )
-  icd tussen;
+  icd208 tussen;
   for(long stap = 3; ;stap += 2)
   {
     number *= z2;
-    tussen = number / icd(stap);
+    tussen = number / icd208(stap);
     // Breaking criterion
     if(tussen.AbsoluteValue() < epsilon)
     {
@@ -849,32 +895,32 @@ icd::Log() const
     res += tussen;
   }
   // Adding the powers of 2 again (came from " < 1.2")
-  res *= icd(pow(2.0,(double)(k + 1)));
+  res *= icd208(pow(2.0,(double)(k + 1)));
 
   // Adding the exponent again
   if(expo != 0)
   {
     // Ln(x^y) = Ln(x) + Ln(10^y) = Ln(x) + y * ln(10)
-    res += icd(expo) * icd::LN10();
+    res += icd208(expo) * icd208::LN10();
   }
   return res;
 }
 
 // Icd::Exp
-// Description:   Exponent E till the power of this icd
+// Description:   Exponent E till the power of this icd208
 // What it does:  Use a Taylor series until their is no more change in the result
 //                exp(x) == 1 + x + x^2/2!+x^3/3!+....
 //                Equivalent with the same standard C function call
 //
-icd 
-icd::Exp() const
+icd208 
+icd208::Exp() const
 {
   long step, k = 0;
   long expo;
-  icd  between, result, number;
-  icd  half(_T("0.5"));
-  icd  ten(10L);
-  icd  epsilon = Epsilon(5);
+  icd208  between, result, number;
+  icd208  half(_T("0.5"));
+  icd208  ten(10L);
+  icd208  epsilon = Epsilon(5);
 
   number = *this;
 
@@ -888,7 +934,7 @@ icd::Exp() const
     if( expo > 0 )
     {
       step   = 3 * min( 10, expo );  // 2^3
-      result = icd((long) (1 << step) );
+      result = icd208((long) (1 << step) );
       result = result.Reciproke();
       k += step;
     }
@@ -902,13 +948,13 @@ icd::Exp() const
   }
 
   // Do first two iterations
-  result  = icd(1L) + number;
+  result  = icd208(1L) + number;
   between  = number * number * half;
   result += between;
   // Now iterate 
   for(step = 3; ;step++)
   {
-    between *= number / icd(step);
+    between *= number / icd208(step);
     // Breaking criterion
     if(between < epsilon)
     {
@@ -924,7 +970,7 @@ icd::Exp() const
   // Correcting the sign
   if(this->GetSign() < 0 )
   {
-    result = icd((long)1) / result;
+    result = icd208((long)1) / result;
   }
   return result;
 }
@@ -932,10 +978,10 @@ icd::Exp() const
 // Icd::Log10
 // Description:   Logarithm on base 10
 // What it does:  log10 = ln(x) / ln(10);
-icd     
-icd::Log10() const
+icd208     
+icd208::Log10() const
 {
-  icd res(0L);
+  icd208 res(0L);
 
   if(GetSign() <= 0) 
   { 
@@ -948,17 +994,17 @@ icd::Log10() const
 }
 
 // Ten Power
-// Description: icd . 10^n
+// Description: icd208 . 10^n
 // Technical:   add n to the exponent of the number
-icd
-icd::TenPower(int n)
+icd208
+icd208::TenPower(int n)
 {
   // Check if we can do this
   if (IsNull())
   {
-    return icd();
+    return icd208();
   }
-  icd res = *this;
+  icd208 res = *this;
   if(n > 0)
   {
     for (int ind = 0;ind < n;++ind)
@@ -997,14 +1043,14 @@ icd::TenPower(int n)
 //   This reductions are necessary to speed up the Taylor expansion and 
 //   keep the rounding errors under control
 //
-icd
-icd::Sine() const
+icd208
+icd208::Sine() const
 {
   int sign;
-  icd number;
-  icd pi,pi2;
-  icd between;
-  icd epsilon = Epsilon(3);
+  icd208 number;
+  icd208 pi,pi2;
+  icd208 between;
+  icd208 epsilon = Epsilon(3);
 
   number = *this;
 
@@ -1014,14 +1060,14 @@ icd::Sine() const
     number = -number;
   }
   // Reduce the argument until it is between 0..2PI
-  pi2 = PI() * icd(2L);
+  pi2 = PI() * icd208(2L);
   if(number > pi2)
   {
     between = number / pi2; 
     between = between.ValueBeforePoint();
     number -= between * pi2;
   }
-  if(number < icd(0L))
+  if(number < icd208(0L))
   {
     number += pi2;
   }
@@ -1035,14 +1081,14 @@ icd::Sine() const
 
   // Now we iterate with the Taylor expansion
   // Sin(x) = x - x^3/3! + x^5/5! ...
-  icd kwadraat  = number * number;
-  icd resultaat = number;
+  icd208 kwadraat  = number * number;
+  icd208 resultaat = number;
   between = number;
 
   for(long stap = 3; ;stap += 2)
   {
     between   *= kwadraat;
-    between   /= icd(stap) * icd (stap - 1);
+    between   /= icd208(stap) * icd208 (stap - 1);
     between    = -between; // switch signs each step!
     resultaat += between;
 
@@ -1072,13 +1118,13 @@ icd::Sine() const
 //                  until argument is less than 0.5
 //               4) Finally use Taylor 
 //
-icd
-icd::Cosine() const
+icd208
+icd208::Cosine() const
 {
   long trisection, step;
-  icd between, result, number, number2;
-  icd c05(_T("0.5")), c1(1L), c2(2L), c3(3L), c4(4L);
-  icd epsilon = Epsilon(2);
+  icd208 between, result, number, number2;
+  icd208 c05(_T("0.5")), c1(1L), c2(2L), c3(3L), c4(4L);
+  icd208 epsilon = Epsilon(2);
 
   number = *this;
 
@@ -1117,8 +1163,8 @@ icd::Cosine() const
   for(step=2; ;step += 2)
   {
     number   = number2; 
-    number  /= icd(step);
-    number  /= icd(step-1);
+    number  /= icd208(step);
+    number  /= icd208(step-1);
     between *= number;
     between  = -between;  // r.change_sign();
     // Breaking criterion
@@ -1142,17 +1188,17 @@ icd::Cosine() const
 // What it does:  Use the identity tan(x)=Sin(x)/Sqrt(1-Sin(x)^2)
 //                However first reduce x to between 0..2*PI
 //
-icd
-icd::Tangent() const
+icd208
+icd208::Tangent() const
 {
-  icd result, between, number;
-  icd two(2L),three(3L);;
+  icd208 result, between, number;
+  icd208 two(2L),three(3L);;
 
   number = *this;
 
   // Reduce argument to between 0..2PI
-  icd pi    = PI();
-  icd twopi = two * pi;
+  icd208 pi    = PI();
+  icd208 twopi = two * pi;
   if(number.AbsoluteValue() > twopi )
   {
     between  = number / twopi; 
@@ -1164,17 +1210,17 @@ icd::Tangent() const
   {
     number += twopi;
   }
-  icd halfpi    = pi / two;
-  icd anderhalf = three * halfpi;
+  icd208 halfpi    = pi / two;
+  icd208 anderhalf = three * halfpi;
   if( number == halfpi || number == anderhalf)
   { 
     throw CString(_T("Cannot calculate a tangent from an angle of 1/2 pi or 3/2 pi"));
   }
   // Sin(x)/Sqrt(1-Sin(x)^2)
   result     = number.Sine(); 
-  icd square = result * result;
-  icd part   = icd(1L) - square;
-  icd root   = sqrt(part);
+  icd208 square = result * result;
+  icd208 part   = icd208(1L) - square;
+  icd208 root   = sqrt(part);
   result    /= root;
 
   // Correct for the sign
@@ -1191,14 +1237,14 @@ icd::Tangent() const
 //               Iterate by Newton y'=y-(sin(y)-x)/cos(y). 
 //               With initial guess using standard double precision arithmetic.
 //
-icd     
-icd::ArcSine() const
+icd208     
+icd208::ArcSine() const
 {
   long step, reduction, sign;
   double d;
-  icd between, number, result, factor;
-  icd c1(1L), c05(_T("0.5")), c2(2L);
-  icd epsilon = Epsilon(5);
+  icd208 between, number, result, factor;
+  icd208 c1(1L), c05(_T("0.5")), c2(2L);
+  icd208 epsilon = Epsilon(5);
 
   number = *this;
   if(number > c1 || number < -c1)
@@ -1218,8 +1264,8 @@ icd::ArcSine() const
   }
   // Fast estimate from a double
   d = asin(number.AsDouble());
-  result = icd( d );
-  factor = icd( 1.0 / cos(d) ); // Constant factor 
+  result = icd208( d );
+  factor = icd208( 1.0 / cos(d) ); // Constant factor 
 
   // Newton Iteration
   for( step=0;; step++)
@@ -1234,7 +1280,7 @@ icd::ArcSine() const
   }
 
   // Set reduction back into the result
-  result *= icd((long) (1 << reduction) );
+  result *= icd208((long) (1 << reduction) );
 
   // Correct the sign
   if( sign < 0 )
@@ -1248,13 +1294,13 @@ icd::ArcSine() const
 // Icd::Acos
 // Description:   ArcCosine (angle) of a cosine ratio
 // What it does:  Use ArcCosine(x) = PI/2 - ArcSine(x)
-icd     
-icd::ArcCosine() const
+icd208     
+icd208::ArcCosine() const
 {
-  icd y;
+  icd208 y;
 
   y  = PI();
-  y /= icd(2L);
+  y /= icd208(2L);
   y -= ArcSine();
 
   return y;
@@ -1266,14 +1312,14 @@ icd::ArcCosine() const
 //                However first reduce x to abs(x)< 0.5 to improve taylor series
 //                using the identity. ArcTan(x)=2*ArcTan(x/(1+sqrt(1+x^2)))
 //
-icd
-icd::ArcTangent() const
+icd208
+icd208::ArcTangent() const
 {
-  icd  result, square;
-  icd  between1,between2;
-  icd  half(_T("0.5"));
-  icd  one(1L);
-  icd  epsilon = Epsilon(5);
+  icd208  result, square;
+  icd208  between1,between2;
+  icd208  half(_T("0.5"));
+  icd208  one(1L);
+  icd208  epsilon = Epsilon(5);
   long k = 2;
 
   result   = *this;
@@ -1291,7 +1337,7 @@ icd::ArcTangent() const
   {
     between1 *= square;
     between1  = -between1;
-    between2  = between1 / icd(stap);
+    between2  = between1 / icd208(stap);
     // Use the breaking criterion
     if(between2.AbsoluteValue() < epsilon)
     {
@@ -1299,7 +1345,7 @@ icd::ArcTangent() const
     }
     result += between2;
   }
-  result *= icd(k);
+  result *= icd208(k);
   return result;
 }
 
@@ -1308,12 +1354,12 @@ icd::ArcTangent() const
 // What it does: return the angle (in radians) from the X axis to a point (y,x).
 //               use atan() to calculate atan2()
 //
-icd
-icd::ArcTangent2Points(icd p_x) const
+icd208
+icd208::ArcTangent2Points(icd208 p_x) const
 {
-  icd result;
-  icd number = *this;
-  icd zero(0L), c05(_T("0.5"));
+  icd208 result;
+  icd208 number = *this;
+  icd208 zero(0L), c05(_T("0.5"));
 
   if( p_x == zero && number == zero)
   {
@@ -1346,7 +1392,7 @@ icd::ArcTangent2Points(icd p_x) const
     }
     else
     {
-      result = icd( number / p_x ).ArcTangent();
+      result = icd208( number / p_x ).ArcTangent();
       if( p_x < zero  && number < zero )
       {
         result -= PI();
@@ -1375,10 +1421,10 @@ icd::ArcTangent2Points(icd p_x) const
 // Icd::ValueBeforePoint
 // Description:   Getting the part before the decimal point 
 // What it does:  Part after the decimal point is set to zero
-icd
-icd::ValueBeforePoint() const
+icd208
+icd208::ValueBeforePoint() const
 {
-  icd before = *this;
+  icd208 before = *this;
   for(int i = 0; i < icdPointPosition; ++i)
   {
     before.m_data[i] = 0;
@@ -1389,10 +1435,10 @@ icd::ValueBeforePoint() const
 // Icd:: ValueBehindPoint
 // Description:  Value behind the decimal point
 // What it does: Part before the decimal point is set to zero
-icd
-icd::ValueBehindPoint() const
+icd208
+icd208::ValueBehindPoint() const
 {
-  icd behind = *this;
+  icd208 behind = *this;
   for(int i = icdPointPosition; i < icdLength; ++i)
   {
     behind.m_data[i] = 0;
@@ -1401,13 +1447,13 @@ icd::ValueBehindPoint() const
 }
 
 // Icd::AsDouble
-// Description:    Value of the icd as a standard double
+// Description:    Value of the icd208 as a standard double
 //                 Beware for rounding errors!
 // What it does:   Calculate the parts before and after the decimal point
 //                 seperetly by means of the pow function
 //
 double
-icd::AsDouble() const
+icd208::AsDouble() const
 {
   double res = 0.0;
 
@@ -1427,12 +1473,12 @@ icd::AsDouble() const
 
 // Icd200::AsShort
 // Description:   Returns the value of the ICD as a short
-//                Can throw if the icd does not fit into a short
+//                Can throw if the icd208 does not fit into a short
 // What it does:  Converts the icdPointPosition to a short
 //                given the fact that the higher order numbers are zero
 //                Ignores any decimal part!
 short
-icd::AsShort() const
+icd208::AsShort() const
 {
   // Check if high part is zero
   for(int ind = icdPointPosition + 1; ind < icdLength; ++ind)
@@ -1464,12 +1510,12 @@ icd::AsShort() const
 
 // Icd200::AsUShort
 // Description:   Returns the value of the ICD as an unsigned short
-//                Can throw if the icd does not fit into a short
+//                Can throw if the icd208 does not fit into a short
 // What it does:  Converts the icdPointPosition to a short
 //                given the fact that the higher order numbers are zero
 //                Ignores any decimal part!
 ushort
-icd::AsUShort() const
+icd208::AsUShort() const
 {
   // Check if high part is zero
   for (int ind = icdPointPosition + 1; ind < icdLength; ++ind)
@@ -1496,15 +1542,15 @@ icd::AsUShort() const
 
 // Icd::AsLong
 // Description:   Returns the value of the ICD as a long
-//                Can throw if the icd does not fit into a long
+//                Can throw if the icd208 does not fit into a long
 // What it does:  Converts the first three parts before the decimal point
 //
 long
-icd::AsLong() const
+icd208::AsLong() const
 {
   if(!FitsInLong()) 
   {
-    throw CString("Number: Overflow in icd");
+    throw CString("Number: Overflow in icd208");
   }
   // Calculate long
   long result = m_data[icdPointPosition] + 
@@ -1522,15 +1568,15 @@ icd::AsLong() const
 
 // Icd::AsULong
 // Description:   Returns the value of the ICD as an unsigned long
-//                Can throw if the icd does not fit into a long
+//                Can throw if the icd208 does not fit into a long
 // What it does:  Converts the first three parts before the decimal point
 //
 ulong
-icd::AsULong() const
+icd208::AsULong() const
 {
   if(!FitsInULong())
   {
-    throw CString("Number: Overflow in icd");
+    throw CString("Number: Overflow in icd208");
   }
   // Calculate long
   long result = m_data[icdPointPosition] +
@@ -1547,17 +1593,17 @@ icd::AsULong() const
 }
 
 // Icd::AsInt64
-// Description:   Gets the value of an icd as an int64
+// Description:   Gets the value of an icd208 as an int64
 // What it does:  Converts the part before the decimal point
 //
 int64
-icd::AsInt64() const
+icd208::AsInt64() const
 {
   int64 result = 0;
 
   if(!FitsInInt64())
   {
-    throw CString(_T("Number: Overflow in icd"));
+    throw CString(_T("Number: Overflow in icd208"));
   }
   for(int i = icdLength -1; i >= icdPointPosition; --i)
   {
@@ -1573,13 +1619,13 @@ icd::AsInt64() const
 
 // Get as a unsigned int64
 unsigned int64  
-icd::AsUInt64() const
+icd208::AsUInt64() const
 {
   unsigned int64 result = 0;
 
   if (!FitsInUInt64())
   {
-    throw CString(_T("Number: Overflow in icd"));
+    throw CString(_T("Number: Overflow in icd208"));
   }
   for (int i = icdLength - 1; i >= icdPointPosition; --i)
   {
@@ -1590,15 +1636,15 @@ icd::AsUInt64() const
 }
 
 // Icd::AsString
-// Description:    Gets the value of the icd as a string
+// Description:    Gets the value of the icd208 as a string
 // What it does:   Gets the sign first, and then runs through the m_data parts
 //
 CString
-icd::AsString() const
+icd208::AsString() const
 {
   // Sign at the beginning. Always add a sign
   CString str;
-  if (m_sign == icd::Negative)
+  if (m_sign == icd208::Negative)
   {
     str += "-";
   }
@@ -1685,7 +1731,7 @@ icd::AsString() const
 
 // Get as a SQL string 
 CString 
-icd::AsSQLString(bool p_strip /*=false*/) const
+icd208::AsSQLString(bool p_strip /*=false*/) const
 {
   CString str = AsString();
   if(p_strip)
@@ -1735,11 +1781,11 @@ icd::AsSQLString(bool p_strip /*=false*/) const
 }
 
 // Icd::AsDisplayString
-// Description:    Gets the value of a icd as a formatted string
+// Description:    Gets the value of a icd208 as a formatted string
 // What it does:   Gets the string first and then adds the thousands separators
 //
 CString 
-icd::AsDisplayString() const
+icd208::AsDisplayString() const
 {
   CString display = AsString();
   CString decpart;
@@ -1779,7 +1825,7 @@ icd::AsDisplayString() const
 
 // Get as an ODBC SQL NUMERIC
 void
-icd::AsNumeric(SQL_NUMERIC_STRUCT* p_numeric) const
+icd208::AsNumeric(SQL_NUMERIC_STRUCT* p_numeric) const
 {
   // Init the value array
   memset(p_numeric->val,0,SQL_MAX_NUMERIC_LEN);
@@ -1796,9 +1842,9 @@ icd::AsNumeric(SQL_NUMERIC_STRUCT* p_numeric) const
   }
 
   // Converting the value array
-  icd one(1L);
-  icd radix(256L);
-  icd accu(*this);
+  icd208 one(1L);
+  icd208 radix(256L);
+  icd208 accu(*this);
   int index = 0;
 
   // Here is the big trick: positive calculations
@@ -1857,7 +1903,7 @@ icd::AsNumeric(SQL_NUMERIC_STRUCT* p_numeric) const
 // What it does:  Checking of all the arguments and rounding
 //               
 void
-icd::SetLengthAndPrecision(int length, int precision)
+icd208::SetLengthAndPrecision(int length, int precision)
 {
   if(length == m_length && precision == m_precision)
   {
@@ -1866,19 +1912,19 @@ icd::SetLengthAndPrecision(int length, int precision)
 
   if (length < 1 || length > icdLength * icdDigits)
   {
-    throw CString(_T("Decimal number (icd): The length must be between 1 and ")) + LongToString(icdLength * icdDigits);
+    throw CString(_T("Decimal number (icd208): The length must be between 1 and ")) + LongToString(icdLength * icdDigits);
   }
   if (precision < 0 || precision > icdPointPosition * icdDigits)
   {
-    throw CString(_T("Decimal number (icd): The precision must be between 0 and ")) + LongToString(icdPointPosition * icdDigits);
+    throw CString(_T("Decimal number (icd208): The precision must be between 0 and ")) + LongToString(icdPointPosition * icdDigits);
   }
   if (length < precision)
   {
-    throw CString(_T("Decimal number (icd): The precision must be smaller than or equal to the length"));
+    throw CString(_T("Decimal number (icd208): The precision must be smaller than or equal to the length"));
   }
   if ((length - precision) > (icdPointPosition * icdDigits))
   {
-    throw CString(_T("Decimal number (icd): Number of digits before the decimal point cannot be greater than ")) + LongToString(icdPointPosition * icdDigits);
+    throw CString(_T("Decimal number (icd208): Number of digits before the decimal point cannot be greater than ")) + LongToString(icdPointPosition * icdDigits);
   }
   m_precision = precision;
 
@@ -1951,7 +1997,7 @@ icd::SetLengthAndPrecision(int length, int precision)
 // What it does:
 //
 long 
-icd::RoundDecimals(long decimal, int precsion)
+icd208::RoundDecimals(long decimal, int precsion)
 {
   CString strDecimal = _T("");
   CString strNum     = _T("");
@@ -2004,9 +2050,9 @@ icd::RoundDecimals(long decimal, int precsion)
 
 // Correct mathematical rounding
 void
-icd::Rounding(int p_length /*= 80*/,int p_precision /*= 40*/)
+icd208::Rounding(int p_length /*= 80*/,int p_precision /*= 40*/)
 {
-  icd factor(pow(0.1,p_precision));
+  icd208 factor(pow(0.1,p_precision));
   factor = (GetSign() == 1) ? (factor * 0.5) : (factor * -0.5);
   *this = Add(factor);
   SetLengthAndPrecision(p_length,p_precision);
@@ -2024,11 +2070,11 @@ icd::Rounding(int p_length /*= 80*/,int p_precision /*= 40*/)
 //////////////////////////////////////////////////////////////////////////
 
 // Icd::IsNull
-// Description:    Returns true if icd is zero, otherwise false
+// Description:    Returns true if icd208 is zero, otherwise false
 // What it does:   Walks m_data to see if it is all zero
 //
 bool
-icd::IsNull() const
+icd208::IsNull() const
 {
   for(int ind = 0;ind < icdLength; ++ind)
   {
@@ -2044,7 +2090,7 @@ icd::IsNull() const
 // Returns 1  -> Contents are > 0.0
 // Returns -1 -> Contents are < 0.0
 int 
-icd::GetSign() const
+icd208::GetSign() const
 {
   if (IsNull())
   {
@@ -2055,7 +2101,7 @@ icd::GetSign() const
 
 // Change the sign
 void
-icd::Negate()
+icd208::Negate()
 {
   if(IsNull())
   {
@@ -2065,11 +2111,11 @@ icd::Negate()
 }
 
 // Icd::FitsInLong
-// Description:   Returns true if the icd fits into a basic 'long'
+// Description:   Returns true if the icd208 fits into a basic 'long'
 // What it does:  Checks the first two data members
 //
 bool 
-icd::FitsInLong() const
+icd208::FitsInLong() const
 {
   int64 result = m_data[icdPointPosition    ] + 
                  m_data[icdPointPosition + 1] * icdBase;
@@ -2101,11 +2147,11 @@ icd::FitsInLong() const
 }
 
 // Icd::FitsInULong
-// Description:   Returns true if the icd fits into a basic 'unsigned long'
+// Description:   Returns true if the icd208 fits into a basic 'unsigned long'
 // What it does:  Checks the first two data members
 //
 bool
-icd::FitsInULong() const
+icd208::FitsInULong() const
 {
   int64 result = m_data[icdPointPosition] +
                  m_data[icdPointPosition + 1] * icdBase;
@@ -2134,10 +2180,10 @@ icd::FitsInULong() const
 }
 
 // Icd::FitsInInt64
-// Description:   Returns true if the icd fits into a __int64
+// Description:   Returns true if the icd208 fits into a __int64
 // What it does:  Checks the first m_data members
 bool
-icd::FitsInInt64() const
+icd208::FitsInInt64() const
 {
   int64 result = m_data[icdPointPosition    ] +
                  m_data[icdPointPosition + 1] * icdBase;
@@ -2169,7 +2215,7 @@ icd::FitsInInt64() const
 }
 
 bool
-icd::FitsInUInt64() const
+icd208::FitsInUInt64() const
 {
   unsigned int64 result = m_data[icdPointPosition    ] +
                           m_data[icdPointPosition + 1] * icdBase;
@@ -2200,7 +2246,7 @@ icd::FitsInUInt64() const
 // Description:   Returns true if the part behind the decimal point is filled
 // What it does:  Checks m_data
 bool 
-icd::HasDecimals() const
+icd208::HasDecimals() const
 {
   for(int x = 0; x < icdPointPosition; ++x)
   {
@@ -2213,11 +2259,11 @@ icd::HasDecimals() const
 }
 
 // Icd::Exponent
-// Description:   Returns the 10 base exponent of the icd number
-// What it does:  Divides/multiplies until the icd is in the 0-10 range
+// Description:   Returns the 10 base exponent of the icd208 number
+// What it does:  Divides/multiplies until the icd208 is in the 0-10 range
 //
 int
-icd::Exponent() const
+icd208::Exponent() const
 {
   int exponent = icdPointPosition * icdDigits - 1;
   for(int ind = icdLength - 1; ind >= 0; --ind)
@@ -2239,9 +2285,9 @@ icd::Exponent() const
 }
 
 // Icd::Mantissa
-// Description: Returns the 10-base mantissa of the icd number
-icd
-icd::Mantissa() const
+// Description: Returns the 10-base mantissa of the icd208 number
+icd208
+icd208::Mantissa() const
 {
   long expo = Exponent();
 
@@ -2251,7 +2297,7 @@ icd::Mantissa() const
   }
   long shift  = expo / icdDigits;
   long remain = expo % icdDigits;
-  icd  number = *this;
+  icd208  number = *this;
   int  sign   = number.GetSign();
 
   number = number.BringTogether(number,-shift);
@@ -2280,9 +2326,9 @@ icd::Mantissa() const
 // icd::IsNearZero
 // Description: Nearly zero or zero
 bool
-icd::IsNearZero()
+icd208::IsNearZero()
 {
-  icd epsilon = Epsilon(10);
+  icd208 epsilon = Epsilon(10);
   return AbsoluteValue() < epsilon;
 }
 
@@ -2303,19 +2349,19 @@ icd::IsNearZero()
 // Parameters:     void
 // What it does:   Making the contents equal to 0.0
 void
-icd::Zero()
+icd208::Zero()
 {
   MakeEmpty();
 }
 
 // Icd::Add
-// Description:   + operator, Adding of two icd's
-// Parameters:     const icd&
+// Description:   + operator, Adding of two icd208's
+// Parameters:     const icd208&
 // What it does:   Getting the sign of the end result first
 //                 Then see if we must use positive addition or subtraction
 //
-icd
-icd::Add(const icd& p_icd) const
+icd208
+icd208::Add(const icd208& p_icd) const
 {
   // See if we must add or subtract in positive form
   // (+x) + (+y) -> Adding,    result positive, do not turn around
@@ -2324,8 +2370,8 @@ icd::Add(const icd& p_icd) const
   // (-x) + (-y) -> Adding,    result negative, do not turn around
   Sign signResult;
   OperatorKind kindOperator;
-  icd arg1(*this);
-  icd arg2(p_icd);
+  icd208 arg1(*this);
+  icd208 arg2(p_icd);
   PositionArguments(arg1, arg2, signResult, kindOperator);
 
   if (kindOperator == Adding)
@@ -2357,21 +2403,21 @@ icd::Add(const icd& p_icd) const
 // Description:   - operator, Subtracting two icds
 // What it does:  Uses the + operator and the prefix - (x-y is equivalent to x+(-y))
 //
-icd
-icd::Sub(const icd& p_icd) const
+icd208
+icd208::Sub(const icd208& p_icd) const
 {
   // x-y is equivalent to: x+(-y)
   return *this + (-p_icd);
 }
 
 // Icd::Mul
-// Description:   * operator, Multiplies two icd's
+// Description:   * operator, Multiplies two icd208's
 //
-icd
-icd::Mul(const icd& p_icd) const
+icd208
+icd208::Mul(const icd208& p_icd) const
 {
   // Multiply without taking signs into account
-  icd res = MultiplyPositive(*this,p_icd);
+  icd208 res = MultiplyPositive(*this,p_icd);
 
   // Getting the sign
   res.m_sign = res.IsNull() ? Positive : CalculateSign(*this,p_icd);
@@ -2380,20 +2426,20 @@ icd::Mul(const icd& p_icd) const
 }
 
 // Icd::Div
-// Description:   / operator, Dividing of two icd's
+// Description:   / operator, Dividing of two icd208's
 // What it does:  if denominator is zero then an exception
 //                Using positive dividing en then getting the sign
 //
-icd
-icd::Div(const icd& p_icd) const
+icd208
+icd208::Div(const icd208& p_icd) const
 {
   // if denominator is zero -> error
   if (p_icd.IsNull())
   {
-    throw CString(_T("Decimal number (icd): Division by zero"));
+    throw CString(_T("Decimal number (icd208): Division by zero"));
   }
   // Divide without taking the sign into account
-  icd res = DividePositive(*this,p_icd);
+  icd208 res = DividePositive(*this,p_icd);
 
   // Getting the sign
   res.m_sign = res.IsNull() ? Positive : CalculateSign(*this,p_icd);
@@ -2403,12 +2449,12 @@ icd::Div(const icd& p_icd) const
 
 // Icd::Mod
 // Description:   Modulo operator
-// What it does:  Modulo calculation in icd calculations
-icd
-icd::Mod(const icd& p_icd) const
+// What it does:  Modulo calculation in icd208 calculations
+icd208
+icd208::Mod(const icd208& p_icd) const
 {
-  icd number = ((*this) / p_icd).ValueBeforePoint();
-  icd mod((*this) - (number * p_icd));
+  icd208 number = ((*this) / p_icd).ValueBeforePoint();
+  icd208 mod((*this) - (number * p_icd));
   if (m_sign == Negative)
   {
     -mod;
@@ -2433,7 +2479,7 @@ icd::Mod(const icd& p_icd) const
 // This function bypasses all <math> library and general macros
 // Needed because various versions of std:abs linked wrongly in larger apps
 long 
-icd::long_abs(const long waarde) const
+icd208::long_abs(const long waarde) const
 {
   if(waarde < 0)
   {
@@ -2443,10 +2489,10 @@ icd::long_abs(const long waarde) const
 }
 
 // Gives the 10 or 10000 power of a number
-// Used for quick shift operations in an icd
+// Used for quick shift operations in an icd208
 // (operand always between 0 en icdDigits (currently 8))
 long 
-icd::long_pow(long base,int operand) const
+icd208::long_pow(long base,int operand) const
 {
   long result = 1;
   if(operand > 0)
@@ -2465,7 +2511,7 @@ icd::long_pow(long base,int operand) const
 // Needed for quick shift operations
 // Result is at maximum (icdDigits - 1)
 long
-icd::long_log10(long value) const
+icd208::long_log10(long value) const
 {
   int result = 0;
 
@@ -2478,7 +2524,7 @@ icd::long_log10(long value) const
 }
 
 // Icd::SetValueLong
-// Description:    Setting the icd through two long values
+// Description:    Setting the icd208 through two long values
 //                 First value is the number before the decimal point
 //                 The second number cannot be larger than icdBase (1000000)
 // Parameters:     const long value     // value before decimal point
@@ -2487,10 +2533,10 @@ icd::long_log10(long value) const
 //                 2) gets the sign from the remainder if value == 0
 //                 3) Sets the first m_data before the decimal point
 //                 4) Sets the first m_data after the decimal point
-//                 5) Do a reformat to make the icd valid
+//                 5) Do a reformat to make the icd208 valid
 //
 void
-icd::SetValueLong(const long p_value, const long p_remainder)
+icd208::SetValueLong(const long p_value, const long p_remainder)
 {
   // Empty the number
   MakeEmpty();
@@ -2515,7 +2561,7 @@ icd::SetValueLong(const long p_value, const long p_remainder)
 }
 
 // Icd::SetValueULong
-// Description:    Setting the icd through two long values
+// Description:    Setting the icd208 through two long values
 //                 First value is the number before the decimal point
 //                 The second number cannot be larger than icdBase (1000000)
 // Parameters:     const unsigned long value     // value before decimal point
@@ -2524,10 +2570,10 @@ icd::SetValueLong(const long p_value, const long p_remainder)
 //                 2) gets the sign from the remainder if value == 0
 //                 3) Sets the first m_data before the decimal point
 //                 4) Sets the first m_data after the decimal point
-//                 5) Do a reformat to make the icd valid
+//                 5) Do a reformat to make the icd208 valid
 //
 void
-icd::SetValueULong(const ulong p_value, const ulong p_remainder)
+icd208::SetValueULong(const ulong p_value, const ulong p_remainder)
 {
   // Empty the number
   MakeEmpty();
@@ -2547,11 +2593,11 @@ icd::SetValueULong(const ulong p_value, const ulong p_remainder)
 
 // Icd::SetValueDouble
 //
-// Setting the value of the icd from a double
+// Setting the value of the icd208 from a double
 void
-icd::SetValueDouble(const double waarde)
+icd208::SetValueDouble(const double waarde)
 {
-  // Make icd initially empty
+  // Make icd208 initially empty
   MakeEmpty();
 
   // Getting the sign
@@ -2595,13 +2641,13 @@ icd::SetValueDouble(const double waarde)
 }
 
 // Icd::SetValueString
-// Description:    Setting a value in an icd from a string
+// Description:    Setting a value in an icd208 from a string
 //								 Characters without meaning will be ignored like in an 'atoi' conversion
 //
 void
-icd::SetValueString(CString p_value)
+icd208::SetValueString(CString p_value)
 {
-  // Begin with empty icd
+  // Begin with empty icd208
   MakeEmpty();
 
   // Optimization: Ready on empty string
@@ -2730,19 +2776,19 @@ icd::SetValueString(CString p_value)
 //   if(*ptr)
 //   {
 //     // Cannot convert
-//     throw CString("Cannot convert to icd");
+//     throw CString("Cannot convert to icd208");
 //   }
 }
 
 // Icd::SetValueInt64
-// Description:  Set the icd to an int64 value
+// Description:  Set the icd208 to an int64 value
 //               and optionally a remainder after the decimal point
 void
-icd::SetValueInt64(const int64 p_value, const int64 p_remainder)
+icd208::SetValueInt64(const int64 p_value, const int64 p_remainder)
 {
   int64 rest = 0;
 
-  // Start with an empty icd
+  // Start with an empty icd208
   MakeEmpty();
 
   // Getting the sign
@@ -2777,14 +2823,14 @@ icd::SetValueInt64(const int64 p_value, const int64 p_remainder)
 }
 
 // Icd::SetValueUInt64
-// Description:  Set the icd to an unsigned int64 value
+// Description:  Set the icd208 to an unsigned int64 value
 //               and optionally a remainder after the decimal point
 void
-icd::SetValueUInt64(const UINT64 p_value, const UINT64 p_remainder)
+icd208::SetValueUInt64(const UINT64 p_value, const UINT64 p_remainder)
 {
   UINT64 rest(p_value);
 
-  // Start with an empty icd
+  // Start with an empty icd208
   MakeEmpty();
 
   // Getting the sign always positive
@@ -2806,9 +2852,9 @@ icd::SetValueUInt64(const UINT64 p_value, const UINT64 p_remainder)
   Reformat();
 }
 
-// Put a SQL_NUMERIC_STRUCT from the ODBC driver in the icd
+// Put a SQL_NUMERIC_STRUCT from the ODBC driver in the icd208
 void
-icd::SetValueNumeric(SQL_NUMERIC_STRUCT* p_numeric)
+icd208::SetValueNumeric(SQL_NUMERIC_STRUCT* p_numeric)
 {
   MakeEmpty();
 
@@ -2830,10 +2876,10 @@ icd::SetValueNumeric(SQL_NUMERIC_STRUCT* p_numeric)
   if(ind >= 0)
   {
     // Compute the value array to the bcd-mantissa
-    icd radix(1L);
+    icd208 radix(1L);
     for(ind = 0;ind <= maxval; ++ind)
     {
-      icd val = radix * icd((long) (p_numeric->val[ind]));
+      icd208 val = radix * icd208((long) (p_numeric->val[ind]));
       *this = Add(val);
       radix = radix.Multi(256);  // Value array is in 256 radix
     }
@@ -2851,13 +2897,13 @@ icd::SetValueNumeric(SQL_NUMERIC_STRUCT* p_numeric)
 }
 
 // Icd::CalculateEFactor
-// Description: icd to the 10th power of a factor
+// Description: icd208 to the 10th power of a factor
 void
-icd::CalculateEFactor(int factor)
+icd208::CalculateEFactor(int factor)
 {
   static const int positionsBeforePoint = icdPointPosition * icdDigits;
   static const int positionsAfterPoint = (icdLength - icdPointPosition) * icdDigits;
-  static const icd basisICD((long)icdBase);
+  static const icd208 basisICD((long)icdBase);
 
   // See to it that the factor is in the range [-9,+9].
   while (factor > 9)
@@ -2870,7 +2916,7 @@ icd::CalculateEFactor(int factor)
     *this = Div(1000000000L /* 9 positions */);
     factor += 9;
   }
-  // Shift the rest by doing an icd-multiply
+  // Shift the rest by doing an icd208-multiply
   // the long-pow is now possible because 10^factor is within range of a 32-bits long
   if (factor > 0)
   {
@@ -2884,13 +2930,13 @@ icd::CalculateEFactor(int factor)
 
 // Icd::Reformat
 // Description:    See to it that all m_data members are correct again (<IcdBasis)
-// Exceptions:     If icd has become too big after reformatting  we do an Overflow exception
+// Exceptions:     If icd208 has become too big after reformatting  we do an Overflow exception
 // What it does:   Truncate the m_data values from highest till lowest value
 //                 so that m_data[i] < IcdBase. The remainder will be added to the next 
 //                 m_data member. (IcdOverflow if no more m_data member available)
 //
 void
-icd::Reformat()
+icd208::Reformat()
 {
   // Shift values to higher members of m_data
   long remainder = 0;
@@ -2908,10 +2954,10 @@ icd::Reformat()
 }
 
 // Icd::MakeEmpty
-// Description:   Make icd zero
+// Description:   Make icd208 zero
 //
 void
-icd::MakeEmpty()
+icd208::MakeEmpty()
 {
   // initialize data members to +0000...0000,0000...0000
   m_sign      = Positive;
@@ -2921,20 +2967,20 @@ icd::MakeEmpty()
 }
 
 // Icd::Multi
-// Description:    Multiplies a (positive) icd with a positive long
-//                 If the icd becomes to big, it's set to negative
+// Description:    Multiplies a (positive) icd208 with a positive long
+//                 If the icd208 becomes to big, it's set to negative
 // Parameters:     const long multiplier // number to multiply with
 // Retourneert:    this * multiplier
 // Precondition:   Sign is positive, the parameter is positive
 // What it does:   Multiplies every member of m_data with the parameter
 //                 After this you need to do a 'Reformat'
 //
-const icd
-icd::Multi(const long multiplier) const
+const icd208
+icd208::Multi(const long multiplier) const
 {
   int64 between = 0;
   int64 remain  = 0;
-  icd res(*this);
+  icd208 res(*this);
 
   // Multiplying
   for(long i = 0; i < icdLength; ++i)
@@ -2953,10 +2999,10 @@ icd::Multi(const long multiplier) const
 }
 
 // Icd::IsCornerCase
-// Description: Test if icd has become to big for the precision
+// Description: Test if icd208 has become to big for the precision
 //
 const bool
-icd::IsCornerCase() const
+icd208::IsCornerCase() const
 {
   // Test if a corner case where the round makes the length to long
   // E.g.: 9,995 with length = 3 and precision = 2, will be rounded to 10,00 (length = icdDigits!)
@@ -3038,8 +3084,8 @@ icd::IsCornerCase() const
 //                 (-x) + (+y) -> Subtract, result positive, flip arguments
 //                 (-x) + (-y) -> Adding,   result negative, do NOT flip arguments
 //
-// Parameters:     icd& arg1        // argument on the left side
-//                 icd& arg2        // argument on the right side
+// Parameters:     icd208& arg1        // argument on the left side
+//                 icd208& arg2        // argument on the right side
 //                 Sign& signResult // Total sign result
 //                 OperatorKind& kind // Operator to do (+ or -)
 //
@@ -3047,8 +3093,8 @@ icd::IsCornerCase() const
 //                 and the type of operation to perform
 //
 void
-icd::PositionArguments(icd&  arg1,
-                          icd&  arg2,
+icd208::PositionArguments(icd208&  arg1,
+                          icd208&  arg2,
                           Sign& signResult,
                           OperatorKind& kindOperator)
 {
@@ -3074,7 +3120,7 @@ icd::PositionArguments(icd&  arg1,
       signResult = Positive;
       kindOperator = Subtracting;
       // Flip the arguments
-      icd dummy(arg1);
+      icd208 dummy(arg1);
       arg1 = arg2;
       arg2 = dummy;
     }
@@ -3090,19 +3136,19 @@ icd::PositionArguments(icd&  arg1,
 }
 
 // Icd::AddPositive
-// Description:    Adds two icd's without taking the sign into account
-// Parameters:     const icd& arg1 // argument on the left side
-//                 const icd& arg2 // argument on the right side
-// Returns:        arg1+arg2 as an icd
+// Description:    Adds two icd208's without taking the sign into account
+// Parameters:     const icd208& arg1 // argument on the left side
+//                 const icd208& arg2 // argument on the right side
+// Returns:        arg1+arg2 as an icd208
 // Precondition:   arg1.m_sign = positive, arg2.m_teken = positive
-// Exceptions:     IcdOverflow if the result does not fit into an icd
+// Exceptions:     IcdOverflow if the result does not fit into an icd208
 // What it does:   Adds all m_data members one-by-one after which a reformat occurs
 //
-const icd
-icd::AddPositive(const icd& arg1, const icd& arg2)
+const icd208
+icd208::AddPositive(const icd208& arg1, const icd208& arg2)
 {
   // Add all data members
-  icd res(arg1);
+  icd208 res(arg1);
   for (long i = 0; i < icdLength; i++)
   {
     res.m_data[i] += arg2.m_data[i];
@@ -3113,10 +3159,10 @@ icd::AddPositive(const icd& arg1, const icd& arg2)
 }
 
 // Icd::SubtractPositive
-// Description:    Subtracts two icd's without taking the sign into account
-// Parameters:     const icd& arg1 // argument on the left side
-//                 const icd& arg2 // argument on the right side
-// Returns:        arg1-arg2 as an icd
+// Description:    Subtracts two icd208's without taking the sign into account
+// Parameters:     const icd208& arg1 // argument on the left side
+//                 const icd208& arg2 // argument on the right side
+// Returns:        arg1-arg2 as an icd208
 // Precondition:   arg1.m_sign = positive, arg2.m_sign = positive
 // What it does:   We do a subtract of all m_Data members
 //                 if the left data is smaller than the right data
@@ -3124,12 +3170,12 @@ icd::AddPositive(const icd& arg1, const icd& arg2)
 //                 unless it does not exist, so we do a switch of the sign
 //                 to make the underflow detectable outside the function
 //
-const icd
-icd::SubtractPositive(const icd& arg1, const icd& arg2)
+const icd208
+icd208::SubtractPositive(const icd208& arg1, const icd208& arg2)
 {
-  // Temporary icd's
-  icd res(arg1);
-  icd mina(arg2);
+  // Temporary icd208's
+  icd208 res(arg1);
+  icd208 mina(arg2);
 
   // res = res - mina
   for (long i = 0; i < icdLength; i++)
@@ -3161,7 +3207,7 @@ icd::SubtractPositive(const icd& arg1, const icd& arg2)
     // Switched signs, the result must be corrected
     // by subtracting the result from the theoretical maximum
     // N.B.: It's a recursive call of SubtractPositive!
-    icd maxIcd;
+    icd208 maxIcd;
     maxIcd.m_data[icdLength-1] = icdBase;
     res = -(maxIcd + res);
   }
@@ -3169,9 +3215,9 @@ icd::SubtractPositive(const icd& arg1, const icd& arg2)
 }
 
 // Icd::MultiplyPositive
-// Description:    Multiply two icd's without taking the sign into account
-// Parameters:     icd& arg1 // argument on the left side
-//                 icd& arg2 // argument on the righ tside
+// Description:    Multiply two icd208's without taking the sign into account
+// Parameters:     icd208& arg1 // argument on the left side
+//                 icd208& arg2 // argument on the righ tside
 // Returns:        arg1*arg2
 // Precondition:   arg1.m_sign = positive, arg2.m_sign = positive
 // Exceptions:     BKIcdOverflow if the result becomes too big
@@ -3182,10 +3228,10 @@ icd::SubtractPositive(const icd& arg1, const icd& arg2)
 //                 m_data array at the end, an ICD overflow exception will follow
 //                 As a last step we doe a 'Reformat' to get everything in line
 //
-const icd
-icd::MultiplyPositive(const icd& arg1, const icd& arg2)
+const icd208
+icd208::MultiplyPositive(const icd208& arg1, const icd208& arg2)
 {
-  // temporary m_data's so we do not need any longer icd structures elsewhere
+  // temporary m_data's so we do not need any longer icd208 structures elsewhere
   int64 res[icdLength * 2 + 1] = {0};
   int64 between = 0;
 
@@ -3220,8 +3266,8 @@ icd::MultiplyPositive(const icd& arg1, const icd& arg2)
     throw CString(_T("Decimal number too big (ICD Overflow)"));
   }
 
-  // Setting the result in an icd, taking the decimal point position into account
-  icd Icdres;
+  // Setting the result in an icd208, taking the decimal point position into account
+  icd208 Icdres;
   for (int i = 0; i < icdLength; i++)
   {
     Icdres.m_data[i] = (long) res[i+icdPointPosition];
@@ -3230,9 +3276,9 @@ icd::MultiplyPositive(const icd& arg1, const icd& arg2)
 }
 
 // Icd::DividePositive
-// Description:    Divides two icd's without taking the sign into account
-// Parameters:     icd& arg1 // numerator
-//                 icd& arg2 // denominator (non zero)
+// Description:    Divides two icd208's without taking the sign into account
+// Parameters:     icd208& arg1 // numerator
+//                 icd208& arg2 // denominator (non zero)
 // Returns:        arg1 / arg2
 // Precondition:   arg1.m_teken=positief, arg2.m_teken=positief, arg2!=0
 // Exceptions:     IcdOverflow if the result becomes too big
@@ -3243,16 +3289,16 @@ icd::MultiplyPositive(const icd& arg1, const icd& arg2)
 //                 So we find the highest and lowest possible values for the quotient
 //                 Then we do a binary search to find the 'real' quotient.
 //
-const icd
-icd::DividePositive(const icd& arg1, const icd& arg2)
+const icd208
+icd208::DividePositive(const icd208& arg1, const icd208& arg2)
 {
   // numerator   is argument 1
   // denominator is argument 2
   // res         Will be the result
   // The numerator will also be used to store parts of the numerator
-  icd numerator(arg1);
-  icd denominator(arg2);
-  icd res;
+  icd208 numerator(arg1);
+  icd208 denominator(arg2);
+  icd208 res;
 
   // Only positive dividing, sign will be set later
   numerator.m_sign   = Positive;
@@ -3281,8 +3327,8 @@ icd::DividePositive(const icd& arg1, const icd& arg2)
   // most-significant number of the numerator
   // Example: numerator is 12:32:43 and denominator is 32:43, then the
   // denominator will be shifted to "32:43:00"
-  icd multires;
-  icd denominatorSame;
+  icd208 multires;
+  icd208 denominatorSame;
 
   // The actual dividing action, go on until the number of digits is reached
   while (resindex >= 0 && index1 >= 0)
@@ -3376,13 +3422,13 @@ icd::DividePositive(const icd& arg1, const icd& arg2)
 
 // Icd::CalculateSign
 // Description:    Calculates the sign for a multiplication or a division
-// Parameters:     const icd& arg1 // 1th argument
-//                 const icd& arg2 // 2th argument
+// Parameters:     const icd208& arg1 // 1th argument
+//                 const icd208& arg2 // 2th argument
 // What it does:   First see if one of both arguments is zero
 //                 Then calculates the sign
 //
-const icd::Sign
-icd::CalculateSign(const icd& arg1, const icd& arg2)
+const icd208::Sign
+icd208::CalculateSign(const icd208& arg1, const icd208& arg2)
 {
   // Getting the sign
   // If both arguments are 0 -> positive
@@ -3419,18 +3465,18 @@ icd::CalculateSign(const icd& arg1, const icd& arg2)
 }
 
 // Icd::BringTogether
-// Description:    Shifts the icd a number of places left or right
+// Description:    Shifts the icd208 a number of places left or right
 //                 dependent on the second argument
-// Parameters:     const icd& arg1   // icd to shift
+// Parameters:     const icd208& arg1   // icd208 to shift
 //                 const long places // places to shift
-// Returns:        Shifted icd
-// What it does:   Used to shift an icd to bring it in line with another one
+// Returns:        Shifted icd208
+// What it does:   Used to shift an icd208 to bring it in line with another one
 //                 second argument shifts right (negative) or left (positive)
 //
-const icd
-icd::BringTogether(const icd& arg1, const long places)
+const icd208
+icd208::BringTogether(const icd208& arg1, const long places)
 {
-  icd res;
+  icd208 res;
 
   // if no displacement: do nothing
   if (places == 0)
@@ -3465,7 +3511,7 @@ icd::BringTogether(const icd& arg1, const long places)
 // Description:  Divide mantissa (m_data) by 10
 // What it does: Purely a shift register operation by dividing everything by 10
 void
-icd::Div10()
+icd208::Div10()
 {
   for(int ind = icdLength - 1;ind >= 0; --ind)
   {
@@ -3483,7 +3529,7 @@ icd::Div10()
 // Description:   Multiplies mantissa (m_data) with 10
 // What it does:  Purely a shift register operation by multiplying everything by 10
 void
-icd::Mult10()
+icd208::Mult10()
 {
   long carry = 0;
   for(int ind = 0; ind < icdLength; ++ind)
@@ -3502,7 +3548,7 @@ icd::Mult10()
 // Icd::LongToString
 // Description: Long to a string in radix 10
 CString
-icd::LongToString(long p_getal) const
+icd208::LongToString(long p_getal) const
 {
   TCHAR buffer[20];
   _itot_s(p_getal,buffer,20,10);
@@ -3512,7 +3558,7 @@ icd::LongToString(long p_getal) const
 // Icd::StringToLong
 // Description: String to a long
 long
-icd::StringToLong(CString& p_string) const
+icd208::StringToLong(CString& p_string) const
 {
   return _ttoi(p_string);
 }
@@ -3522,10 +3568,10 @@ icd::StringToLong(CString& p_string) const
 // What it does: Transposes the fraction to the lowest m_data position
 //               10 -> 0.0000000000000000000000000000000000000010
 //                5 -> 0.0000000000000000000000000000000000000005
-icd&
-icd::Epsilon(long p_fraction) const
+icd208&
+icd208::Epsilon(long p_fraction) const
 {
-  static icd epsilon;
+  static icd208 epsilon;
   epsilon.m_data[0] = p_fraction;
   return epsilon;
 }

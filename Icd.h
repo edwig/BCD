@@ -1,7 +1,7 @@
 // ICD = INTEGER CODED DECIMAL
 // A class to work with large decimal numbers
 // in exact precisions in decimals as opposed to
-// the built in datatypes (float, double) that
+// the built in data types (float, double) that
 // do a binary approximation 
 //
 #pragma once
@@ -17,6 +17,10 @@ static const short icdPointPosition = 5;          // Implied position of the dec
 static const short icdPrecision     = 38;         // Maximum allowed precision in ODBC
 // icd now has the form of: 0 0 0 0 0. 0 0 0 0 0
 // Example: 2.5 is stored:  0 0 0 0 5. 2 0 0 0 0
+// Handy typedefs of used basic data types
+using uchar  = unsigned char;
+using ushort = unsigned short;
+using ulong  = unsigned long;
 
 // All internal registers are in 64 bits
 #define int64 __int64
@@ -30,8 +34,14 @@ public:
   // ICD of a long
   icd(const long value, const long remainder = 0);
 
+  // ICD of an unsigned long
+  icd(const ulong value, const ulong remainder = 0);
+
   // ICD of a 64bits int
   icd(const int64 value,const int64 remainder = 0);
+
+  // ICD of a 64bits int
+  icd(const UINT64 value, const UINT64 remainder = 0);
 
   // Copy constructor.
   icd(const icd& icd);
@@ -41,6 +51,18 @@ public:
 
   // Assignment-constructor from a string.
   icd(const CString& p_string);
+
+  // ICD of a signed byte/char
+  icd(const char value);
+
+  // ICD of a signed byte/char
+  icd(const uchar value);
+
+  // ICD of a short
+  icd(const short value);
+
+  // ICD of an unsigned short
+  icd(const ushort value);
 
   // Assignment constructor from ODBC
   icd(SQL_NUMERIC_STRUCT* p_numeric);
@@ -56,14 +78,15 @@ public:
 
   // OPERATORS
 
-  const icd& operator=( const icd& icd);
+  const icd& operator=( const icd& p_icd);
   const icd& operator=( const long value);
   const icd& operator=( const double value);
   const icd& operator=( const CString& str);
-  const icd& operator+=(const icd& icd);
-  const icd& operator-=(const icd& icd);
-  const icd& operator*=(const icd& icd);
-  const icd& operator/=(const icd& icd);
+  const icd& operator+=(const icd& p_icd);
+  const icd& operator-=(const icd& p_icd);
+  const icd& operator*=(const icd& p_icd);
+  const icd& operator/=(const icd& p_icd);
+  const icd& operator%=(const icd& p_icd);
   // Prefix unary minus (negation)
   const icd  operator-() const;
   // Postfix increment
@@ -76,15 +99,15 @@ public:
   icd& operator--();
 
   // Comparison operators
-  const bool operator==(const icd& icd) const;
-  const bool operator!=(const icd& icd) const;
-  const bool operator< (const icd& icd) const;
-  const bool operator> (const icd& icd) const;
-  const bool operator<=(const icd& icd) const;
-  const bool operator>=(const icd& icd) const;
+  const bool operator==(const icd& p_icd) const;
+  const bool operator!=(const icd& p_icd) const;
+  const bool operator< (const icd& p_icd) const;
+  const bool operator> (const icd& p_icd) const;
+  const bool operator<=(const icd& p_icd) const;
+  const bool operator>=(const icd& p_icd) const;
 
   // standard output operator
-  friend ostream& operator<<(ostream& os, const icd& icd);
+  friend ostream& operator<<(ostream& os, const icd& p_icd);
 
   // MATHEMATICAL FUNCTIONS
 
@@ -106,6 +129,8 @@ public:
   icd     Exp() const;
   // Log with base 10
   icd     Log10() const;
+  // Ten Power
+  icd     TenPower(int n);
 
   // TRIGONOMETRICAL FUNCTIONS
   
@@ -117,7 +142,7 @@ public:
   icd     Tangent() const;
   // Arcsine (angle) of a Sine ratio
   icd     ArcSine() const;
-  // Arccosine (angle) of a Cosine ratio
+  // ArcCosine (angle) of a Cosine ratio
   icd     ArcCosine() const;
   // Arctangent (angle) of a Tangent ratio
   icd     ArcTangent() const;
@@ -131,10 +156,18 @@ public:
   icd     ValueBehindPoint() const;
   // Get as a converted double
   double  AsDouble() const;
+  // Get as a short
+  short   AsShort() const;
+  // Get as an unsigned short
+  ushort  AsUShort() const;
   // Get as a converted long
   long    AsLong() const;
+  // Get as an unsigned long
+  ulong   AsULong() const;
   // Get as a converted int-64
   int64   AsInt64() const;
+  // Get as a unsigned int64
+  unsigned int64  AsUInt64() const;
   // Get as mathematical string
   CString AsString() const;
   // Get as a SQL string 
@@ -160,6 +193,8 @@ public:
   bool  IsNull() const; 
   // Getting the sign as 0 (= 0.0), 1 (greater than 0) or -1 (smaller than 0)
   int   GetSign() const;
+  // Change the sign
+  void  Negate();
   // Total length (before and after the decimal .)
   int   Length();
   // Precision after the decimal '.'
@@ -168,28 +203,34 @@ public:
   static int GetMaxSize(int precision = 0);
   // See if the icd fits into a long
   bool  FitsInLong() const;
+  bool  FitsInULong() const;
   // See if the icd fits into a int64
   bool  FitsInInt64() const;
+  bool  FitsInUInt64() const;
   // See if the icd has decimals after the '.' (no scalar)
   bool  HasDecimals() const;
   // Getting the exponent of the icd
   int   Exponent() const;
   // Getting the 10th power mantissa of the icd
   icd   Mantissa() const;
+  // Nearly zero or zero
+  bool  IsNearZero();
 
   // BASIC OPERATIONS.
   // Has to be public for the operators
 
+  // Make ZERO
+  void Zero();
   // Add operation
-  icd Add(const icd& icd) const;
+  icd Add(const icd& p_icd) const;
   // Subtraction operation
-  icd Sub(const icd& icd) const;
+  icd Sub(const icd& p_icd) const;
   // Multiply operation
-  icd Mul(const icd& icd) const;
+  icd Mul(const icd& p_icd) const;
   // Dividing operation
-  icd Div(const icd& icd) const;
+  icd Div(const icd& p_icd) const;
   // Modulo operation
-  icd Mod(const icd& icd) const;
+  icd Mod(const icd& p_icd) const;
 
 private:
   enum Sign          { Positive, Negative    };
@@ -203,13 +244,15 @@ private:
   long long_log10(long value) const;
   
   // Put a long in the icd
-  void SetValueLong  (const long value, const long remainder);
+  void SetValueLong  (const long  value,const long  remainder);
+  void SetValueULong (const ulong value,const ulong remainder);
   // Put a double in the icd
   void SetValueDouble(const double value);
   // Convert a string in the icd
   void SetValueString(CString value);
   // Put an int64 in the icd
-  void SetValueInt64 (const int64 value, const int64 remainder);
+  void SetValueInt64 (const int64  value,const int64  remainder);
+  void SetValueUInt64(const UINT64 value,const UINT64 remainder);
   // Put a SQL_NUMERIC_STRUCT from the ODBC driver in the icd
   void SetValueNumeric(SQL_NUMERIC_STRUCT* p_numeric);
   // To the 10th power
@@ -250,7 +293,6 @@ private:
 
   // Breaking criterion for internal iterations
   icd&    Epsilon(long p_fraction) const;
-
   //
   // Data members: Storing the number
   //
@@ -277,7 +319,7 @@ icd::Precision()
 inline int 
 icd::GetMaxSize(int precisie)
 {
-  return ((icdLength * 2) + precisie); 
+  return (icdLength * icdDigits); 
 }
 
 // Overloaded basic operators

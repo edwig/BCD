@@ -304,6 +304,8 @@
     <ClInclude Include="..\bcd.h" />
     <ClInclude Include="..\bcd200.h" />
     <ClInclude Include="..\HPFCounter.h" />
+    <ClInclude Include="..\Icd.h" />
+    <ClInclude Include="..\Icd208.h" />
     <ClInclude Include="..\numeric.h" />
     <ClInclude Include="..\StdException.h" />
     <ClInclude Include="..\uint128.h" />
@@ -315,6 +317,8 @@
     <ClCompile Include="..\bcd.cpp" />
     <ClCompile Include="..\bcd200.cpp" />
     <ClCompile Include="..\HPFCounter.cpp" />
+    <ClCompile Include="..\Icd.cpp" />
+    <ClCompile Include="..\Icd208.cpp" />
     <ClCompile Include="..\numeric.cpp" />
     <ClCompile Include="..\StdException.cpp" />
     <ClCompile Include="..\uint128.cpp">
@@ -334,6 +338,8 @@
     <ClCompile Include="UnitTestAFP.cpp" />
     <ClCompile Include="UnitTestBCD.cpp" />
     <ClCompile Include="UnitTestBCD200.cpp" />
+    <ClCompile Include="UnitTestICD.cpp" />
+    <ClCompile Include="UnitTestICD208.cpp" />
     <ClCompile Include="UnitTestNumeric.cpp" />
     <ClCompile Include="UnitTestUint128.cpp" />
   </ItemGroup>
