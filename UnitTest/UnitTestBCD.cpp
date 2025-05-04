@@ -1439,5 +1439,17 @@ namespace UnitTest
       // Modified algorithm blackjetrock: 56 nano-sec
       // Total calculation time: 0.000056
     }
+
+    TEST_METHOD(T101_ComparingNegatives)
+    {
+      Logger::WriteMessage("Testing BCD comparing negatives");
+      bcd one(_T("-123456.789012345678"));
+      bcd two(_T("-123456.789012345678"));
+      Assert::IsTrue(one == two);
+      one = _T("-123456.789012345678");
+      two = _T("-123456.789012345679");
+      Assert::IsTrue(two < one);
+    }
+
   };
 }

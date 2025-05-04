@@ -2,7 +2,7 @@
 //
 // SourceFile: bcd.cpp
 //
-// Copyright (c) 2014-2021 ir. W.E. Huisman
+// Copyright (c) 2014-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -50,10 +50,12 @@
 #include <locale.h>
 #include <winnls.h>
 
+#ifdef _AFX
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
+#endif
 #endif
 
 // Theoretical maximum of numerical separators
@@ -310,6 +312,47 @@ bcd::LN10()
   ln10.m_mantissa[4] = 64207601L;
 
   return ln10;
+}
+
+ // Maximum number a bcd can hold
+bcd
+bcd::MIN_BCD()
+{
+  bcd min = MAX_BCD();
+  // Turn the sign around
+  min.m_sign = Sign::Negative;
+
+  return min;
+}
+
+// Minimum number a bcd can hold
+bcd
+bcd::MAX_BCD()
+{
+  bcd max;
+
+  max.m_sign        = Sign::Positive;
+  max.m_mantissa[0] = 99999999L;
+  max.m_mantissa[1] = 99999999L;
+  max.m_mantissa[2] = 99999999L;
+  max.m_mantissa[3] = 99999999L;
+  max.m_mantissa[4] = 99999999L;
+  max.m_exponent    = SHRT_MAX;
+
+  return max;
+}
+
+// Smallest number a bcd can hold
+bcd
+bcd::MIN_EPSILON()
+{
+  bcd eps;
+
+  eps.m_sign        = Sign::Positive;
+  eps.m_mantissa[0] = 1L;
+  eps.m_exponent    = SHRT_MIN;
+
+  return eps;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -865,7 +908,14 @@ bcd::operator<(const bcd& p_value) const
     if(m_mantissa[ind] != p_value.m_mantissa[ind])
     {
       // Result by comparing the mantissa positions
-      return (m_mantissa[ind] < p_value.m_mantissa[ind]);
+      if(m_sign == Sign::Positive)
+      {
+        return (m_mantissa[ind] < p_value.m_mantissa[ind]);
+      }
+      else
+      {
+        return (m_mantissa[ind] > p_value.m_mantissa[ind]);
+      }
     }
   }
   // Numbers are exactly the same
@@ -936,7 +986,14 @@ bcd::operator>(const bcd& p_value) const
     if(m_mantissa[ind] != p_value.m_mantissa[ind])
     {
       // Result by comparing the mantissa positions
-      return (m_mantissa[ind] > p_value.m_mantissa[ind]);
+      if(m_sign == Sign::Positive)
+      {
+        return (m_mantissa[ind] > p_value.m_mantissa[ind]);
+      }
+      else
+      {
+        return (m_mantissa[ind] < p_value.m_mantissa[ind]);
+      }
     }
   }
   // Numbers are exactly the same
@@ -1403,7 +1460,7 @@ bcd::SquareRoot() const
     return SetInfinity(_T("BCD: Infinity does not have a square root!"));
   }
 
-  // Optimaization sqrt(0) = 0
+  // Optimalization sqrt(0) = 0
   if(IsZero())
   {
     return number;
@@ -2428,9 +2485,12 @@ bcd::AsLong() const
 
   // Adjust to exponent
   int exponent = 2 * bcdDigits - m_exponent - 1;
-  while(exponent--)
+  if(exponent > 0)
   {
-    result /= 10;
+    while(exponent--)
+    {
+      result /= 10;
+    }
   }
 
   // Take care of sign and over/under flows
@@ -2885,7 +2945,7 @@ bcd::IsNearZero()
   {
     return false;
   }
-  bcd epsilon = Epsilon(10);
+  bcd epsilon = Epsilon(5);
   return AbsoluteValue() < epsilon;
 }
 
@@ -3883,7 +3943,7 @@ bcd::CalculatePrecisionAndScale(SQLCHAR& p_precision,SQLCHAR& p_scale) const
     return;
   }
   // Find the number of digits in this mantissa
-  // Change this optimization when changing bcdDigits or bcdLength !!
+  // Change this optimalization when changing bcdDigits or bcdLength !!
   if(m_mantissa[index] % 10000)
   {
     // Lower half filled
